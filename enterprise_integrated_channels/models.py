@@ -1,3 +1,3 @@
 """
-Database models for enterprise_integrated_channels.
+Database models for integrated_channels.
 """

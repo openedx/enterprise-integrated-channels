@@ -32,14 +32,14 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.sessions',
-    'enterprise_integrated_channels',
+    'integrated_channels',
 )
 
 LOCALE_PATHS = [
-    root('enterprise_integrated_channels', 'conf', 'locale'),
+    root('integrated_channels', 'conf', 'locale'),
 ]
 
-ROOT_URLCONF = 'enterprise_integrated_channels.urls'
+ROOT_URLCONF = 'integrated_channels.urls'
 
 SECRET_KEY = 'insecure-secret-key'
 

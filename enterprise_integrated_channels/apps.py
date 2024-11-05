@@ -1,13 +1,13 @@
 """
-enterprise_integrated_channels Django application initialization.
+integrated_channels Django application initialization.
 """
 
 from django.apps import AppConfig
 
 
-class EnterpriseIntegratedChannelsConfig(AppConfig):
+class IntegratedChannelsConfig(AppConfig):
     """
-    Configuration for the enterprise_integrated_channels Django application.
+    Configuration for the integrated_channels Django application.
     """
 
-    name = 'enterprise_integrated_channels'
+    name = 'integrated_channels'
