@@ -4,15 +4,15 @@
 #
 #    make upgrade
 #
-build==1.2.2
+build==1.2.2.post1
     # via pip-tools
 click==8.1.7
     # via pip-tools
 packaging==24.1
     # via build
 pip-tools==7.4.1
-    # via -r python-template/placeholder_repo_name_0/requirements/pip-tools.in
-pyproject-hooks==1.1.0
+    # via -r requirements/pip-tools.in
+pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
