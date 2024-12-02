@@ -85,13 +85,13 @@ selfcheck: ## check that the Makefile is well-formed
 
 extract_translations: ## extract strings to be translated, outputting .mo files
 	rm -rf docs/_build
-	cd integrated_channels && i18n_tool extract --no-segment
+	cd channel_integrations && i18n_tool extract --no-segment
 
 compile_translations: ## compile translation files, outputting .po files for each supported language
-	cd integrated_channels && i18n_tool generate
+	cd channel_integrations && i18n_tool generate
 
 detect_changed_source_translations:
-	cd integrated_channels && i18n_tool changed
+	cd channel_integrations && i18n_tool changed
 
 ifeq ($(OPENEDX_ATLAS_PULL),)
 pull_translations: ## Pull translations from Transifex
@@ -99,8 +99,8 @@ pull_translations: ## Pull translations from Transifex
 else
 # Experimental: OEP-58 Pulls translations using atlas
 pull_translations:
-	find integrated_channels/conf/locale -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
-	atlas pull $(OPENEDX_ATLAS_ARGS) translations/enterprise-integrated-channels/integrated_channels/conf/locale:integrated_channels/conf/locale
+	find channel_integrations/conf/locale -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
+	atlas pull $(OPENEDX_ATLAS_ARGS) translations/enterprise-integrated-channels/channel_integrations/conf/locale:channel_integrations/conf/locale
 	python manage.py compilemessages
 
 	@echo "Translations have been pulled via Atlas and compiled."
@@ -110,7 +110,7 @@ push_translations: ## push source translation files (.po) from Transifex
 	tx push -s
 
 dummy_translations: ## generate dummy translation (.po) files
-	cd integrated_channels && i18n_tool dummy
+	cd channel_integrations && i18n_tool dummy
 
 build_dummy_translations: extract_translations dummy_translations compile_translations ## generate and compile dummy translation files
 

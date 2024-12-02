@@ -57,8 +57,8 @@ output/*/index.html
 # Sphinx
 docs/_build
 docs/modules.rst
-docs/integrated_channels.rst
-docs/integrated_channels.*.rst
+docs/channel_integrations.rst
+docs/channel_integrations.*.rst
 
 # Private requirements
 requirements/private.in

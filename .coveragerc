@@ -1,7 +1,7 @@
 [run]
 branch = True
 data_file = .coverage
-source=integrated_channels
+source=channel_integrations
 omit =
     test_settings.py
     */migrations/*
