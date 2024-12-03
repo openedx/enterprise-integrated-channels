@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Package metadata for integrated_channels.
+Package metadata for channel_integrations.
 """
 import os
 import re
@@ -117,7 +117,7 @@ def is_requirement(line):
     return line and line.strip() and not line.startswith(("-r", "#", "-e", "git+", "-c"))
 
 
-VERSION = get_version('integrated_channels', '__init__.py')
+VERSION = get_version('channel_integrations', '__init__.py')
 
 if sys.argv[-1] == 'tag':
     print("Tagging the version on github:")
@@ -137,7 +137,7 @@ setup(
     author_email='oscm@openedx.org',
     url='https://github.com/openedx/enterprise-integrated-channels',
     packages=find_packages(
-        include=['integrated_channels', 'integrated_channels.*'],
+        include=['channel_integrations', 'channel_integrations.*'],
         exclude=["*tests"],
     ),
 
