@@ -11,3 +11,4 @@ class IntegratedChannelConfig(AppConfig):
     """
     name = 'channel_integrations.integrated_channel'
     verbose_name = "Enterprise Integrated Channels"
+    label = 'channel_integration'

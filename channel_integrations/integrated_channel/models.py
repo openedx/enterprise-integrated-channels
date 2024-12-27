@@ -117,6 +117,7 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
 
     enterprise_customer = models.ForeignKey(
         EnterpriseCustomer,
+        related_name='channelintegration_enterprisecustomerpluginconfiguration',
         blank=False,
         null=False,
         help_text=_("Enterprise Customer associated with the configuration."),
@@ -537,7 +538,7 @@ class LearnerDataTransmissionAudit(TimeStampedModel):
 
     class Meta:
         abstract = True
-        app_label = 'integrated_channel'
+        app_label = 'channel_integration'
 
     def __str__(self):
         """
@@ -613,7 +614,7 @@ class GenericLearnerDataTransmissionAudit(LearnerDataTransmissionAudit):
     A generic implementation of LearnerDataTransmissionAudit which can be instantiated
     """
     class Meta:
-        app_label = 'integrated_channel'
+        app_label = 'channel_integration'
 
     def __str__(self):
         """
@@ -649,7 +650,11 @@ class ContentMetadataItemTransmission(TimeStampedModel):
         index_together = [('enterprise_customer', 'integrated_channel_code', 'plugin_configuration_id', 'content_id')]
         unique_together = (('integrated_channel_code', 'plugin_configuration_id', 'content_id'),)
 
-    enterprise_customer = models.ForeignKey(EnterpriseCustomer, on_delete=models.CASCADE)
+    enterprise_customer = models.ForeignKey(
+        EnterpriseCustomer,
+        related_name='channelintegration_contentmetadataitemtransmission',
+        on_delete=models.CASCADE
+    )
     integrated_channel_code = models.CharField(max_length=30)
     plugin_configuration_id = models.PositiveIntegerField(blank=True, null=True)
     content_id = models.CharField(max_length=255)
@@ -912,7 +917,9 @@ class IntegratedChannelAPIRequestLogs(TimeStampedModel):
     """
 
     enterprise_customer = models.ForeignKey(
-        EnterpriseCustomer, on_delete=models.CASCADE
+        EnterpriseCustomer,
+        related_name='channelintegration_integratedchannelapirequestlogs',
+        on_delete=models.CASCADE
     )
     enterprise_customer_configuration_id = models.IntegerField(
         blank=False,
@@ -938,7 +945,7 @@ class IntegratedChannelAPIRequestLogs(TimeStampedModel):
     )
 
     class Meta:
-        app_label = "integrated_channel"
+        app_label = 'channel_integration'
         verbose_name_plural = "Integrated channels API request logs"
 
     def __str__(self):

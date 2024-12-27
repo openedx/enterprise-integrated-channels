@@ -143,7 +143,7 @@ setup(
 
     include_package_data=True,
     install_requires=load_requirements('requirements/base.in'),
-    python_requires=">=3.12",
+    python_requires=">=3.11",
     license="AGPL 3.0",
     zip_safe=False,
     keywords='Python edx',
@@ -155,6 +155,6 @@ setup(
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.11',
     ],
 )
