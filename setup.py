@@ -131,7 +131,8 @@ CHANGELOG = open(os.path.join(os.path.dirname(__file__), 'CHANGELOG.rst'), encod
 setup(
     name='enterprise-integrated-channels',
     version=VERSION,
-    description="""An integrated channel is an abstraction meant to represent a third-party system which provides an API that can be used to transmit EdX data to the third-party system.""",
+    description="""An integrated channel is an abstraction meant to represent a third-party system \
+                which provides an API that can be used to transmit EdX data to the third-party system.""",
     long_description=README + '\n\n' + CHANGELOG,
     author='Open edX Project',
     author_email='oscm@openedx.org',
