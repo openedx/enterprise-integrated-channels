@@ -5,3 +5,10 @@ Django             # Web application framework
 
 
 openedx-atlas
+pytz
+requests
+edx-opaque-keys[django]
+celery
+edx_django_utils
+jsonfield
+django-model-utils
