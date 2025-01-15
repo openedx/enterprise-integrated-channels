@@ -19,7 +19,7 @@ metadata:
     # component.
     openedx.org/arch-interest-groups: ""
 spec:
-  owner: "group:2u-iris"
+  owner: "group:2u-enterprise"
   type: 'library'
   lifecycle: 'production'
   dependsOn:
