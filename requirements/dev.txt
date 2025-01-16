@@ -4,6 +4,10 @@
 #
 #    make upgrade
 #
+amqp==5.3.1
+    # via
+    #   -r requirements/quality.txt
+    #   kombu
 asgiref==3.8.1
     # via
     #   -r requirements/quality.txt
@@ -13,6 +17,10 @@ astroid==3.3.8
     #   -r requirements/quality.txt
     #   pylint
     #   pylint-celery
+billiard==4.2.1
+    # via
+    #   -r requirements/quality.txt
+    #   celery
 build==1.2.2.post1
     # via
     #   -r requirements/pip-tools.txt
@@ -21,23 +29,54 @@ cachetools==5.5.0
     # via
     #   -r requirements/ci.txt
     #   tox
+celery==5.4.0
+    # via -r requirements/quality.txt
+certifi==2024.12.14
+    # via
+    #   -r requirements/quality.txt
+    #   requests
+cffi==1.17.1
+    # via
+    #   -r requirements/quality.txt
+    #   pynacl
 chardet==5.2.0
     # via
     #   -r requirements/ci.txt
     #   diff-cover
     #   tox
+charset-normalizer==3.4.1
+    # via
+    #   -r requirements/quality.txt
+    #   requests
 click==8.1.8
     # via
     #   -r requirements/pip-tools.txt
     #   -r requirements/quality.txt
+    #   celery
+    #   click-didyoumean
     #   click-log
+    #   click-plugins
+    #   click-repl
     #   code-annotations
+    #   edx-django-utils
     #   edx-lint
     #   pip-tools
+click-didyoumean==0.3.1
+    # via
+    #   -r requirements/quality.txt
+    #   celery
 click-log==0.4.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
+click-plugins==1.1.1
+    # via
+    #   -r requirements/quality.txt
+    #   celery
+click-repl==0.3.0
+    # via
+    #   -r requirements/quality.txt
+    #   celery
 code-annotations==2.1.0
     # via
     #   -r requirements/quality.txt
@@ -64,16 +103,43 @@ django==4.2.17
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
+    #   django-crum
+    #   django-model-utils
+    #   django-waffle
+    #   edx-django-utils
     #   edx-i18n-tools
+    #   jsonfield
+django-crum==0.7.9
+    # via
+    #   -r requirements/quality.txt
+    #   edx-django-utils
+django-model-utils==5.0.0
+    # via -r requirements/quality.txt
+django-waffle==4.2.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-django-utils
+dnspython==2.7.0
+    # via
+    #   -r requirements/quality.txt
+    #   pymongo
+edx-django-utils==7.1.0
+    # via -r requirements/quality.txt
 edx-i18n-tools==1.6.3
     # via -r requirements/dev.in
 edx-lint==5.4.1
+    # via -r requirements/quality.txt
+edx-opaque-keys[django]==2.11.0
     # via -r requirements/quality.txt
 filelock==3.16.1
     # via
     #   -r requirements/ci.txt
     #   tox
     #   virtualenv
+idna==3.10
+    # via
+    #   -r requirements/quality.txt
+    #   requests
 iniconfig==2.0.0
     # via
     #   -r requirements/quality.txt
@@ -87,6 +153,12 @@ jinja2==3.1.5
     #   -r requirements/quality.txt
     #   code-annotations
     #   diff-cover
+jsonfield==3.1.0
+    # via -r requirements/quality.txt
+kombu==5.4.2
+    # via
+    #   -r requirements/quality.txt
+    #   celery
 lxml[html-clean,html_clean]==5.3.0
     # via
     #   edx-i18n-tools
@@ -101,6 +173,10 @@ mccabe==0.7.0
     # via
     #   -r requirements/quality.txt
     #   pylint
+newrelic==10.4.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-django-utils
 openedx-atlas==0.6.2
     # via -r requirements/quality.txt
 packaging==24.2
@@ -136,11 +212,23 @@ pluggy==1.5.0
     #   tox
 polib==1.2.0
     # via edx-i18n-tools
+prompt-toolkit==3.0.48
+    # via
+    #   -r requirements/quality.txt
+    #   click-repl
+psutil==6.1.1
+    # via
+    #   -r requirements/quality.txt
+    #   edx-django-utils
 pycodestyle==2.12.1
     # via -r requirements/quality.txt
+pycparser==2.22
+    # via
+    #   -r requirements/quality.txt
+    #   cffi
 pydocstyle==6.3.0
     # via -r requirements/quality.txt
-pygments==2.18.0
+pygments==2.19.1
     # via diff-cover
 pylint==3.3.3
     # via
@@ -162,6 +250,14 @@ pylint-plugin-utils==0.8.2
     #   -r requirements/quality.txt
     #   pylint-celery
     #   pylint-django
+pymongo==4.10.1
+    # via
+    #   -r requirements/quality.txt
+    #   edx-opaque-keys
+pynacl==1.5.0
+    # via
+    #   -r requirements/quality.txt
+    #   edx-django-utils
 pyproject-api==1.8.0
     # via
     #   -r requirements/ci.txt
@@ -180,19 +276,28 @@ pytest-cov==6.0.0
     # via -r requirements/quality.txt
 pytest-django==4.9.0
     # via -r requirements/quality.txt
+python-dateutil==2.9.0.post0
+    # via
+    #   -r requirements/quality.txt
+    #   celery
 python-slugify==8.0.4
     # via
     #   -r requirements/quality.txt
     #   code-annotations
+pytz==2024.2
+    # via -r requirements/quality.txt
 pyyaml==6.0.2
     # via
     #   -r requirements/quality.txt
     #   code-annotations
     #   edx-i18n-tools
+requests==2.32.3
+    # via -r requirements/quality.txt
 six==1.17.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
+    #   python-dateutil
 snowballstemmer==2.2.0
     # via
     #   -r requirements/quality.txt
@@ -205,6 +310,8 @@ stevedore==5.4.0
     # via
     #   -r requirements/quality.txt
     #   code-annotations
+    #   edx-django-utils
+    #   edx-opaque-keys
 text-unidecode==1.3
     # via
     #   -r requirements/quality.txt
@@ -215,10 +322,34 @@ tomlkit==0.13.2
     #   pylint
 tox==4.23.2
     # via -r requirements/ci.txt
+typing-extensions==4.12.2
+    # via
+    #   -r requirements/quality.txt
+    #   edx-opaque-keys
+tzdata==2024.2
+    # via
+    #   -r requirements/quality.txt
+    #   celery
+    #   kombu
+urllib3==2.2.3
+    # via
+    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -r requirements/quality.txt
+    #   requests
+vine==5.1.0
+    # via
+    #   -r requirements/quality.txt
+    #   amqp
+    #   celery
+    #   kombu
 virtualenv==20.28.1
     # via
     #   -r requirements/ci.txt
     #   tox
+wcwidth==0.2.13
+    # via
+    #   -r requirements/quality.txt
+    #   prompt-toolkit
 wheel==0.45.1
     # via
     #   -r requirements/pip-tools.txt
