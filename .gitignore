@@ -63,3 +63,7 @@ docs/channel_integrations.*.rst
 # Private requirements
 requirements/private.in
 requirements/private.txt
+
+# Code editor settings
+.idea/
+.vscode/
