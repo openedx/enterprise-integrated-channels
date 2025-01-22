@@ -14,7 +14,6 @@ from django.apps import apps
 from django.contrib import auth
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-
 from enterprise.api_client.lms import GradesApiClient
 from enterprise.models import EnterpriseCourseEnrollment
 from opaque_keys import InvalidKeyError

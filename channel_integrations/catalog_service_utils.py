@@ -1,5 +1,5 @@
 """
-A utility collection for calls from integrated_channels to Catalog service
+A utility collection for calls from integrated_channels to Catalog service.
 """
 from enterprise.api_client.discovery import get_course_catalog_api_service_client
 

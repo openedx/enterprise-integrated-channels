@@ -129,7 +129,7 @@ class ContentMetadataTransmitter(Transmitter):
         """
         return response
 
-    def _transmit_action(self, content_metadata_item_map, client_method, action_name):  # pylint: disable=too-many-statements
+    def _transmit_action(self, content_metadata_item_map, client_method, action_name):  # pylint: disable=R0915
         """
         Do the work of calling the appropriate client method, saving the results, and updating
         the appropriate timestamps
