@@ -5,24 +5,19 @@ Database models for enterprise.
 import collections
 from uuid import uuid4
 
-from jsonfield.encoder import JSONEncoder
-from jsonfield.fields import JSONField
-
-from simple_history.models import HistoricalRecords
-
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import auth
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.functional import lazy
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-from model_utils.models import TimeStampedModel
-
-
 from enterprise.constants import json_serialized_course_modes
 from enterprise.logging import getEnterpriseLogger
 from enterprise.validators import validate_content_filter_fields
-
+from jsonfield.encoder import JSONEncoder
+from jsonfield.fields import JSONField
+from model_utils.models import TimeStampedModel
+from simple_history.models import HistoricalRecords
 
 LOGGER = getEnterpriseLogger(__name__)
 User = auth.get_user_model()

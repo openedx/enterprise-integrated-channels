@@ -13,7 +13,6 @@ from django.apps import apps
 from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
-
 from enterprise.api_client.enterprise_catalog import EnterpriseCatalogApiClient
 from enterprise.constants import (
     EXEC_ED_CONTENT_DESCRIPTION_TAG,
@@ -23,6 +22,7 @@ from enterprise.constants import (
     TRANSMISSION_MARK_CREATE,
 )
 from enterprise.utils import get_content_metadata_item_id
+
 from channel_integrations.integrated_channel.exporters import Exporter
 from channel_integrations.utils import generate_formatted_log, truncate_item_dicts
 

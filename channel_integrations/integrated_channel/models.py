@@ -5,8 +5,6 @@ Database models for Enterprise Integrated Channel.
 import json
 import logging
 
-from jsonfield.fields import JSONField
-
 from django.contrib import auth
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -14,12 +12,12 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
-from model_utils.models import TimeStampedModel
-
 from enterprise.constants import TRANSMISSION_MARK_CREATE, TRANSMISSION_MARK_DELETE, TRANSMISSION_MARK_UPDATE
 from enterprise.models import EnterpriseCustomer, EnterpriseCustomerCatalog
 from enterprise.utils import localized_utcnow
+from jsonfield.fields import JSONField
+from model_utils.models import TimeStampedModel
+
 from channel_integrations.integrated_channel.exporters.content_metadata import ContentMetadataExporter
 from channel_integrations.integrated_channel.exporters.learner_data import LearnerExporter
 from channel_integrations.integrated_channel.transmitters.content_metadata import ContentMetadataTransmitter

@@ -1,12 +1,10 @@
 import datetime
-import pytz
 
+import pytz
 from django.apps import apps
 from django.utils.dateparse import parse_datetime
-
-from enterprise.logging import getEnterpriseLogger
 from enterprise.constants import MAX_ALLOWED_TEXT_LENGTH
-
+from enterprise.logging import getEnterpriseLogger
 
 LMS_API_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 LMS_API_DATETIME_FORMAT_WITHOUT_TIMEZONE = '%Y-%m-%dT%H:%M:%S'

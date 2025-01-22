@@ -8,11 +8,10 @@ import logging
 from itertools import islice
 
 import requests
-
 from django.apps import apps
 from django.conf import settings
-
 from enterprise.utils import localized_utcnow, truncate_string
+
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient
 from channel_integrations.integrated_channel.transmitters import Transmitter

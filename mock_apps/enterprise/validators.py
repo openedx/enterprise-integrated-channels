@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-
 from enterprise.constants import CONTENT_FILTER_FIELD_TYPES as cftypes
 
 

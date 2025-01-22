@@ -7,10 +7,8 @@ from time import time
 from urllib.parse import urljoin
 
 import requests
-from edx_rest_api_client.auth import SuppliedJwtAuth
-
 from django.conf import settings
-
+from edx_rest_api_client.auth import SuppliedJwtAuth
 from enterprise.utils import NotConnectedToOpenEdX  # pylint: disable=cyclic-import
 
 try:

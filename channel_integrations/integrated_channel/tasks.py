@@ -7,14 +7,13 @@ from functools import wraps
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from edx_django_utils.monitoring import set_code_owner_attribute
-
 from django.conf import settings
 from django.contrib import auth
 from django.core.cache import cache
 from django.utils import timezone
-
+from edx_django_utils.monitoring import set_code_owner_attribute
 from enterprise.utils import get_enterprise_uuids_for_user_and_course
+
 from channel_integrations.integrated_channel.constants import TASK_LOCK_EXPIRY_SECONDS
 from channel_integrations.integrated_channel.management.commands import (
     INTEGRATED_CHANNEL_CHOICES,

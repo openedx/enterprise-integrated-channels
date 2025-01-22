@@ -4,18 +4,16 @@ Utilities to get details from the course catalog API.
 
 from logging import getLogger
 
-from opaque_keys import InvalidKeyError
-from opaque_keys.edx.keys import CourseKey
-from requests.exceptions import ConnectionError, RequestException, Timeout  # pylint: disable=redefined-builtin
-
 from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
-
 from enterprise import utils
 from enterprise.api_client.client import UserAPIClient
 from enterprise.utils import NotConnectedToOpenEdX, get_configuration_value_for_site
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey
+from requests.exceptions import ConnectionError, RequestException, Timeout  # pylint: disable=redefined-builtin
 
 try:
     import cPickle as pickle

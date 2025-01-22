@@ -4,7 +4,6 @@ Mixins for edX Enterprise's Consent application.
 import logging
 
 from django.contrib import auth
-
 from enterprise.models import EnterpriseCourseEnrollment
 
 LOGGER = logging.getLogger(__name__)

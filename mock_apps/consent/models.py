@@ -1,17 +1,14 @@
-from simple_history.models import HistoricalRecords
-
-from django.core.exceptions import ImproperlyConfigured
-from django.contrib import auth
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-
-from model_utils.models import TimeStampedModel
-
 from consent.errors import InvalidProxyConsent
 from consent.mixins import ConsentModelMixin
+from django.contrib import auth
+from django.core.exceptions import ImproperlyConfigured
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 from enterprise.api_client.discovery import get_course_catalog_api_service_client
 from enterprise.logging import getEnterpriseLogger
 from enterprise.models import EnterpriseCustomer
+from model_utils.models import TimeStampedModel
+from simple_history.models import HistoricalRecords
 
 LOGGER = getEnterpriseLogger(__name__)
 User = auth.get_user_model()

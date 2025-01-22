@@ -6,12 +6,9 @@ import logging
 import time
 from urllib.parse import urljoin
 
-from requests.exceptions import HTTPError, Timeout
-
 from django.conf import settings
-
 from enterprise.api_client.client import UserAPIClient
-
+from requests.exceptions import HTTPError, Timeout
 
 LOGGER = logging.getLogger(__name__)
 
