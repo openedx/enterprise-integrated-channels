@@ -125,10 +125,3 @@ class NotConnectedToOpenEdX(Exception):
     In general, this exception shouldn't be raised, because this package is
     designed to be installed directly inside an existing OpenEdX platform.
     """
-
-    def __init__(self, *args, **kwargs):
-        """
-        Log a warning and initialize the exception.
-        """
-        LOGGER.warning('edx-enterprise unexpectedly failed as if not installed in an OpenEdX platform')
-        super().__init__(*args, **kwargs)
