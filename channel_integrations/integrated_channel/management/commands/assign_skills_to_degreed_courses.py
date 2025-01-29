@@ -3,12 +3,11 @@ Assign skills to degreed courses
 """
 from logging import getLogger
 
-from requests.exceptions import ConnectionError, RequestException, Timeout  # pylint: disable=redefined-builtin
-
 from django.contrib import auth
 from django.core.management.base import BaseCommand, CommandError
-
 from enterprise.api_client.enterprise_catalog import EnterpriseCatalogApiClient
+from requests.exceptions import ConnectionError, RequestException, Timeout  # pylint: disable=redefined-builtin
+
 from channel_integrations.degreed2.client import Degreed2APIClient
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.management.commands import IntegratedChannelCommandMixin

@@ -15,14 +15,13 @@ from urllib.parse import urlparse
 
 import pytz
 import requests
-
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.html import strip_tags
-
 from enterprise.utils import parse_datetime_handle_invalid, parse_lms_api_datetime
+
 from channel_integrations.catalog_service_utils import get_course_run_for_enrollment
 
 UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -503,8 +502,9 @@ def get_enterprise_client_by_channel_code(channel_code):
     """
     Get the appropriate enterprise client based on channel code
     """
+    # TODO: Suppress pylint warning for E0401 and E0611 until we migrate canvas
     # TODO: Other configs
-    from channel_integrations.canvas.client import CanvasAPIClient  # pylint: disable=C0415
+    from channel_integrations.canvas.client import CanvasAPIClient  # pylint: disable=C0415, E0401, E0611
     _enterprise_client_model_by_channel_code = {
         'canvas': CanvasAPIClient,
     }

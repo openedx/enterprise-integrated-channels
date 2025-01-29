@@ -9,13 +9,15 @@ enterprise customer.
 from datetime import datetime
 from logging import getLogger
 
-from opaque_keys import InvalidKeyError
-from requests.exceptions import HTTPError
-
+from consent.models import DataSharingConsent
 from django.apps import apps
 from django.contrib import auth
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from enterprise.api_client.lms import GradesApiClient
+from enterprise.models import EnterpriseCourseEnrollment
+from opaque_keys import InvalidKeyError
+from requests.exceptions import HTTPError
 
 from channel_integrations.integrated_channel.channel_settings import ChannelSettingsMixin
 
@@ -23,9 +25,6 @@ try:
     from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 except ImportError:
     CourseOverview = None
-from consent.models import DataSharingConsent
-from enterprise.api_client.lms import GradesApiClient
-from enterprise.models import EnterpriseCourseEnrollment
 from channel_integrations.catalog_service_utils import get_course_id_for_enrollment
 from channel_integrations.integrated_channel.exporters import Exporter
 from channel_integrations.lms_utils import (

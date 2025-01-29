@@ -6,8 +6,8 @@ import logging
 from http import HTTPStatus
 
 from django.apps import apps
-
 from enterprise.utils import localized_utcnow
+
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.channel_settings import ChannelSettingsMixin
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient

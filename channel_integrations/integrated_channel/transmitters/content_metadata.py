@@ -8,11 +8,10 @@ import logging
 from itertools import islice
 
 import requests
-
 from django.apps import apps
 from django.conf import settings
-
 from enterprise.utils import localized_utcnow, truncate_string
+
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient
 from channel_integrations.integrated_channel.transmitters import Transmitter
@@ -130,7 +129,7 @@ class ContentMetadataTransmitter(Transmitter):
         """
         return response
 
-    def _transmit_action(self, content_metadata_item_map, client_method, action_name):  # pylint: disable=too-many-statements
+    def _transmit_action(self, content_metadata_item_map, client_method, action_name):  # pylint: disable=R0915
         """
         Do the work of calling the appropriate client method, saving the results, and updating
         the appropriate timestamps

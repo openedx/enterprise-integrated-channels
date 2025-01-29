@@ -6,8 +6,8 @@ from collections import OrderedDict
 
 from django.core.management.base import CommandError
 from django.utils.translation import gettext as _
-
 from enterprise.models import EnterpriseCustomer
+
 from channel_integrations.blackboard.models import BlackboardEnterpriseCustomerConfiguration
 from channel_integrations.canvas.models import CanvasEnterpriseCustomerConfiguration
 from channel_integrations.cornerstone.models import CornerstoneEnterpriseCustomerConfiguration

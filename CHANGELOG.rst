@@ -16,10 +16,13 @@ Unreleased
 
 *
 
-0.1.0 – 2024-10-30
+0.1.0 – 2025-01-16
 **********************************************
 
 Added
 =====
 
+* Created ``mock_apps`` for testing purposes.
+* Updated requirements in ``base.in`` and run ``make requirements``.
+* Migrated ``integrated_channel`` app from edx-enterprise.
 * First release on PyPI.

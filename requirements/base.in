@@ -12,3 +12,4 @@ celery
 edx_django_utils
 jsonfield
 django-model-utils
+django-simple-history

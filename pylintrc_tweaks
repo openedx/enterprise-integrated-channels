@@ -1,6 +1,7 @@
 # pylintrc tweaks for use with edx_lint.
 [MASTER]
-ignore = migrations
+# TODO: Remove `management` from the ignore list once we migrate all the channels
+ignore = migrations, management
 load-plugins = edx_lint.pylint,pylint_django,pylint_celery
 
 [MESSAGES CONTROL]
@@ -9,3 +10,5 @@ disable+=
     django-not-configured,
     consider-using-with,
     bad-option-value,
+    too-many-positional-arguments,
+    logging-format-interpolation,
