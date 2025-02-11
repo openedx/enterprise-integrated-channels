@@ -16,13 +16,13 @@ asgiref==3.8.1
     # via
     #   -r requirements/test.txt
     #   django
-babel==2.16.0
+babel==2.17.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
 backports-tarfile==1.2.0
     # via jaraco-context
-beautifulsoup4==4.12.3
+beautifulsoup4==4.13.3
     # via pydata-sphinx-theme
 billiard==4.2.1
     # via
@@ -32,7 +32,7 @@ build==1.2.2.post1
     # via -r requirements/doc.in
 celery==5.4.0
     # via -r requirements/test.txt
-certifi==2024.12.14
+certifi==2025.1.31
     # via
     #   -r requirements/test.txt
     #   requests
@@ -67,11 +67,11 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.2.0
     # via -r requirements/test.txt
-coverage[toml]==7.6.10
+coverage[toml]==7.6.11
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-django==4.2.18
+django==4.2.19
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
@@ -111,13 +111,15 @@ edx-django-utils==7.1.0
     # via -r requirements/test.txt
 edx-opaque-keys[django]==2.11.0
     # via -r requirements/test.txt
+id==1.5.0
+    # via twine
 idna==3.10
     # via
     #   -r requirements/test.txt
     #   requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==8.5.0
+importlib-metadata==8.6.1
     # via keyring
 iniconfig==2.0.0
     # via
@@ -154,7 +156,7 @@ more-itertools==10.6.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-newrelic==10.4.0
+newrelic==10.6.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -169,17 +171,15 @@ packaging==24.2
     #   pytest
     #   sphinx
     #   twine
-pbr==6.1.0
+pbr==6.1.1
     # via
     #   -r requirements/test.txt
     #   stevedore
-pkginfo==1.12.0
-    # via twine
 pluggy==1.5.0
     # via
     #   -r requirements/test.txt
     #   pytest
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.50
     # via
     #   -r requirements/test.txt
     #   click-repl
@@ -201,7 +201,7 @@ pygments==2.19.1
     #   readme-renderer
     #   rich
     #   sphinx
-pymongo==4.10.1
+pymongo==4.11.1
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys
@@ -218,7 +218,7 @@ pytest==8.3.4
     #   pytest-django
 pytest-cov==6.0.0
     # via -r requirements/test.txt
-pytest-django==4.9.0
+pytest-django==4.10.0
     # via -r requirements/test.txt
 python-dateutil==2.9.0.post0
     # via
@@ -228,7 +228,7 @@ python-slugify==8.0.4
     # via
     #   -r requirements/test.txt
     #   code-annotations
-pytz==2024.2
+pytz==2025.1
     # via -r requirements/test.txt
 pyyaml==6.0.2
     # via
@@ -239,6 +239,7 @@ readme-renderer==44.0
 requests==2.32.3
     # via
     #   -r requirements/test.txt
+    #   id
     #   requests-toolbelt
     #   sphinx
     #   twine
@@ -292,14 +293,15 @@ text-unidecode==1.3
     # via
     #   -r requirements/test.txt
     #   python-slugify
-twine==6.0.1
+twine==6.1.0
     # via -r requirements/doc.in
 typing-extensions==4.12.2
     # via
     #   -r requirements/test.txt
+    #   beautifulsoup4
     #   edx-opaque-keys
     #   pydata-sphinx-theme
-tzdata==2024.2
+tzdata==2025.1
     # via
     #   -r requirements/test.txt
     #   celery
@@ -322,3 +324,6 @@ wcwidth==0.2.13
     #   prompt-toolkit
 zipp==3.21.0
     # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
