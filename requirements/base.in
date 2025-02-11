@@ -13,3 +13,5 @@ edx_django_utils
 jsonfield
 django-model-utils
 django-simple-history
+django-config-models
+django-fernet-fields-v2
