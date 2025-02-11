@@ -25,13 +25,13 @@ build==1.2.2.post1
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
-cachetools==5.5.0
+cachetools==5.5.1
     # via
     #   -r requirements/ci.txt
     #   tox
 celery==5.4.0
     # via -r requirements/quality.txt
-certifi==2024.12.14
+certifi==2025.1.31
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -85,11 +85,11 @@ colorama==0.4.6
     # via
     #   -r requirements/ci.txt
     #   tox
-coverage[toml]==7.6.10
+coverage[toml]==7.6.11
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
-diff-cover==9.2.1
+diff-cover==9.2.2
     # via -r requirements/dev.in
 dill==0.3.9
     # via
@@ -99,7 +99,7 @@ distlib==0.3.9
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==4.2.18
+django==4.2.19
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -131,11 +131,11 @@ edx-django-utils==7.1.0
     # via -r requirements/quality.txt
 edx-i18n-tools==1.6.3
     # via -r requirements/dev.in
-edx-lint==5.4.1
+edx-lint==5.6.0
     # via -r requirements/quality.txt
 edx-opaque-keys[django]==2.11.0
     # via -r requirements/quality.txt
-filelock==3.16.1
+filelock==3.17.0
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -148,7 +148,7 @@ iniconfig==2.0.0
     # via
     #   -r requirements/quality.txt
     #   pytest
-isort==5.13.2
+isort==6.0.0
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -163,7 +163,7 @@ kombu==5.4.2
     # via
     #   -r requirements/quality.txt
     #   celery
-lxml[html-clean,html_clean]==5.3.0
+lxml[html-clean,html_clean]==5.3.1
     # via
     #   edx-i18n-tools
     #   lxml-html-clean
@@ -177,7 +177,7 @@ mccabe==0.7.0
     # via
     #   -r requirements/quality.txt
     #   pylint
-newrelic==10.4.0
+newrelic==10.6.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -194,7 +194,7 @@ packaging==24.2
     #   tox
 path==16.16.0
     # via edx-i18n-tools
-pbr==6.1.0
+pbr==6.1.1
     # via
     #   -r requirements/quality.txt
     #   stevedore
@@ -216,7 +216,7 @@ pluggy==1.5.0
     #   tox
 polib==1.2.0
     # via edx-i18n-tools
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.50
     # via
     #   -r requirements/quality.txt
     #   click-repl
@@ -234,7 +234,7 @@ pydocstyle==6.3.0
     # via -r requirements/quality.txt
 pygments==2.19.1
     # via diff-cover
-pylint==3.3.3
+pylint==3.3.4
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -254,7 +254,7 @@ pylint-plugin-utils==0.8.2
     #   -r requirements/quality.txt
     #   pylint-celery
     #   pylint-django
-pymongo==4.10.1
+pymongo==4.11.1
     # via
     #   -r requirements/quality.txt
     #   edx-opaque-keys
@@ -262,7 +262,7 @@ pynacl==1.5.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
-pyproject-api==1.8.0
+pyproject-api==1.9.0
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -278,7 +278,7 @@ pytest==8.3.4
     #   pytest-django
 pytest-cov==6.0.0
     # via -r requirements/quality.txt
-pytest-django==4.9.0
+pytest-django==4.10.0
     # via -r requirements/quality.txt
 python-dateutil==2.9.0.post0
     # via
@@ -288,7 +288,7 @@ python-slugify==8.0.4
     # via
     #   -r requirements/quality.txt
     #   code-annotations
-pytz==2024.2
+pytz==2025.1
     # via -r requirements/quality.txt
 pyyaml==6.0.2
     # via
@@ -324,13 +324,13 @@ tomlkit==0.13.2
     # via
     #   -r requirements/quality.txt
     #   pylint
-tox==4.23.2
+tox==4.24.1
     # via -r requirements/ci.txt
 typing-extensions==4.12.2
     # via
     #   -r requirements/quality.txt
     #   edx-opaque-keys
-tzdata==2024.2
+tzdata==2025.1
     # via
     #   -r requirements/quality.txt
     #   celery
@@ -346,7 +346,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.29.0
+virtualenv==20.29.2
     # via
     #   -r requirements/ci.txt
     #   tox
