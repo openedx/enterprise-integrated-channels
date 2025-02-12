@@ -29,6 +29,7 @@ certifi==2025.1.31
 cffi==1.17.1
     # via
     #   -r requirements/test.txt
+    #   cryptography
     #   pynacl
 charset-normalizer==3.4.1
     # via
@@ -67,21 +68,32 @@ coverage[toml]==7.6.11
     # via
     #   -r requirements/test.txt
     #   pytest-cov
+cryptography==44.0.0
+    # via
+    #   -r requirements/test.txt
+    #   django-fernet-fields-v2
 dill==0.3.9
     # via pylint
 django==4.2.19
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
+    #   django-config-models
     #   django-crum
+    #   django-fernet-fields-v2
     #   django-model-utils
     #   django-waffle
+    #   djangorestframework
     #   edx-django-utils
     #   jsonfield
+django-config-models==2.7.0
+    # via -r requirements/test.txt
 django-crum==0.7.9
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
+django-fernet-fields-v2==0.9
+    # via -r requirements/test.txt
 django-model-utils==5.0.0
     # via -r requirements/test.txt
 django-simple-history==3.0.0
@@ -92,11 +104,18 @@ django-waffle==4.2.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
+djangorestframework==3.15.2
+    # via
+    #   -r requirements/test.txt
+    #   django-config-models
 dnspython==2.7.0
     # via
     #   -r requirements/test.txt
     #   pymongo
 edx-django-utils==7.1.0
+    # via
+    #   -r requirements/test.txt
+    #   django-config-models
     # via -r requirements/test.txt
 edx-lint==5.6.0
     # via -r requirements/quality.in
