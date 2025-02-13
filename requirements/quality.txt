@@ -64,11 +64,11 @@ code-annotations==2.2.0
     # via
     #   -r requirements/test.txt
     #   edx-lint
-coverage[toml]==7.6.11
+coverage[toml]==7.6.12
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==44.0.0
+cryptography==44.0.1
     # via
     #   -r requirements/test.txt
     #   django-fernet-fields-v2
@@ -116,7 +116,6 @@ edx-django-utils==7.1.0
     # via
     #   -r requirements/test.txt
     #   django-config-models
-    # via -r requirements/test.txt
 edx-lint==5.6.0
     # via -r requirements/quality.in
 edx-opaque-keys[django]==2.11.0
