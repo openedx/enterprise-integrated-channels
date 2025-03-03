@@ -8,7 +8,6 @@ import logging
 import time
 
 import requests
-
 from django.apps import apps
 
 from channel_integrations.cornerstone.utils import get_or_create_key_pair

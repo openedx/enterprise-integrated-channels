@@ -8,16 +8,15 @@ from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
-from rest_framework import generics
-from rest_framework.exceptions import NotFound
-from rest_framework.renderers import JSONRenderer
-
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
-
 from enterprise.utils import get_enterprise_customer
+from rest_framework import generics
+from rest_framework.exceptions import NotFound
+from rest_framework.renderers import JSONRenderer
+
 from channel_integrations.blackboard.models import BlackboardEnterpriseCustomerConfiguration
 
 LOGGER = logging.getLogger(__name__)

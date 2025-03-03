@@ -7,20 +7,23 @@ import json
 import logging
 import time
 from http import HTTPStatus
+from urllib.parse import urljoin
 
 import requests
-from edx_django_utils.cache import TieredCache, get_cache_key
-from six.moves.urllib.parse import urljoin
-
 from django.apps import apps
 from django.conf import settings
 from django.http.request import QueryDict
-
+from edx_django_utils.cache import TieredCache, get_cache_key
 from enterprise.api_client.enterprise_catalog import EnterpriseCatalogApiClient
 from enterprise.models import EnterpriseCustomerUser
+
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient
-from channel_integrations.utils import generate_formatted_log, refresh_session_if_expired, stringify_and_store_api_record
+from channel_integrations.utils import (
+    generate_formatted_log,
+    refresh_session_if_expired,
+    stringify_and_store_api_record,
+)
 
 LOGGER = logging.getLogger(__name__)
 

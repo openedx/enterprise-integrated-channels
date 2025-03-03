@@ -9,10 +9,9 @@ from urllib.parse import quote_plus, urljoin
 
 import requests
 from dateutil.parser import parse
-
 from django.apps import apps
-
 from enterprise.models import EnterpriseCustomerUser
+
 from channel_integrations.canvas.utils import CanvasUtil  # pylint: disable=cyclic-import
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient, IntegratedChannelHealthStatus

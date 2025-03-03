@@ -10,14 +10,17 @@ from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
-
 from django.apps import apps
 from django.db import transaction
 
 from channel_integrations.blackboard.exporters.content_metadata import BLACKBOARD_COURSE_CONTENT_NAME
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient
-from channel_integrations.utils import generate_formatted_log, refresh_session_if_expired, stringify_and_store_api_record
+from channel_integrations.utils import (
+    generate_formatted_log,
+    refresh_session_if_expired,
+    stringify_and_store_api_record,
+)
 
 LOGGER = logging.getLogger(__name__)
 

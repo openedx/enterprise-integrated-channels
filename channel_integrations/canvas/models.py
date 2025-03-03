@@ -5,16 +5,15 @@ Database models for Enterprise Integrated Channel Canvas.
 import json
 import uuid
 from logging import getLogger
-
-from fernet_fields import EncryptedCharField
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
-
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
+
 from channel_integrations.canvas.exporters.content_metadata import CanvasContentMetadataExporter
 from channel_integrations.canvas.exporters.learner_data import CanvasLearnerExporter
 from channel_integrations.canvas.transmitters.content_metadata import CanvasContentMetadataTransmitter
@@ -347,7 +346,8 @@ class CanvasLearnerDataTransmissionAudit(LearnerDataTransmissionAudit):
         constraints = [
             models.UniqueConstraint(
                 fields=['enterprise_course_enrollment_id', 'course_id'],
-                name='canvas_channel_unique_enrollment_course_id'  # Changed from 'canvas_unique_enrollment_course_id' to ensure uniqueness across different models
+                # Changed from 'canvas_unique_enrollment_course_id' to ensure uniqueness across different models
+                name='canvas_channel_unique_enrollment_course_id'
             )
         ]
         index_together = ['enterprise_customer_uuid', 'plugin_configuration_id']

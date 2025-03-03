@@ -9,3 +9,7 @@ class DataSharingConsent:
     .. pii_types: username
     .. pii_retirement: consumer_api
     """
+
+
+class DataSharingConsentTextOverrides:
+    pass

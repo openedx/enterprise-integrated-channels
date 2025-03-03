@@ -6,15 +6,14 @@ from logging import getLogger
 from urllib.parse import urljoin
 
 import requests
-from rest_framework import generics
-from rest_framework.renderers import JSONRenderer
-
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
-
 from enterprise.utils import get_enterprise_customer
+from rest_framework import generics
+from rest_framework.renderers import JSONRenderer
+
 from channel_integrations.canvas.models import CanvasEnterpriseCustomerConfiguration
 
 LOGGER = getLogger(__name__)

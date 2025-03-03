@@ -2,12 +2,11 @@
 Admin integration for configuring Blackboard app to communicate with Blackboard systems.
 """
 from config_models.admin import ConfigurationModelAdmin
-from django_object_actions import DjangoObjectActions
-
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.utils.html import format_html
+from django_object_actions import DjangoObjectActions
 
 from channel_integrations.blackboard.models import (
     BlackboardEnterpriseCustomerConfiguration,

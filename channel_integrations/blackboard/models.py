@@ -5,17 +5,16 @@ Database models for Enterprise Integrated Channel Blackboard.
 import json
 import uuid
 from logging import getLogger
+from urllib.parse import urljoin
 
 from config_models.models import ConfigurationModel
-from fernet_fields import EncryptedCharField
-from six.moves.urllib.parse import urljoin
-
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
-
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
+
 from channel_integrations.blackboard.exporters.content_metadata import BlackboardContentMetadataExporter
 from channel_integrations.blackboard.exporters.learner_data import BlackboardLearnerExporter
 from channel_integrations.blackboard.transmitters.content_metadata import BlackboardContentMetadataTransmitter

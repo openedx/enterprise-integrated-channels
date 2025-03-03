@@ -5,13 +5,12 @@ Database models for Enterprise Integrated Channel Moodle.
 import json
 from logging import getLogger
 
-from fernet_fields import EncryptedCharField
-
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
-
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
+
 from channel_integrations.integrated_channel.models import (
     EnterpriseCustomerPluginConfiguration,
     LearnerDataTransmissionAudit,

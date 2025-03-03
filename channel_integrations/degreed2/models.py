@@ -6,13 +6,12 @@ Database models for Enterprise Integrated Channel Degreed.
 import json
 from logging import getLogger
 
-from fernet_fields import EncryptedCharField
-
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
-
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
+
 from channel_integrations.degreed2.exporters.content_metadata import Degreed2ContentMetadataExporter
 from channel_integrations.degreed2.exporters.learner_data import Degreed2LearnerExporter
 from channel_integrations.degreed2.transmitters.content_metadata import Degreed2ContentMetadataTransmitter

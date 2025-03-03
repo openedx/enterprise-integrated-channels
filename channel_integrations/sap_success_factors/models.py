@@ -6,14 +6,13 @@ import json
 from logging import getLogger
 
 from config_models.models import ConfigurationModel
-from fernet_fields import EncryptedCharField
-
+from django.conf import settings
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
-
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
+
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.models import (
     EnterpriseCustomerPluginConfiguration,

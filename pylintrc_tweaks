@@ -12,3 +12,4 @@ disable+=
     bad-option-value,
     too-many-positional-arguments,
     logging-format-interpolation,
+    missing-timeout,
