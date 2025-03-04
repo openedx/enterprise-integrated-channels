@@ -9,7 +9,6 @@ from http import HTTPStatus
 from urllib.parse import urlencode, urljoin
 
 import requests
-
 from django.apps import apps
 
 from channel_integrations.exceptions import ClientError

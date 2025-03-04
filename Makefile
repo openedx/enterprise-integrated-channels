@@ -67,7 +67,7 @@ requirements: clean_tox piptools ## install development environment requirements
 	pip-sync -q requirements/dev.txt requirements/private.*
 
 test: clean ## run tests in the current virtualenv
-	pytest
+	PYTHONPATH=./:./mock_apps pytest
 
 diff_cover: test ## find diff lines that need test coverage
 	diff-cover coverage.xml

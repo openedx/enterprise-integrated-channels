@@ -6,11 +6,10 @@ import datetime
 from logging import getLogger
 
 import pytz
-
 from django.apps import apps
 from django.conf import settings
-
 from enterprise.utils import get_closest_course_run, get_language_code
+
 from channel_integrations.cornerstone.utils import convert_invalid_course_id
 from channel_integrations.integrated_channel.constants import ISO_8601_DATE_FORMAT
 from channel_integrations.integrated_channel.exporters.content_metadata import ContentMetadataExporter

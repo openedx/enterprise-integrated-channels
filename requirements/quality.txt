@@ -31,6 +31,10 @@ cffi==1.17.1
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
+chardet==5.2.0
+    # via
+    #   -r requirements/test.txt
+    #   diff-cover
 charset-normalizer==3.4.1
     # via
     #   -r requirements/test.txt
@@ -68,10 +72,16 @@ coverage[toml]==7.6.12
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==44.0.1
+cryptography==44.0.2
     # via
     #   -r requirements/test.txt
     #   django-fernet-fields-v2
+    #   jwcrypto
+    #   pyjwt
+ddt==1.3.1
+    # via -r requirements/test.txt
+diff-cover==9.2.3
+    # via -r requirements/test.txt
 dill==0.3.9
     # via pylint
 django==4.2.19
@@ -82,9 +92,12 @@ django==4.2.19
     #   django-crum
     #   django-fernet-fields-v2
     #   django-model-utils
+    #   django-oauth-toolkit
     #   django-waffle
     #   djangorestframework
+    #   drf-jwt
     #   edx-django-utils
+    #   edx-drf-extensions
     #   jsonfield
 django-config-models==2.8.0
     # via -r requirements/test.txt
@@ -96,6 +109,10 @@ django-fernet-fields-v2==0.9
     # via -r requirements/test.txt
 django-model-utils==5.0.0
     # via -r requirements/test.txt
+django-oauth-toolkit==3.0.1
+    # via -r requirements/test.txt
+django-object-actions==4.3.0
+    # via -r requirements/test.txt
 django-simple-history==3.0.0
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
@@ -104,21 +121,41 @@ django-waffle==4.2.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
+    #   edx-drf-extensions
 djangorestframework==3.15.2
     # via
     #   -r requirements/test.txt
     #   django-config-models
+    #   drf-jwt
+    #   edx-drf-extensions
 dnspython==2.7.0
     # via
     #   -r requirements/test.txt
     #   pymongo
-edx-django-utils==7.1.0
+drf-jwt==1.19.2
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
+edx-django-utils==7.2.0
     # via
     #   -r requirements/test.txt
     #   django-config-models
+    #   edx-drf-extensions
+edx-drf-extensions==10.5.0
+    # via -r requirements/test.txt
 edx-lint==5.6.0
     # via -r requirements/quality.in
 edx-opaque-keys[django]==2.11.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
+factory-boy==3.3.3
+    # via -r requirements/test.txt
+faker==36.1.1
+    # via
+    #   -r requirements/test.txt
+    #   factory-boy
+freezegun==1.5.1
     # via -r requirements/test.txt
 idna==3.10
     # via
@@ -128,7 +165,7 @@ iniconfig==2.0.0
     # via
     #   -r requirements/test.txt
     #   pytest
-isort==6.0.0
+isort==6.0.1
     # via
     #   -r requirements/quality.in
     #   pylint
@@ -136,8 +173,13 @@ jinja2==3.1.5
     # via
     #   -r requirements/test.txt
     #   code-annotations
+    #   diff-cover
 jsonfield==3.1.0
     # via -r requirements/test.txt
+jwcrypto==1.5.6
+    # via
+    #   -r requirements/test.txt
+    #   django-oauth-toolkit
 kombu==5.4.2
     # via
     #   -r requirements/test.txt
@@ -148,10 +190,16 @@ markupsafe==3.0.2
     #   jinja2
 mccabe==0.7.0
     # via pylint
+mock==5.1.0
+    # via -r requirements/test.txt
 newrelic==10.6.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
+oauthlib==3.2.2
+    # via
+    #   -r requirements/test.txt
+    #   django-oauth-toolkit
 openedx-atlas==0.6.2
     # via -r requirements/test.txt
 packaging==24.2
@@ -167,6 +215,7 @@ platformdirs==4.3.6
 pluggy==1.5.0
     # via
     #   -r requirements/test.txt
+    #   diff-cover
     #   pytest
 prompt-toolkit==3.0.50
     # via
@@ -184,6 +233,15 @@ pycparser==2.22
     #   cffi
 pydocstyle==6.3.0
     # via -r requirements/quality.in
+pygments==2.19.1
+    # via
+    #   -r requirements/test.txt
+    #   diff-cover
+pyjwt[crypto]==2.10.1
+    # via
+    #   -r requirements/test.txt
+    #   drf-jwt
+    #   edx-drf-extensions
 pylint==3.3.4
     # via
     #   edx-lint
@@ -206,7 +264,7 @@ pynacl==1.5.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
-pytest==8.3.4
+pytest==8.3.5
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -219,6 +277,7 @@ python-dateutil==2.9.0.post0
     # via
     #   -r requirements/test.txt
     #   celery
+    #   freezegun
 python-slugify==8.0.4
     # via
     #   -r requirements/test.txt
@@ -229,8 +288,19 @@ pyyaml==6.0.2
     # via
     #   -r requirements/test.txt
     #   code-annotations
+    #   responses
 requests==2.32.3
+    # via
+    #   -r requirements/test.txt
+    #   django-oauth-toolkit
+    #   edx-drf-extensions
+    #   responses
+responses==0.25.6
     # via -r requirements/test.txt
+semantic-version==2.10.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
 six==1.17.0
     # via
     #   -r requirements/test.txt
@@ -248,6 +318,8 @@ stevedore==5.4.1
     #   code-annotations
     #   edx-django-utils
     #   edx-opaque-keys
+testfixtures==8.3.0
+    # via -r requirements/test.txt
 text-unidecode==1.3
     # via
     #   -r requirements/test.txt
@@ -258,16 +330,19 @@ typing-extensions==4.12.2
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys
+    #   jwcrypto
 tzdata==2025.1
     # via
     #   -r requirements/test.txt
     #   celery
+    #   faker
     #   kombu
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
     #   requests
+    #   responses
 vine==5.1.0
     # via
     #   -r requirements/test.txt

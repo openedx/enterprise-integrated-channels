@@ -5,7 +5,6 @@ Content metadata exporter for SAP SuccessFactors.
 from logging import getLogger
 
 from django.utils.translation import gettext_lazy as _
-
 from enterprise.constants import IC_DELETE_ACTION
 from enterprise.utils import (
     get_advertised_course_run,
@@ -17,6 +16,7 @@ from enterprise.utils import (
     parse_lms_api_datetime,
 )
 from enterprise.views import CourseEnrollmentView
+
 from channel_integrations.integrated_channel.exporters.content_metadata import ContentMetadataExporter
 from channel_integrations.sap_success_factors.exporters.utils import transform_language_code
 from channel_integrations.utils import (

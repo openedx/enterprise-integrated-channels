@@ -8,17 +8,16 @@ import time
 from logging import getLogger
 
 from dateutil import parser
+from django.apps import apps
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.http import parse_http_date_safe
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
+from enterprise.api.throttles import ServiceUserThrottle
+from enterprise.utils import get_enterprise_customer, get_enterprise_worker_user, get_oauth2authentication_class
 from rest_framework import generics, permissions, renderers, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 
-from django.apps import apps
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.http import parse_http_date_safe
-
-from enterprise.api.throttles import ServiceUserThrottle
-from enterprise.utils import get_enterprise_customer, get_enterprise_worker_user, get_oauth2authentication_class
 from channel_integrations.cornerstone.models import CornerstoneEnterpriseCustomerConfiguration
 from channel_integrations.integrated_channel.constants import ISO_8601_DATE_FORMAT
 

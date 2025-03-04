@@ -5,6 +5,7 @@ Class for transmitting learner data to SuccessFactors.
 import logging
 
 from enterprise.models import EnterpriseCustomerUser
+
 from channel_integrations.integrated_channel.transmitters.learner_data import LearnerTransmitter
 from channel_integrations.sap_success_factors.client import SAPSuccessFactorsAPIClient
 from channel_integrations.utils import generate_formatted_log

@@ -3,6 +3,15 @@
 
 -r base.txt               # Core dependencies for this package
 
+
+code-annotations          # provides commands used by the pii_check make target.
+ddt<1.4.0                 # data-driven tests
+diff-cover
+django-model-utils        # Provides TimeStampedModel abstract base class
+factory_boy               # Test factory framework
+freezegun                 # Time freezing library
+mock                      # mocking library
 pytest-cov                # pytest extension for code coverage statistics
 pytest-django             # pytest extension for better Django support
-code-annotations          # provides commands used by the pii_check make target.
+responses                 # utility library for mocking out the requests library
+testfixtures              # Mock objects for unit tests and doc tests

@@ -10,10 +10,9 @@ from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
-from requests.exceptions import ConnectionError, Timeout  # pylint: disable=redefined-builtin
-
 from django.apps import apps
 from django.conf import settings
+from requests.exceptions import ConnectionError, Timeout  # pylint: disable=redefined-builtin
 
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient

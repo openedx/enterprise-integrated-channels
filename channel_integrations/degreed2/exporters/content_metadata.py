@@ -11,6 +11,7 @@ from enterprise.utils import (
     get_course_run_duration_info,
     is_course_run_active,
 )
+
 from channel_integrations.integrated_channel.exporters.content_metadata import ContentMetadataExporter
 from channel_integrations.utils import (
     generate_formatted_log,

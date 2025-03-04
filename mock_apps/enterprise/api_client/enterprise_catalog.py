@@ -13,3 +13,6 @@ class EnterpriseCatalogApiClient:
 
     def get_content_metadata(self, enterprise_customer, enterprise_catalogs=None, content_keys_filter=None):
         return []
+    
+    def get_customer_content_metadata_content_identifier(self, enterprise_uuid, content_id):
+        return {}

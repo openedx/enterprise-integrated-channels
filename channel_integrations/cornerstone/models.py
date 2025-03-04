@@ -6,14 +6,13 @@ import json
 from logging import getLogger
 
 from config_models.models import ConfigurationModel
-from jsonfield import JSONField
-
+from django.conf import settings
 from django.contrib import auth
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
-
 from enterprise.models import EnterpriseCustomer
+from jsonfield import JSONField
+
 from channel_integrations.cornerstone.exporters.content_metadata import CornerstoneContentMetadataExporter
 from channel_integrations.cornerstone.exporters.learner_data import CornerstoneLearnerExporter
 from channel_integrations.cornerstone.transmitters.content_metadata import CornerstoneContentMetadataTransmitter

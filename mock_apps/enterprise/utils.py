@@ -77,3 +77,39 @@ class NotConnectedToOpenEdX(Exception):
     """
     Exception to raise when not connected to OpenEdX.
     """
+
+
+SELF_ENROLL_EMAIL_TEMPLATE_TYPE = 'self_enroll'
+
+def get_advertised_course_run(course_runs):
+    return {}
+
+def get_closest_course_run(course_runs):
+    return {}
+
+def get_course_run_duration_info(course_run):
+    return []
+
+def is_course_run_active(course_run):
+    return True
+
+def get_enterprise_customer(uuid):
+    return {}
+
+def get_enterprise_worker_user():
+    return {}
+
+def get_oauth2authentication_class():
+    return {}
+
+def get_language_code(language):
+    return {}
+
+def get_advertised_or_closest_course_run(course_runs):
+    return {}
+
+def get_duration_of_course_or_courserun(course_run):
+    return "", "", ""
+
+def is_course_run_available_for_enrollment(course_run):
+    return True
