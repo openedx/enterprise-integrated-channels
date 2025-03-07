@@ -1,10 +1,8 @@
-"""
-Test utilities.
+""" This module contains utility functions for testing. """
 
-Since pytest discourages putting __init__.py into test directory
-(i.e. making tests a package) one cannot import from anywhere
-under tests folder. However, some utility classes/methods might be useful
-in multiple test modules (i.e. factoryboy factories, base test classes).
+import uuid
 
-So this package is the place to put them.
-"""
+FAKE_UUIDS = [str(uuid.uuid4()) for i in range(5)]
+
+def update_search_with_enterprise_context(search_result, add_utm_info): # pylint: disable=unused-argument
+    return []

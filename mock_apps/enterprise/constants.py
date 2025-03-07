@@ -26,3 +26,18 @@ class FulfillmentTypes:
     LEARNER_CREDIT = 'learner_credit'
     COUPON_CODE = 'coupon_code'
     CHOICES = [(choice, choice.capitalize().replace('_', ' ')) for choice in (LICENSE, LEARNER_CREDIT, COUPON_CODE)]
+
+
+class DefaultColors:
+    """
+    Class to group the default branding color codes.
+    These color codes originated in the Enterprise Learner Portal.
+    """
+    PRIMARY = '#2D494E'
+    SECONDARY = '#F2F0EF'
+    TERTIARY = '#D23228'
+
+
+# Course Modes
+VERIFIED_COURSE_MODE = 'verified'
+AUDIT_COURSE_MODE = 'audit'

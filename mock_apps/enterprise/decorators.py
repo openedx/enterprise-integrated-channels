@@ -1,0 +1,1 @@
+FRESH_LOGIN_PARAMETER = 'new_enterprise_login'

@@ -101,7 +101,7 @@ jwcrypto==1.5.6
     # via django-oauth-toolkit
 kombu==5.4.2
     # via celery
-newrelic==10.6.0
+newrelic==10.7.0
     # via edx-django-utils
 oauthlib==3.2.2
     # via django-oauth-toolkit
@@ -132,12 +132,13 @@ requests==2.32.3
     #   -r requirements/base.in
     #   django-oauth-toolkit
     #   edx-drf-extensions
+    #   slumber
 semantic-version==2.10.0
     # via edx-drf-extensions
 six==1.17.0
-    # via
-    #   -r requirements/base.in
-    #   python-dateutil
+    # via python-dateutil
+slumber==0.7.1
+    # via -r requirements/base.in
 sqlparse==0.5.3
     # via django
 stevedore==5.4.1
@@ -152,6 +153,8 @@ tzdata==2025.1
     # via
     #   celery
     #   kombu
+unicodecsv==0.14.1
+    # via -r requirements/base.in
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
