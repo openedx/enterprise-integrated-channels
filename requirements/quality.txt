@@ -12,6 +12,7 @@ asgiref==3.8.1
     # via
     #   -r requirements/test.txt
     #   django
+    #   django-countries
 astroid==3.3.8
     # via
     #   pylint
@@ -84,7 +85,7 @@ diff-cover==9.2.3
     # via -r requirements/test.txt
 dill==0.3.9
     # via pylint
-django==4.2.19
+django==4.2.20
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
@@ -100,6 +101,8 @@ django==4.2.19
     #   edx-drf-extensions
     #   jsonfield
 django-config-models==2.8.0
+    # via -r requirements/test.txt
+django-countries==7.6.1
     # via -r requirements/test.txt
 django-crum==0.7.9
     # via
@@ -151,7 +154,7 @@ edx-opaque-keys[django]==2.11.0
     #   edx-drf-extensions
 factory-boy==3.3.3
     # via -r requirements/test.txt
-faker==36.1.1
+faker==36.2.2
     # via
     #   -r requirements/test.txt
     #   factory-boy
@@ -169,7 +172,7 @@ isort==6.0.1
     # via
     #   -r requirements/quality.in
     #   pylint
-jinja2==3.1.5
+jinja2==3.1.6
     # via
     #   -r requirements/test.txt
     #   code-annotations
@@ -190,9 +193,9 @@ markupsafe==3.0.2
     #   jinja2
 mccabe==0.7.0
     # via pylint
-mock==5.1.0
+mock==5.2.0
     # via -r requirements/test.txt
-newrelic==10.6.0
+newrelic==10.7.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -256,7 +259,7 @@ pylint-plugin-utils==0.8.2
     # via
     #   pylint-celery
     #   pylint-django
-pymongo==4.11.1
+pymongo==4.11.2
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys
@@ -295,6 +298,7 @@ requests==2.32.3
     #   django-oauth-toolkit
     #   edx-drf-extensions
     #   responses
+    #   slumber
 responses==0.25.6
     # via -r requirements/test.txt
 semantic-version==2.10.0
@@ -306,6 +310,8 @@ six==1.17.0
     #   -r requirements/test.txt
     #   edx-lint
     #   python-dateutil
+slumber==0.7.1
+    # via -r requirements/test.txt
 snowballstemmer==2.2.0
     # via pydocstyle
 sqlparse==0.5.3
@@ -329,6 +335,7 @@ tomlkit==0.13.2
 typing-extensions==4.12.2
     # via
     #   -r requirements/test.txt
+    #   django-countries
     #   edx-opaque-keys
     #   jwcrypto
 tzdata==2025.1
@@ -337,6 +344,8 @@ tzdata==2025.1
     #   celery
     #   faker
     #   kombu
+unicodecsv==0.14.1
+    # via -r requirements/test.txt
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt

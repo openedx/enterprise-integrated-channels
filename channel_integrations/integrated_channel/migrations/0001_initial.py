@@ -11,9 +11,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('enterprise', '0228_alter_defaultenterpriseenrollmentrealization_realized_enrollment'),
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(

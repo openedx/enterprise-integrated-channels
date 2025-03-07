@@ -29,10 +29,23 @@ DATABASES = {
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.sessions',
-    'channel_integrations',
+
+    'channel_integrations.integrated_channel.apps.IntegratedChannelConfig',
+    'channel_integrations.cornerstone',
+    'channel_integrations.degreed2',
+    'channel_integrations.canvas',
+    'channel_integrations.blackboard',
+    'channel_integrations.moodle',
+    'channel_integrations.sap_success_factors',
+
+    'enterprise',
+    'consent',
+
+    'oauth2_provider',
 )
 
 LOCALE_PATHS = [
@@ -56,6 +69,15 @@ TEMPLATES = [{
         'context_processors': [
             'django.contrib.auth.context_processors.auth',  # this is required for admin
             'django.contrib.messages.context_processors.messages',  # this is required for admin
+            'django.template.context_processors.request',   # this is required for admin
         ],
     },
 }]
+
+
+LMS_ROOT_URL = "http://lms.example.com"
+LMS_INTERNAL_ROOT_URL = "http://localhost:8000"
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SITE_ID = 1
+

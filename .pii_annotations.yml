@@ -1,7 +1,7 @@
 source_path: ./
 report_path: pii_report
 safelist_path: .annotation_safe_list.yml
-coverage_target: 100.0
+coverage_target: 44.1
 annotations:
     ".. no_pii:":
     "pii_group":

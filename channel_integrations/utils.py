@@ -24,7 +24,7 @@ from enterprise.utils import parse_datetime_handle_invalid, parse_lms_api_dateti
 
 from channel_integrations.catalog_service_utils import get_course_run_for_enrollment
 
-UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=pytz.UTC)
 UNIX_MIN_DATE_STRING = '1970-01-01T00:00:00Z'
 UNIX_MAX_DATE_STRING = '2038-01-19T03:14:07Z'
 

@@ -18,4 +18,5 @@ django-fernet-fields-v2
 edx-drf-extensions
 django-oauth-toolkit
 django-object-actions
-six
+unicodecsv
+slumber

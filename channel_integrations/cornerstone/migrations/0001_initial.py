@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('channel_integration', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('enterprise', '0228_alter_defaultenterpriseenrollmentrealization_realized_enrollment'),
     ]
 
     operations = [
