@@ -73,7 +73,7 @@ django-waffle==4.2.0
     # via
     #   edx-django-utils
     #   edx-drf-extensions
-djangorestframework==3.15.2
+djangorestframework==3.16.0
     # via
     #   django-config-models
     #   drf-jwt
@@ -99,9 +99,9 @@ jsonfield==3.1.0
     # via -r requirements/base.in
 jwcrypto==1.5.6
     # via django-oauth-toolkit
-kombu==5.5.0
+kombu==5.5.2
     # via celery
-newrelic==10.7.0
+newrelic==10.8.0
     # via edx-django-utils
 oauthlib==3.2.2
     # via django-oauth-toolkit
@@ -125,7 +125,7 @@ pynacl==1.5.0
     # via edx-django-utils
 python-dateutil==2.9.0.post0
     # via celery
-pytz==2025.1
+pytz==2025.2
     # via -r requirements/base.in
 requests==2.32.3
     # via
@@ -144,11 +144,11 @@ stevedore==5.4.1
     # via
     #   edx-django-utils
     #   edx-opaque-keys
-typing-extensions==4.12.2
+typing-extensions==4.13.0
     # via
     #   edx-opaque-keys
     #   jwcrypto
-tzdata==2025.1
+tzdata==2025.2
     # via
     #   celery
     #   kombu
