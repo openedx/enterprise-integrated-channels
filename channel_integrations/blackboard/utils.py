@@ -8,7 +8,7 @@ def populate_decrypted_fields_blackboard(apps, schema_editor=None):  # pylint: d
     Populates the encryption fields in Blackboard config with the data previously stored in database.
     """
     BlackboardEnterpriseCustomerConfiguration = apps.get_model(
-        'blackboard', 'BlackboardEnterpriseCustomerConfiguration'
+        'blackboard_channel', 'BlackboardEnterpriseCustomerConfiguration'
     )
 
     for blackboard_enterprise_configuration in BlackboardEnterpriseCustomerConfiguration.objects.all():

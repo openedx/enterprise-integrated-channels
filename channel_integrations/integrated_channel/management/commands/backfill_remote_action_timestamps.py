@@ -29,7 +29,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
         """
 
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
 

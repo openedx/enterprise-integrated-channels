@@ -135,7 +135,7 @@ class BlackboardCompleteOAuthView(generics.ListAPIView):
                 return self.render_page(request, 'error')
 
         BlackboardGlobalConfiguration = apps.get_model(
-            'blackboard',
+            'blackboard_channel',
             'BlackboardGlobalConfiguration'
         )
         blackboard_global_config = BlackboardGlobalConfiguration.current()

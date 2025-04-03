@@ -55,7 +55,7 @@ class BlackboardAPIClient(IntegratedChannelApiClient):
         """
         super().__init__(enterprise_configuration)
         BlackboardGlobalConfiguration = apps.get_model(
-            'blackboard',
+            'blackboard_channel',
             'BlackboardGlobalConfiguration'
         )
         self.global_blackboard_config = BlackboardGlobalConfiguration.current()
@@ -371,7 +371,7 @@ class BlackboardAPIClient(IntegratedChannelApiClient):
         # replaced by a new token
         with transaction.atomic():
             channel_config = apps.get_model(
-                'blackboard',
+                'blackboard_channel',
                 'BlackboardEnterpriseCustomerConfiguration'
             ).objects.select_for_update().get(pk=self.enterprise_configuration.pk)
             if not channel_config.refresh_token:

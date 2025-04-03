@@ -34,13 +34,13 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.sessions',
 
-    'channel_integrations.integrated_channel.apps.IntegratedChannelConfig',
     'channel_integrations.cornerstone',
     'channel_integrations.degreed2',
     'channel_integrations.canvas',
     'channel_integrations.blackboard',
     'channel_integrations.moodle',
     'channel_integrations.sap_success_factors',
+    'channel_integrations.integrated_channel',
 
     'enterprise',
     'consent',
@@ -73,11 +73,31 @@ TEMPLATES = [{
         ],
     },
 }]
+ENTERPRISE_SERVICE_WORKER_USERNAME = 'enterprise_worker'
+ENTERPRISE_CATALOG_INTERNAL_ROOT_URL = "http://localhost:18160"
 
 
 LMS_ROOT_URL = "http://lms.example.com"
 LMS_INTERNAL_ROOT_URL = "http://localhost:8000"
+LMS_ENROLLMENT_API_PATH = "/api/enrollment/v1/"
+
+ENTERPRISE_ENROLLMENT_API_URL = LMS_INTERNAL_ROOT_URL + LMS_ENROLLMENT_API_PATH
+
+ENTERPRISE_COURSE_ENROLLMENT_AUDIT_MODES = ['audit', 'honor']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+OAUTH_ID_TOKEN_EXPIRATION = 60 * 60  # in seconds
+
 SITE_ID = 1
 
+USE_TZ = True
+TIME_ZONE = 'UTC'
+
+INTEGRATED_CHANNELS_API_CHUNK_TRANSMISSION_LIMIT = {
+    'SAP': 1,
+}
+
+# URL for the server that django client listens to by default.
+TEST_SERVER = "http://testserver"
+ALLOWED_HOSTS = ["testserver.enterprise"]
+MEDIA_URL = "/"

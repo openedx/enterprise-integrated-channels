@@ -673,6 +673,7 @@ class TestLearnerExporter(unittest.TestCase):
             assert report.completed_timestamp == expected_completion
             assert report.grade == expected_grade
 
+    # @mark.skip('TODO: unskip this test later')
     @ddt.data(
         ('A-', None),
         ('0.72', 72.0),
