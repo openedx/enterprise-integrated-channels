@@ -50,7 +50,7 @@ class SapSuccessFactorsLearnerExporter(LearnerExporter):
 
         if sapsf_user_id is not None:
             SapSuccessFactorsLearnerDataTransmissionAudit = apps.get_model(
-                'sap_success_factors',
+                'sap_success_factors_channel',
                 'SapSuccessFactorsLearnerDataTransmissionAudit'
             )
             # We return two records here, one with the course key and one with the course run id, to account for

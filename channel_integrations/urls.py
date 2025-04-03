@@ -1,10 +1,28 @@
 """
 URLs for channel_integrations.
 """
-from django.urls import re_path  # pylint: disable=unused-import
-from django.views.generic import TemplateView  # pylint: disable=unused-import
+from django.urls import re_path, include
+
 
 urlpatterns = [
-    # TODO: Fill in URL patterns and views here.
-    # re_path(r'', TemplateView.as_view(template_name="channel_integrations/base.html")),
+    re_path(
+        r'^cornerstone/',
+        include('channel_integrations.cornerstone.urls'),
+        name='cornerstone'
+    ),
+    re_path(
+        r'^canvas/',
+        include('channel_integrations.canvas.urls'),
+        name='canvas',
+    ),
+    re_path(
+        r'^blackboard/',
+        include('channel_integrations.blackboard.urls'),
+        name='blackboard',
+    ),
+    # TODO: uncomment when the channel_integrations.api.urls is ready
+    # re_path(
+    #     r'^integrated_channels/api/',
+    #     include('channel_integrations.api.urls')
+    # ),
 ]

@@ -65,7 +65,7 @@ class CanvasAPIClient(IntegratedChannelApiClient):
         self.expires_at = None
         self.course_create_url = CanvasUtil.course_create_endpoint(self.enterprise_configuration)
         self.IntegratedChannelAPIRequestLogs = apps.get_model(
-            "integrated_channel", "IntegratedChannelAPIRequestLogs"
+            "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
 
     def create_content_metadata(self, serialized_data):

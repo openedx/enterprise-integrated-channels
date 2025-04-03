@@ -23,15 +23,14 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
         Mark already transmitted LearnerDataTransmission as is_trasmitted=True
         """
         channel_learner_audit_models = [
-            ('moodle', 'MoodleLearnerDataTransmissionAudit'),
-            ('blackboard', 'BlackboardLearnerDataTransmissionAudit'),
-            ('blackboard', 'BlackboardLearnerAssessmentDataTransmissionAudit'),
-            ('canvas', 'CanvasLearnerDataTransmissionAudit'),
-            ('degreed2', 'Degreed2LearnerDataTransmissionAudit'),
-            ('degreed', 'DegreedLearnerDataTransmissionAudit'),
-            ('sap_success_factors', 'SapSuccessFactorsLearnerDataTransmissionAudit'),
-            ('cornerstone', 'CornerstoneLearnerDataTransmissionAudit'),
-            ('canvas', 'CanvasLearnerAssessmentDataTransmissionAudit'),
+            ('moodle_channel', 'MoodleLearnerDataTransmissionAudit'),
+            ('blackboard_channel', 'BlackboardLearnerDataTransmissionAudit'),
+            ('blackboard_channel', 'BlackboardLearnerAssessmentDataTransmissionAudit'),
+            ('canvas_channel', 'CanvasLearnerDataTransmissionAudit'),
+            ('degreed2_channel', 'Degreed2LearnerDataTransmissionAudit'),
+            ('sap_success_factors_channel', 'SapSuccessFactorsLearnerDataTransmissionAudit'),
+            ('cornerstone_channel', 'CornerstoneLearnerDataTransmissionAudit'),
+            ('canvas_channel', 'CanvasLearnerAssessmentDataTransmissionAudit'),
         ]
         for app_label, model_name in channel_learner_audit_models:
             model_class = apps.get_model(app_label=app_label, model_name=model_name)

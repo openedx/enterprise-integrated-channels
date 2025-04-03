@@ -41,3 +41,34 @@ class DefaultColors:
 # Course Modes
 VERIFIED_COURSE_MODE = 'verified'
 AUDIT_COURSE_MODE = 'audit'
+
+
+class CourseModes:
+    """
+    Class to group modes that a course might have.
+    """
+
+    AUDIT = 'audit'
+    CREDIT = 'credit'
+    HONOR = 'honor'
+    NO_ID_PROFESSIONAL = 'no-id-professional'
+    PROFESSIONAL = 'professional'
+    VERIFIED = 'verified'
+    UNPAID_EXECUTIVE_EDUCATION = 'unpaid-executive-education'
+
+
+# Course mode sorting based on slug
+COURSE_MODE_SORT_ORDER = [
+    CourseModes.VERIFIED,
+    CourseModes.PROFESSIONAL,
+    CourseModes.NO_ID_PROFESSIONAL,
+    CourseModes.AUDIT,
+    CourseModes.HONOR,
+    CourseModes.UNPAID_EXECUTIVE_EDUCATION,
+]
+
+def json_serialized_course_modes():
+    """
+    :return: serialized course modes.
+    """
+    return COURSE_MODE_SORT_ORDER

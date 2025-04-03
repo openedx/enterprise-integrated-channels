@@ -137,7 +137,7 @@ class MoodleAPIClient(IntegratedChannelApiClient):
         self.token = enterprise_configuration.decrypted_token or self._get_access_token()
         self.api_url = urljoin(self.enterprise_configuration.moodle_base_url, self.MOODLE_API_PATH)
         self.IntegratedChannelAPIRequestLogs = apps.get_model(
-            "integrated_channel", "IntegratedChannelAPIRequestLogs"
+            "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
 
     def _post(self, additional_params):

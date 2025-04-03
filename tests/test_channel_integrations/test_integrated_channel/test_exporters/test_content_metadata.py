@@ -39,7 +39,7 @@ class TestContentMetadataExporter(unittest.TestCase, EnterpriseMockMixin):
     """
 
     def setUp(self):
-        with mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient'):
+        with mock.patch('enterprise.signals.EnterpriseCatalogApiClient'):
             self.enterprise_customer_catalog = factories.EnterpriseCustomerCatalogFactory()
 
         # Need a non-abstract config.

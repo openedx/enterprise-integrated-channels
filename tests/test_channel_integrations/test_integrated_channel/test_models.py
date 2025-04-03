@@ -27,7 +27,7 @@ class TestContentMetadataItemTransmission(unittest.TestCase, EnterpriseMockMixin
 
     def setUp(self):
         self.enterprise_customer = factories.EnterpriseCustomerFactory()
-        with mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient'):
+        with mock.patch('enterprise.signals.EnterpriseCatalogApiClient'):
             self.enterprise_customer_catalog = factories.EnterpriseCustomerCatalogFactory(
                 enterprise_customer=self.enterprise_customer,
             )

@@ -35,7 +35,7 @@ class CornerstoneLearnerExporter(LearnerExporter):
         """
 
         CornerstoneLearnerDataTransmissionAudit = apps.get_model(
-            'cornerstone',
+            'cornerstone_channel',
             'CornerstoneLearnerDataTransmissionAudit'
         )
 

@@ -224,7 +224,7 @@ class ContentMetadataTransmitter(Transmitter):
                         transmission.api_record.save()
                     else:
                         ApiResponseRecord = apps.get_model(
-                            'integrated_channel',
+                            'channel_integration',
                             'ApiResponseRecord'
                         )
                         transmission.api_record = ApiResponseRecord.objects.create(
@@ -250,7 +250,7 @@ class ContentMetadataTransmitter(Transmitter):
         if is_delete_action and successfully_removed_content_keys:
             # Mark any successfully deleted, orphaned content transmissions as resolved
             OrphanedContentTransmissions = apps.get_model(
-                'integrated_channel',
+                'channel_integration',
                 'OrphanedContentTransmissions'
             )
             orphaned_items = OrphanedContentTransmissions.objects.filter(

@@ -29,9 +29,9 @@ class IntegratedChannelCommandMixinTests(TestCase):
         self.mixin = IntegratedChannelCommandMixin()
         super().setUp()
 
-    def test_get_channel_integrations(self):
+    def test_get_integrated_channels(self):
         channels = []
-        for integrated_channel in self.mixin.get_channel_integrations({}):
+        for integrated_channel in self.mixin.get_integrated_channels({}):
             channels.append(integrated_channel)
         assert self.active_customer_config in channels
         assert self.inactive_customer_config not in channels

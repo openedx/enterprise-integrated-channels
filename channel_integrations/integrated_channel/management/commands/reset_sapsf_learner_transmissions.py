@@ -52,7 +52,7 @@ class Command(BaseCommand):
             return
 
         SapSuccessFactorsLearnerDataTransmissionAudit = apps.get_model(
-            'sap_success_factors',
+            'sap_success_factors_channel',
             'SapSuccessFactorsLearnerDataTransmissionAudit'
         )
         enrollment_ids = SapSuccessFactorsLearnerDataTransmissionAudit.objects.filter(

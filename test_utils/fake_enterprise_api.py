@@ -13,7 +13,8 @@ from django.conf import settings
 from django.core.cache import cache
 
 from enterprise.constants import DefaultColors
-from test_utils import FAKE_UUIDS, fake_catalog_api, update_search_with_enterprise_context
+from enterprise.models import EnterpriseCustomerCatalog
+from test_utils import FAKE_UUIDS, fake_catalog_api, update_search_with_enterprise_context, factories
 
 
 class EnterpriseMockMixin:
@@ -28,7 +29,8 @@ class EnterpriseMockMixin:
         super().setUp()
         cache.clear()
 
-    def build_enterprise_api_url(self, resource, *args, **kwargs):
+    # TODO: remove `resource` from this method
+    def build_enterprise_api_url(self, resource, *args, **kwargs): # pylint: disable=unused-argument
         """
         DRY method to make Enterprise API URLs.
 
@@ -36,7 +38,7 @@ class EnterpriseMockMixin:
         """
         return '{lms_root_url}{enterprise_api_uri}{params}'.format(
             lms_root_url=settings.LMS_INTERNAL_ROOT_URL,
-            enterprise_api_uri=reverse(resource, args=args),
+            enterprise_api_uri=f'/enterprise/api/v1/enterprise-catalogs/{"-".join(args)}/',
             params=('?' + urlencode(kwargs)) if kwargs else '',
         )
 
@@ -123,6 +125,22 @@ class EnterpriseMockMixin:
             status=200,
             content_type='application/json',
         )
+
+        # Dynamically fetch or create EnterpriseCustomerCatalog
+        enterprise_customer_catalog = EnterpriseCustomerCatalog.objects.filter(uuid=enterprise_catalog_uuid).first()
+
+        if enterprise_customer_catalog:
+            # Try to get associated EnterpriseCustomer
+            enterprise_customer = enterprise_customer_catalog.enterprise_customer
+
+            if not enterprise_customer:
+                # If not set, create a default EnterpriseCustomer and link it
+                enterprise_customer = factories.EnterpriseCustomerFactory()
+                enterprise_customer.enterprise_customer_catalogs.add(enterprise_customer_catalog)
+
+            # Ensure ManyToMany relationship is correctly set
+            enterprise_customer.enterprise_customer_catalogs.add(enterprise_customer_catalog)
+
 
     def mock_enterprise_catalogs_with_error(self, enterprise_uuid):
         """
