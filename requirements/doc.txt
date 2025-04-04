@@ -16,6 +16,7 @@ asgiref==3.8.1
     # via
     #   -r requirements/test.txt
     #   django
+    #   django-countries
 babel==2.17.0
     # via
     #   pydata-sphinx-theme
@@ -103,6 +104,8 @@ django==4.2.20
     #   edx-drf-extensions
     #   jsonfield
 django-config-models==2.8.0
+    # via -r requirements/test.txt
+django-countries==7.6.1
     # via -r requirements/test.txt
 django-crum==0.7.9
     # via
@@ -326,6 +329,7 @@ requests==2.32.3
     #   id
     #   requests-toolbelt
     #   responses
+    #   slumber
     #   sphinx
     #   twine
 requests-toolbelt==1.0.0
@@ -350,6 +354,8 @@ six==1.17.0
     # via
     #   -r requirements/test.txt
     #   python-dateutil
+slumber==0.7.1
+    # via -r requirements/test.txt
 snowballstemmer==2.2.0
     # via sphinx
 soupsieve==2.6
@@ -396,6 +402,7 @@ typing-extensions==4.13.0
     # via
     #   -r requirements/test.txt
     #   beautifulsoup4
+    #   django-countries
     #   edx-opaque-keys
     #   jwcrypto
     #   pydata-sphinx-theme
@@ -405,6 +412,8 @@ tzdata==2025.2
     #   celery
     #   faker
     #   kombu
+unicodecsv==0.14.1
+    # via -r requirements/test.txt
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt

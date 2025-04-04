@@ -50,7 +50,7 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
         self.session = None
         self.expires_at = None
         self.IntegratedChannelAPIRequestLogs = apps.get_model(
-            "integrated_channel", "IntegratedChannelAPIRequestLogs"
+            "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
 
     def get_oauth_access_token(self, client_id, client_secret, company_id, user_id, user_type, customer_uuid):
@@ -72,7 +72,7 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             ClientError: If an unexpected response format was received that we could not parse.
         """
         SAPSuccessFactorsGlobalConfiguration = apps.get_model(
-            'sap_success_factors',
+            'sap_success_factors_channel',
             'SAPSuccessFactorsGlobalConfiguration'
         )
         global_sap_config = SAPSuccessFactorsGlobalConfiguration.current()
@@ -296,7 +296,7 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
         Raises: ClientError if error status code >=400 from SAPSF
         """
         SAPSuccessFactorsEnterpriseCustomerConfiguration = apps.get_model(
-            'sap_success_factors',
+            'sap_success_factors_channel',
             'SAPSuccessFactorsEnterpriseCustomerConfiguration'
         )
         oauth_access_token, _ = self.get_oauth_access_token(

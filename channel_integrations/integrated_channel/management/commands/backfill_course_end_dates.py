@@ -26,7 +26,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
         options['channel'] = 'CANVAS'
 
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
 

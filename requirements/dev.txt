@@ -12,6 +12,7 @@ asgiref==3.8.1
     # via
     #   -r requirements/quality.txt
     #   django
+    #   django-countries
 astroid==3.3.9
     # via
     #   -r requirements/quality.txt
@@ -128,6 +129,8 @@ django==4.2.20
     #   edx-i18n-tools
     #   jsonfield
 django-config-models==2.8.0
+    # via -r requirements/quality.txt
+django-countries==7.6.1
     # via -r requirements/quality.txt
 django-crum==0.7.9
     # via
@@ -372,6 +375,7 @@ requests==2.32.3
     #   django-oauth-toolkit
     #   edx-drf-extensions
     #   responses
+    #   slumber
 responses==0.25.7
     # via -r requirements/quality.txt
 semantic-version==2.10.0
@@ -383,6 +387,8 @@ six==1.17.0
     #   -r requirements/quality.txt
     #   edx-lint
     #   python-dateutil
+slumber==0.7.1
+    # via -r requirements/quality.txt
 snowballstemmer==2.2.0
     # via
     #   -r requirements/quality.txt
@@ -412,6 +418,7 @@ tox==4.25.0
 typing-extensions==4.13.0
     # via
     #   -r requirements/quality.txt
+    #   django-countries
     #   edx-opaque-keys
     #   jwcrypto
 tzdata==2025.2
@@ -420,6 +427,8 @@ tzdata==2025.2
     #   celery
     #   faker
     #   kombu
+unicodecsv==0.14.1
+    # via -r requirements/quality.txt
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt

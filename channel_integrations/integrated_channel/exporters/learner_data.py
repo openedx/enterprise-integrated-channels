@@ -547,7 +547,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
         assessment_grade_data: A dict with keys corresponding to different edX course subsections.
         See _collect_assessment_grades_data for the formatted data returned as the value for a given key.
         """
-        TransmissionAudit = apps.get_model('integrated_channel', 'GenericLearnerDataTransmissionAudit')
+        TransmissionAudit = apps.get_model('channel_integration', 'GenericLearnerDataTransmissionAudit')
         user_subsection_audits = []
         # Create an audit for each of the subsections in the course data.
         for subsection_data in assessment_grade_data.values():
@@ -583,7 +583,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
         """
         Generate a learner data transmission audit with fields properly filled in.
         """
-        TransmissionAudit = apps.get_model('integrated_channel', 'GenericLearnerDataTransmissionAudit')
+        TransmissionAudit = apps.get_model('channel_integration', 'GenericLearnerDataTransmissionAudit')
         completed_timestamp = None
         if completed_date is not None:
             completed_timestamp = parse_datetime_to_epoch_millis(completed_date)

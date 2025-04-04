@@ -104,7 +104,7 @@ class CornerstoneCoursesListView(BaseViewSet):
         start_time = time.time()
         enterprise_customer_uuid = request.GET.get('ciid')
         IntegratedChannelAPIRequestLogs = apps.get_model(
-            "integrated_channel", "IntegratedChannelAPIRequestLogs"
+            "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
         if not enterprise_customer_uuid:
             return Response(
