@@ -158,6 +158,9 @@ tzdata==2025.2
     # via kombu
 unicodecsv==0.14.1
     # via -r requirements/base.in
+    # via
+    #   celery
+    #   kombu
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
