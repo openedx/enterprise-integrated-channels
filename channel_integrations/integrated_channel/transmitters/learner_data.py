@@ -37,7 +37,7 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
 
     def _generate_common_params(self, **kwargs):
         """ Pulls labeled common params out of kwargs """
-        app_label = kwargs.get('app_label', 'integrated_channel')
+        app_label = kwargs.get('app_label', 'channel_integration')
         enterprise_customer_uuid = self.enterprise_configuration.enterprise_customer.uuid or None
         lms_user_id = kwargs.get('learner_to_transmit', None)
         return app_label, enterprise_customer_uuid, lms_user_id

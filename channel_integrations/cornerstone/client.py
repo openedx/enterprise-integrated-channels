@@ -34,7 +34,10 @@ class CornerstoneAPIClient(IntegratedChannelApiClient):
             configuration model for connecting with Cornerstone
         """
         super().__init__(enterprise_configuration)
-        self.global_cornerstone_config = apps.get_model('cornerstone', 'CornerstoneGlobalConfiguration').current()
+        self.global_cornerstone_config = apps.get_model(
+            'cornerstone_channel',
+            'CornerstoneGlobalConfiguration'
+        ).current()
         self.session = None
         self.expires_at = None
 
@@ -88,7 +91,7 @@ class CornerstoneAPIClient(IntegratedChannelApiClient):
             HTTPError: if we received a failure response code from Cornerstone
         """
         IntegratedChannelAPIRequestLogs = apps.get_model(
-            "integrated_channel", "IntegratedChannelAPIRequestLogs"
+            "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
         json_payload = json.loads(payload)
         callback_url = json_payload['data'].pop('callbackUrl')

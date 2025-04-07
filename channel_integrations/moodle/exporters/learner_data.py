@@ -49,7 +49,7 @@ class MoodleLearnerExporter(LearnerExporter):
             return None
 
         MoodleLearnerDataTransmissionAudit = apps.get_model(
-            'moodle',
+            'moodle_channel',
             'MoodleLearnerDataTransmissionAudit'
         )
 

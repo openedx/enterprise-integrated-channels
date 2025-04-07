@@ -10,7 +10,7 @@ asgiref==3.8.1
     # via django
 billiard==4.2.1
     # via celery
-celery==5.4.0
+celery==5.5.0
     # via -r requirements/base.in
 certifi==2025.1.31
     # via requests
@@ -63,7 +63,7 @@ django-model-utils==5.0.0
     # via -r requirements/base.in
 django-oauth-toolkit==3.0.1
     # via -r requirements/base.in
-django-object-actions==4.3.0
+django-object-actions==5.0.0
     # via -r requirements/base.in
 django-simple-history==3.0.0
     # via
@@ -87,12 +87,15 @@ edx-django-utils==7.2.0
     #   -r requirements/base.in
     #   django-config-models
     #   edx-drf-extensions
-edx-drf-extensions==10.5.0
+    #   edx-rest-api-client
+edx-drf-extensions==10.6.0
     # via -r requirements/base.in
 edx-opaque-keys[django]==2.12.0
     # via
     #   -r requirements/base.in
     #   edx-drf-extensions
+edx-rest-api-client==6.1.0
+    # via -r requirements/base.in
 idna==3.10
     # via requests
 jsonfield==3.1.0
@@ -101,7 +104,7 @@ jwcrypto==1.5.6
     # via django-oauth-toolkit
 kombu==5.5.2
     # via celery
-newrelic==10.8.0
+newrelic==10.8.1
     # via edx-django-utils
 oauthlib==3.2.2
     # via django-oauth-toolkit
@@ -119,6 +122,7 @@ pyjwt[crypto]==2.10.1
     # via
     #   drf-jwt
     #   edx-drf-extensions
+    #   edx-rest-api-client
 pymongo==4.11.3
     # via edx-opaque-keys
 pynacl==1.5.0
@@ -132,23 +136,28 @@ requests==2.32.3
     #   -r requirements/base.in
     #   django-oauth-toolkit
     #   edx-drf-extensions
+    #   edx-rest-api-client
+    #   slumber
 semantic-version==2.10.0
     # via edx-drf-extensions
 six==1.17.0
-    # via
-    #   -r requirements/base.in
-    #   python-dateutil
+    # via python-dateutil
+slumber==0.7.1
+    # via -r requirements/base.in
 sqlparse==0.5.3
     # via django
 stevedore==5.4.1
     # via
     #   edx-django-utils
     #   edx-opaque-keys
-typing-extensions==4.13.0
+typing-extensions==4.13.1
     # via
     #   edx-opaque-keys
     #   jwcrypto
 tzdata==2025.2
+    # via kombu
+unicodecsv==0.14.1
+    # via -r requirements/base.in
     # via
     #   celery
     #   kombu

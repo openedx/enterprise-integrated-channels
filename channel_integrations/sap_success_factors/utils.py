@@ -8,7 +8,7 @@ def populate_decrypted_fields_sap_success_factors(apps, schema_editor=None):  # 
     Populates the encryption fields in SAP Success Factors config with the data previously stored in database.
     """
     SAPSuccessFactorsEnterpriseCustomerConfiguration = apps.get_model(
-        'sap_success_factors', 'SAPSuccessFactorsEnterpriseCustomerConfiguration'
+        'sap_success_factors_channel', 'SAPSuccessFactorsEnterpriseCustomerConfiguration'
     )
 
     for sap_success_factors_enterprise_configuration in SAPSuccessFactorsEnterpriseCustomerConfiguration.objects.all():

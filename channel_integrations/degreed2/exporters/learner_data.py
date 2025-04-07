@@ -56,7 +56,7 @@ class Degreed2LearnerExporter(LearnerExporter):
 
         if remote_id is not None:
             Degreed2LearnerDataTransmissionAudit = apps.get_model(
-                'degreed2',
+                'degreed2_channel',
                 'Degreed2LearnerDataTransmissionAudit'
             )
             course_id = get_course_id_for_enrollment(enterprise_enrollment)

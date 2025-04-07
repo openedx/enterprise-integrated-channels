@@ -68,7 +68,7 @@ class Degreed2APIClient(IntegratedChannelApiClient):
         )
         self.enterprise_catalog_api_client = EnterpriseCatalogApiClient()
         self.IntegratedChannelAPIRequestLogs = apps.get_model(
-            "integrated_channel", "IntegratedChannelAPIRequestLogs"
+            "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
 
     def get_oauth_url(self):

@@ -407,7 +407,9 @@ class BlackboardLearnerDataTransmissionAudit(LearnerDataTransmissionAudit):
                 name='blackboard_ch_unique_enrollment_course_id'
             )
         ]
-        index_together = ['enterprise_customer_uuid', 'plugin_configuration_id']
+        indexes = [
+            models.Index(fields=['enterprise_customer_uuid', 'plugin_configuration_id']),
+        ]
 
     def __str__(self):
         """

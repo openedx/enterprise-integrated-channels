@@ -49,7 +49,7 @@ class BlackboardLearnerExporter(LearnerExporter):
             blackboard_completed_timestamp = parse_datetime_to_epoch_millis(completed_date)
 
         BlackboardLearnerDataTransmissionAudit = apps.get_model(
-            'blackboard',
+            'blackboard_channel',
             'BlackboardLearnerDataTransmissionAudit'
         )
         course_id = get_course_id_for_enrollment(enterprise_enrollment)
@@ -107,7 +107,7 @@ class BlackboardLearnerExporter(LearnerExporter):
             return None
 
         BlackboardLearnerAssessmentDataTransmissionAudit = apps.get_model(
-            'blackboard',
+            'blackboard_channel',
             'BlackboardLearnerAssessmentDataTransmissionAudit'
         )
 
