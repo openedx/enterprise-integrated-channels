@@ -29,7 +29,7 @@ cachetools==5.5.2
     # via
     #   -r requirements/ci.txt
     #   tox
-celery==5.4.0
+celery==5.5.1
     # via -r requirements/quality.txt
 certifi==2025.1.31
     # via
@@ -79,7 +79,7 @@ click-repl==0.3.0
     # via
     #   -r requirements/quality.txt
     #   celery
-code-annotations==2.2.0
+code-annotations==2.3.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -127,7 +127,7 @@ django==4.2.20
     #   edx-drf-extensions
     #   edx-i18n-tools
     #   jsonfield
-django-config-models==2.8.0
+django-config-models==2.9.0
     # via -r requirements/quality.txt
 django-crum==0.7.9
     # via
@@ -139,7 +139,7 @@ django-model-utils==5.0.0
     # via -r requirements/quality.txt
 django-oauth-toolkit==3.0.1
     # via -r requirements/quality.txt
-django-object-actions==4.3.0
+django-object-actions==5.0.0
     # via -r requirements/quality.txt
 django-simple-history==3.0.0
     # via
@@ -164,12 +164,12 @@ drf-jwt==1.19.2
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
-edx-django-utils==7.2.0
+edx-django-utils==7.4.0
     # via
     #   -r requirements/quality.txt
     #   django-config-models
     #   edx-drf-extensions
-edx-drf-extensions==10.5.0
+edx-drf-extensions==10.6.0
     # via -r requirements/quality.txt
 edx-i18n-tools==1.7.0
     # via -r requirements/dev.in
@@ -219,11 +219,11 @@ kombu==5.5.2
     # via
     #   -r requirements/quality.txt
     #   celery
-lxml[html-clean,html_clean]==5.3.1
+lxml[html-clean,html_clean]==5.3.2
     # via
     #   edx-i18n-tools
     #   lxml-html-clean
-lxml-html-clean==0.4.1
+lxml-html-clean==0.4.2
     # via lxml
 markupsafe==3.0.2
     # via
@@ -235,7 +235,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.2.0
     # via -r requirements/quality.txt
-newrelic==10.8.0
+newrelic==10.9.0
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -243,7 +243,7 @@ oauthlib==3.2.2
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
-openedx-atlas==0.6.2
+openedx-atlas==0.7.0
     # via -r requirements/quality.txt
 packaging==24.2
     # via
@@ -323,7 +323,7 @@ pylint-plugin-utils==0.8.2
     #   -r requirements/quality.txt
     #   pylint-celery
     #   pylint-django
-pymongo==4.11.3
+pymongo==4.12.0
     # via
     #   -r requirements/quality.txt
     #   edx-opaque-keys
@@ -345,9 +345,9 @@ pytest==8.3.5
     #   -r requirements/quality.txt
     #   pytest-cov
     #   pytest-django
-pytest-cov==6.0.0
+pytest-cov==6.1.1
     # via -r requirements/quality.txt
-pytest-django==4.10.0
+pytest-django==4.11.1
     # via -r requirements/quality.txt
 python-dateutil==2.9.0.post0
     # via
@@ -409,7 +409,7 @@ tomlkit==0.13.2
     #   pylint
 tox==4.25.0
     # via -r requirements/ci.txt
-typing-extensions==4.13.0
+typing-extensions==4.13.2
     # via
     #   -r requirements/quality.txt
     #   edx-opaque-keys
@@ -417,7 +417,6 @@ typing-extensions==4.13.0
 tzdata==2025.2
     # via
     #   -r requirements/quality.txt
-    #   celery
     #   faker
     #   kombu
 urllib3==2.2.3
@@ -432,7 +431,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.29.3
+virtualenv==20.30.0
     # via
     #   -r requirements/ci.txt
     #   tox
