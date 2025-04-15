@@ -30,11 +30,11 @@ class Command(BaseCommand):
         # transmission fails against course and course run id. Job of this management command is to keep the latest
         # record for enterprise_course_enrollment_id that doesn't start with "course-v1: and delete all other records."
         channel_learner_audit_models = [
-            ('moodle', 'MoodleLearnerDataTransmissionAudit'),
-            ('blackboard', 'BlackboardLearnerDataTransmissionAudit'),
-            ('canvas', 'CanvasLearnerDataTransmissionAudit'),
-            ('degreed2', 'Degreed2LearnerDataTransmissionAudit'),
-            ('sap_success_factors', 'SapSuccessFactorsLearnerDataTransmissionAudit'),
+            ('moodle_channel', 'MoodleLearnerDataTransmissionAudit'),
+            ('blackboard_channel', 'BlackboardLearnerDataTransmissionAudit'),
+            ('canvas_channel', 'CanvasLearnerDataTransmissionAudit'),
+            ('degreed2_channel', 'Degreed2LearnerDataTransmissionAudit'),
+            ('sap_success_factors_channel', 'SapSuccessFactorsLearnerDataTransmissionAudit'),
         ]
         for app_label, model_name in channel_learner_audit_models:
             model_class = apps.get_model(app_label=app_label, model_name=model_name)

@@ -12,14 +12,14 @@ def cornerstone_learner_data_transmission_audit():
     """
         Returns the ``CornerstoneLearnerDataTransmissionAudit`` class.
     """
-    return apps.get_model('cornerstone', 'CornerstoneLearnerDataTransmissionAudit')
+    return apps.get_model('cornerstone_channel', 'CornerstoneLearnerDataTransmissionAudit')
 
 
 def cornerstone_course_key_model():
     """
         Returns the ``CornerstoneCourseKey`` class.
     """
-    return apps.get_model('cornerstone', 'CornerstoneCourseKey')
+    return apps.get_model('cornerstone_channel', 'CornerstoneCourseKey')
 
 
 LOGGER = getLogger(__name__)

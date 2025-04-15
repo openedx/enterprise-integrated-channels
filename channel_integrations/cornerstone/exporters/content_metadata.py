@@ -54,7 +54,7 @@ class CornerstoneContentMetadataExporter(ContentMetadataExporter):
         Return the exported and transformed content metadata as a dictionary for CSDO web pull.
         """
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
         create_payload = ContentMetadataItemTransmission.objects.filter(
@@ -159,7 +159,7 @@ class CornerstoneContentMetadataExporter(ContentMetadataExporter):
         Return the languages supported by course or `English` as default if no languages found.
         """
         CornerstoneGlobalConfiguration = apps.get_model(
-            'cornerstone',
+            'cornerstone_channel',
             'CornerstoneGlobalConfiguration'
         )
         languages_json = CornerstoneGlobalConfiguration.current().languages or {'Languages': []}
@@ -190,7 +190,7 @@ class CornerstoneContentMetadataExporter(ContentMetadataExporter):
         subjects = []
         course_subjects = get_subjects_from_content_metadata(content_metadata_item)
         CornerstoneGlobalConfiguration = apps.get_model(
-            'cornerstone',
+            'cornerstone_channel',
             'CornerstoneGlobalConfiguration'
         )
         subjects_mapping_dict = CornerstoneGlobalConfiguration.current().subject_mapping or {}

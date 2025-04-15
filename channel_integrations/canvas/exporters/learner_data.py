@@ -49,7 +49,7 @@ class CanvasLearnerExporter(LearnerExporter):
         canvas_completed_timestamp = completed_date.strftime("%F") if isinstance(completed_date, datetime) else None
 
         CanvasLearnerDataTransmissionAudit = apps.get_model(
-            'canvas',
+            'canvas_channel',
             'CanvasLearnerDataTransmissionAudit'
         )
         course_id = get_course_id_for_enrollment(enterprise_enrollment)
@@ -111,7 +111,7 @@ class CanvasLearnerExporter(LearnerExporter):
             return None
 
         CanvasLearnerAssessmentDataTransmissionAudit = apps.get_model(
-            'canvas',
+            'canvas_channel',
             'CanvasLearnerAssessmentDataTransmissionAudit'
         )
 

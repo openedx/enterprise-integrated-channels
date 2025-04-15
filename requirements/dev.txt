@@ -12,6 +12,7 @@ asgiref==3.8.1
     # via
     #   -r requirements/quality.txt
     #   django
+    #   django-countries
 astroid==3.3.9
     # via
     #   -r requirements/quality.txt
@@ -29,7 +30,7 @@ cachetools==5.5.2
     # via
     #   -r requirements/ci.txt
     #   tox
-celery==5.4.0
+celery==5.5.0
     # via -r requirements/quality.txt
 certifi==2025.1.31
     # via
@@ -129,6 +130,8 @@ django==4.2.20
     #   jsonfield
 django-config-models==2.8.0
     # via -r requirements/quality.txt
+django-countries==7.6.1
+    # via -r requirements/quality.txt
 django-crum==0.7.9
     # via
     #   -r requirements/quality.txt
@@ -139,7 +142,7 @@ django-model-utils==5.0.0
     # via -r requirements/quality.txt
 django-oauth-toolkit==3.0.1
     # via -r requirements/quality.txt
-django-object-actions==4.3.0
+django-object-actions==5.0.0
     # via -r requirements/quality.txt
 django-simple-history==3.0.0
     # via
@@ -169,7 +172,8 @@ edx-django-utils==7.2.0
     #   -r requirements/quality.txt
     #   django-config-models
     #   edx-drf-extensions
-edx-drf-extensions==10.5.0
+    #   edx-rest-api-client
+edx-drf-extensions==10.6.0
     # via -r requirements/quality.txt
 edx-i18n-tools==1.7.0
     # via -r requirements/dev.in
@@ -179,6 +183,8 @@ edx-opaque-keys[django]==2.12.0
     # via
     #   -r requirements/quality.txt
     #   edx-drf-extensions
+edx-rest-api-client==6.1.0
+    # via -r requirements/quality.txt
 factory-boy==3.3.3
     # via -r requirements/quality.txt
 faker==37.1.0
@@ -235,7 +241,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.2.0
     # via -r requirements/quality.txt
-newrelic==10.8.0
+newrelic==10.8.1
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
@@ -303,6 +309,7 @@ pyjwt[crypto]==2.10.1
     #   -r requirements/quality.txt
     #   drf-jwt
     #   edx-drf-extensions
+    #   edx-rest-api-client
 pylint==3.3.6
     # via
     #   -r requirements/quality.txt
@@ -345,9 +352,9 @@ pytest==8.3.5
     #   -r requirements/quality.txt
     #   pytest-cov
     #   pytest-django
-pytest-cov==6.0.0
+pytest-cov==6.1.0
     # via -r requirements/quality.txt
-pytest-django==4.10.0
+pytest-django==4.11.1
     # via -r requirements/quality.txt
 python-dateutil==2.9.0.post0
     # via
@@ -371,7 +378,9 @@ requests==2.32.3
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
     #   edx-drf-extensions
+    #   edx-rest-api-client
     #   responses
+    #   slumber
 responses==0.25.7
     # via -r requirements/quality.txt
 semantic-version==2.10.0
@@ -383,6 +392,8 @@ six==1.17.0
     #   -r requirements/quality.txt
     #   edx-lint
     #   python-dateutil
+slumber==0.7.1
+    # via -r requirements/quality.txt
 snowballstemmer==2.2.0
     # via
     #   -r requirements/quality.txt
@@ -409,17 +420,19 @@ tomlkit==0.13.2
     #   pylint
 tox==4.25.0
     # via -r requirements/ci.txt
-typing-extensions==4.13.0
+typing-extensions==4.13.1
     # via
     #   -r requirements/quality.txt
+    #   django-countries
     #   edx-opaque-keys
     #   jwcrypto
 tzdata==2025.2
     # via
     #   -r requirements/quality.txt
-    #   celery
     #   faker
     #   kombu
+unicodecsv==0.14.1
+    # via -r requirements/quality.txt
 urllib3==2.2.3
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
@@ -432,7 +445,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.29.3
+virtualenv==20.30.0
     # via
     #   -r requirements/ci.txt
     #   tox

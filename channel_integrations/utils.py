@@ -24,7 +24,7 @@ from enterprise.utils import parse_datetime_handle_invalid, parse_lms_api_dateti
 
 from channel_integrations.catalog_service_utils import get_course_run_for_enrollment
 
-UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=pytz.UTC)
 UNIX_MIN_DATE_STRING = '1970-01-01T00:00:00Z'
 UNIX_MAX_DATE_STRING = '2038-01-19T03:14:07Z'
 
@@ -462,7 +462,7 @@ def channel_code_to_app_label(channel_code):
     """
     app_label = channel_code.lower()
     if app_label == 'generic':
-        app_label = 'integrated_channel'
+        app_label = 'channel_integration'
     elif app_label == 'sap':
         app_label = 'sap_success_factors'
     elif app_label == 'csod':
@@ -481,7 +481,7 @@ def integrated_channel_request_log_model():
     """
     Returns the ``IntegratedChannelAPIRequestLogs`` class.
     """
-    return apps.get_model("integrated_channel", "IntegratedChannelAPIRequestLogs")
+    return apps.get_model("channel_integration", "IntegratedChannelAPIRequestLogs")
 
 
 def get_enterprise_customer_from_enterprise_enrollment(enrollment_id):

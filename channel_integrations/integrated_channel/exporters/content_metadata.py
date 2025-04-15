@@ -108,7 +108,7 @@ class ContentMetadataExporter(Exporter):
         Retrieve all non-deleted content transmissions under a given customer's catalog
         """
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
 
@@ -172,7 +172,7 @@ class ContentMetadataExporter(Exporter):
                 regardless of the last updated at time
         """
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
         items_to_update = {}
@@ -243,7 +243,7 @@ class ContentMetadataExporter(Exporter):
                 regardless of the last updated at time
         """
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
         items_to_create = {}
@@ -328,7 +328,7 @@ class ContentMetadataExporter(Exporter):
             # orphaned record resolved
             if orphaned_content:
                 ContentMetadataItemTransmission = apps.get_model(
-                    'integrated_channel',
+                    'channel_integration',
                     'ContentMetadataItemTransmission',
                 )
                 ContentMetadataItemTransmission.objects.filter(
@@ -381,7 +381,7 @@ class ContentMetadataExporter(Exporter):
         renamed from _retrieve_past_transmission_content
         """
         ContentMetadataItemTransmission = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'ContentMetadataItemTransmission'
         )
 
@@ -434,7 +434,7 @@ class ContentMetadataExporter(Exporter):
         Helper method to retrieve the customer's orphaned content metadata items.
         """
         OrphanedContentTransmissions = apps.get_model(
-            'integrated_channel',
+            'channel_integration',
             'OrphanedContentTransmissions'
         )
         content_query = Q(content_id=content_key) if content_key else Q()
@@ -673,7 +673,7 @@ class ContentMetadataExporter(Exporter):
             )
             content_ids = [get_content_metadata_item_id(item) for item in content_metadata_items]
             ContentMetadataItemTransmission = apps.get_model(
-                'integrated_channel',
+                'channel_integration',
                 'ContentMetadataItemTransmission'
             )
             transmission_items = ContentMetadataItemTransmission.objects.filter(
