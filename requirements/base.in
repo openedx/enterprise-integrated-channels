@@ -21,3 +21,5 @@ django-oauth-toolkit
 django-object-actions
 unicodecsv
 slumber
+edx-rbac
+edx-tincan-py35
