@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'channel_integrations.moodle',
     'channel_integrations.sap_success_factors',
     'channel_integrations.integrated_channel',
+    'channel_integrations.xapi',
 
     'enterprise',
     'consent',

@@ -46,7 +46,7 @@ htmlcov/
 
 # Logging
 log/
-logs/
+/logs/
 chromedriver.log
 ghostdriver.log
 

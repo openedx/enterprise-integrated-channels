@@ -1,6 +1,7 @@
 import datetime
 from logging import getLogger
 import pytz
+from uuid import UUID
 
 from urllib.parse import parse_qs, urlparse, urlsplit, urlunsplit, urlencode
 from django.apps import apps
@@ -8,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.dateparse import parse_datetime
 from django.db.models.query import QuerySet
+from django.http import Http404
 
 from enterprise.constants import MAX_ALLOWED_TEXT_LENGTH
 
@@ -411,3 +413,52 @@ def get_last_course_run_end_date(course_runs):
         except ValueError:
             latest_end_date = None
     return latest_end_date
+
+
+def enterprise_customer_model():
+    """
+    Returns the ``EnterpriseCustomer`` class.
+    """
+    return apps.get_model('enterprise', 'EnterpriseCustomer')
+
+
+def get_enterprise_customer_or_404(enterprise_uuid):
+    """
+    Given an EnterpriseCustomer UUID, return the corresponding EnterpriseCustomer or raise a 404.
+
+    Arguments:
+        enterprise_uuid (str): The UUID (in string form) of the EnterpriseCustomer to fetch.
+
+    Returns:
+        (EnterpriseCustomer): The EnterpriseCustomer given the UUID.
+
+    """
+    EnterpriseCustomer = enterprise_customer_model()
+    try:
+        enterprise_uuid = UUID(enterprise_uuid)
+        return EnterpriseCustomer.objects.get(uuid=enterprise_uuid)
+    except (TypeError, ValueError, EnterpriseCustomer.DoesNotExist) as no_customer_error:
+        LOGGER.error('Unable to find enterprise customer for UUID: [%s]', enterprise_uuid)
+        raise Http404 from no_customer_error
+
+
+def get_enterprise_customer_user(user_id, enterprise_uuid):
+    """
+    Return the object for EnterpriseCustomerUser.
+
+    Arguments:
+        user_id (str): user identifier
+        enterprise_uuid (UUID): Universally unique identifier for the enterprise customer.
+
+    Returns:
+        (EnterpriseCustomerUser): enterprise customer user record
+
+    """
+    EnterpriseCustomerUser = apps.get_model('enterprise', 'EnterpriseCustomerUser')
+    try:
+        return EnterpriseCustomerUser.objects.get(
+            enterprise_customer__uuid=enterprise_uuid,
+            user_id=user_id
+        )
+    except EnterpriseCustomerUser.DoesNotExist:
+        return None
