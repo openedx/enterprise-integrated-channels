@@ -20,9 +20,8 @@ urlpatterns = [
         include('channel_integrations.blackboard.urls'),
         name='blackboard',
     ),
-    # TODO: uncomment when the channel_integrations.api.urls is ready
-    # re_path(
-    #     r'^integrated_channels/api/',
-    #     include('channel_integrations.api.urls')
-    # ),
+    re_path(
+        r'^integrated_channels/api/',
+        include('channel_integrations.api.urls')
+    ),
 ]
