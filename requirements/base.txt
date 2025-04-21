@@ -6,7 +6,7 @@
 #
 amqp==5.3.1
     # via kombu
-aniso8601==10.0.0
+aniso8601==10.0.1
     # via edx-tincan-py35
 asgiref==3.8.1
     # via django

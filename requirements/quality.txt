@@ -8,7 +8,7 @@ amqp==5.3.1
     # via
     #   -r requirements/test.txt
     #   kombu
-aniso8601==10.0.0
+aniso8601==10.0.1
     # via
     #   -r requirements/test.txt
     #   edx-tincan-py35
@@ -222,7 +222,7 @@ oauthlib==3.2.2
     #   django-oauth-toolkit
 openedx-atlas==0.7.0
     # via -r requirements/test.txt
-packaging==24.2
+packaging==25.0
     # via
     #   -r requirements/test.txt
     #   pytest
