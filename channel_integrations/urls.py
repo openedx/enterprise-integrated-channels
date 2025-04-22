@@ -1,27 +1,28 @@
 """
 URLs for channel_integrations.
 """
-from django.urls import re_path, include
+from django.urls import path
+from django.urls import include
 
 
 urlpatterns = [
-    re_path(
-        r'^cornerstone/',
+    path(
+        'cornerstone/',
         include('channel_integrations.cornerstone.urls'),
         name='cornerstone'
     ),
-    re_path(
-        r'^canvas/',
+    path(
+        'canvas/',
         include('channel_integrations.canvas.urls'),
         name='canvas',
     ),
-    re_path(
-        r'^blackboard/',
+    path(
+        'blackboard/',
         include('channel_integrations.blackboard.urls'),
         name='blackboard',
     ),
-    re_path(
-        r'^integrated_channels/api/',
+    path(
+        'integrated_channels/api/',
         include('channel_integrations.api.urls')
     ),
 ]
