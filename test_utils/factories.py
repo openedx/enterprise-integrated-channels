@@ -13,7 +13,8 @@ import factory
 from faker import Factory as FakerFactory
 from oauth2_provider.models import get_application_model
 
-from consent.models import DataSharingConsent
+
+from consent.models import DataSharingConsent, DataSharingConsentTextOverrides
 from enterprise.constants import FulfillmentTypes
 from enterprise.models import (
     EnterpriseCatalogQuery,
