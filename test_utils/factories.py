@@ -11,7 +11,7 @@ from oauth2_provider.models import get_application_model
 
 from django.contrib import auth
 from django.contrib.sites.models import Site
-from django.utils import timezone
+from datetime import timezone
 
 from consent.models import DataSharingConsent, DataSharingConsentTextOverrides
 from enterprise.constants import FulfillmentTypes
