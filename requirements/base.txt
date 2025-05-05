@@ -6,21 +6,21 @@
 #
 amqp==5.3.1
     # via kombu
-aniso8601==10.0.0
+aniso8601==10.0.1
     # via edx-tincan-py35
 asgiref==3.8.1
     # via django
 billiard==4.2.1
     # via celery
-celery==5.5.1
+celery==5.5.2
     # via -r requirements/base.in
-certifi==2025.1.31
+certifi==2025.4.26
     # via requests
 cffi==1.17.1
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
 click==8.1.8
     # via
@@ -35,7 +35,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==44.0.2
+cryptography==44.0.3
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
@@ -99,7 +99,7 @@ edx-drf-extensions==10.6.0
     # via
     #   -r requirements/base.in
     #   edx-rbac
-edx-opaque-keys[django]==2.12.0
+edx-opaque-keys[django]==3.0.0
     # via
     #   -r requirements/base.in
     #   edx-drf-extensions
@@ -117,7 +117,7 @@ jwcrypto==1.5.6
     # via django-oauth-toolkit
 kombu==5.5.3
     # via celery
-newrelic==10.9.0
+newrelic==10.11.0
     # via edx-django-utils
 oauthlib==3.2.2
     # via django-oauth-toolkit
@@ -136,7 +136,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.12.0
+pymongo==4.12.1
     # via edx-opaque-keys
 pynacl==1.5.0
     # via edx-django-utils
