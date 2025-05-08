@@ -66,7 +66,7 @@ piptools: ## install pinned version of pip-compile and pip-sync
 requirements: clean_tox piptools ## install development environment requirements
 	pip-sync -q requirements/dev.txt requirements/private.*
 
-test: clean ## run tests in the current virtualenv
+test: clean ## run tests in the current virtualenvs
 	PYTHONPATH=./:./mock_apps pytest
 
 diff_cover: test ## find diff lines that need test coverage
