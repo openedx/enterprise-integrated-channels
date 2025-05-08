@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse, urlsplit, urlunsplit, urlencode
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.utils.dateparse import parse_datetime
 from django.db.models.query import QuerySet
 from django.http import Http404
@@ -247,8 +248,6 @@ class CourseEnrollmentPermissionError(Exception):
     """
 
 
-SELF_ENROLL_EMAIL_TEMPLATE_TYPE = 'self_enroll'
-
 
 def track_event(user_id, event_name, properties):
     """
@@ -258,20 +257,84 @@ def track_event(user_id, event_name, properties):
     if segment:
         segment.track(user_id, event_name, properties)
 
-def get_advertised_course_run(course_runs):
-    return {}
+def get_advertised_course_run(course):
+    """
+    Find the advertised course run for a given course
+    Arguments:
+        course (dict): course dict
+    Returns:
+        dict: a course_run or None
+    """
+    advertised_course_run_uuid = course.get('advertised_course_run_uuid')
+    if advertised_course_run_uuid:
+        for course_run in course.get('course_runs', []):
+            if advertised_course_run_uuid == course_run.get('uuid'):
+                return course_run
+    return None
+
+
+def get_course_run_start(course_run, default=None):
+    """
+    Return the given course run's start date as a datetime.
+    """
+    return parse_datetime_handle_invalid(course_run.get('start')) or default
+
 
 def get_closest_course_run(course_runs):
-    return {}
+    """
+    Return course run with start date closest to now.
+    """
+    if len(course_runs) == 1:
+        return course_runs[0]
+
+    now = datetime.datetime.now(pytz.UTC)
+    # course runs with no start date should be considered last.
+    never = now - datetime.timedelta(days=3650)
+    return min(course_runs, key=lambda x: abs(get_course_run_start(x, never) - now))
 
 def get_course_run_duration_info(course_run):
-    return []
+    """
+    Return course run's duration(str) info.
+    """
+    duration_info = ''
+    min_effort = course_run.get('min_effort')
+    max_effort = course_run.get('max_effort')
+    weeks_to_complete = course_run.get('weeks_to_complete')
+    if min_effort and max_effort and weeks_to_complete:
+        duration_info = "{min_effort}-{max_effort} hours a week for {weeks_to_complete} weeks. ".format(
+            min_effort=str(min_effort),
+            max_effort=str(max_effort),
+            weeks_to_complete=str(weeks_to_complete)
+        )
+    return duration_info
 
 def is_course_run_active(course_run):
-    return True
+    """
+    Checks whether a course run is active. That is, whether the course run is published,
+    enrollable, and marketable.
+    Arguments:
+        course_run (dict): The metadata about a course run.
+    Returns:
+        bool: True if course run is "active"
+    """
+    is_published = is_course_run_published(course_run)
+    is_enrollable = course_run.get('is_enrollable', False)
+    is_marketable = course_run.get('is_marketable', False)
+
+    return is_published and is_enrollable and is_marketable
 
 def get_enterprise_customer(uuid):
-    return {}
+    """
+    Get the ``EnterpriseCustomer`` instance associated with ``uuid``.
+
+    :param uuid: The universally unique ID of the enterprise customer.
+    :return: The ``EnterpriseCustomer`` instance, or ``None`` if it doesn't exist.
+    """
+    EnterpriseCustomer = enterprise_customer_model()
+    try:
+        return EnterpriseCustomer.objects.get(uuid=uuid)
+    except (EnterpriseCustomer.DoesNotExist, ValidationError):
+        return None
 
 
 def _get_service_worker(service_worker_username):
@@ -321,16 +384,134 @@ def traverse_pagination(response, client, api_url):
     return results
 
 def get_oauth2authentication_class():
-    return {}
+    """
+    Return oauth2 authentication class to authenticate REST APIs with Bearer token.
+    """
+    try:
+        # pylint: disable=import-outside-toplevel
+        from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser as OAuth2Authentication
+    except ImportError:
+        return None
+
+    return OAuth2Authentication
+
 
 def get_language_code(language):
-    return {}
+    """
+    Return IETF language tag of given language name.
 
-def get_advertised_or_closest_course_run(course_runs):
-    return {}
+    - if language is not found in the language map then `en-US` is returned.
 
-def get_duration_of_course_or_courserun(course_run):
-    return "", "", ""
+    Args:
+        language (str): string language name
+
+    Returns: a language tag (two-letter language code - two letter country code if applicable)
+    """
+    language_map = {
+        "Afrikaans": "af",
+        "Arabic": "ar-AE",
+        "Belarusian": "be",
+        "Bulgarian": "bg-BG",
+        "Catalan": "ca",
+        "Czech": "cs-CZ",
+        "Danish": "da-DK",
+        "German": "de-DE",
+        "Greek": "el-GR",
+        "English": "en-US",
+        "Spanish": "es-ES",
+        "Estonian": "et",
+        "Basque (Basque)": "eu",
+        "Farsi": "fa",
+        "Finnish": "fi-FI",
+        "French": "fr-FR",
+        "Hebrew": "he-IL",
+        "Hindi": "hi",
+        "Croatian": "hr",
+        "Hungarian": "hu-HU",
+        "Indonesian": "id-ID",
+        "Icelandic": "is",
+        "Italian": "it-IT",
+        "Japanese": "ja-JP",
+        "Korean": "ko-KR",
+        "Lithuanian": "lt-LT",
+        "Malay": "ms-MY",
+        "Maltese": "mt",
+        "Dutch": "nl-NL",
+        "Norwegian": "nb-NO",
+        "Polish": "pl-PL",
+        "Portuguese": "pt-BR",
+        "Romanian": "ro-RO",
+        "Russian": "ru-RU",
+        "Sanskrit": "sa",
+        "Sorbian": "sb",
+        "Slovak": "sk-SK",
+        "Slovenian": "sl-SI",
+        "Swedish": "sv-SE",
+        "Swahili": "sw",
+        "Tamil": "ta",
+        "Thai": "th-TH",
+        "Turkish": "tr-TR",
+        "Tsonga": "ts",
+        "Tatar": "tt",
+        "Ukrainian": "uk",
+        "Urdu": "ur",
+        "Uzbek": "uz-UZ",
+        "Vietnamese": "vi",
+        "Xhosa": "xh",
+        "Yiddish": "yi",
+        "Chinese - Mandarin": "zh-CMN",
+        "Chinese - China": "zh-CN",
+        "Chinese - Simplified": "zh-Hans",
+        "Chinese - Traditional": "zh-Hant",
+        "Chinese - Hong Kong SAR": "zh-HK",
+        "Chinese - Macau SAR": "zh-MO",
+        "Chinese - Singapore": "zh-SG",
+        "Chinese - Taiwan": "zh-TW",
+        "Zulu": "zu",
+    }
+    return language_map.get(language, "en-US")
+
+
+def get_advertised_or_closest_course_run(content_metadata_item):
+    """
+    Returns advertised course run of a course. If the advertised run does not exist, it looks for the closest run.
+    """
+    course_run = get_advertised_course_run(content_metadata_item)
+    # get the closest run if advertised run doesn't exist
+    if not course_run:
+        course_runs = content_metadata_item.get('course_runs')
+        if course_runs:
+            course_run = get_closest_course_run(course_runs)
+    return course_run
+
+
+def get_duration_of_course_or_courserun(content_metadata_item):
+    """
+    Returns duration start, end dates given a piece of content_metadata item
+    If course item, extracts start, end dates of closest course run based on current timestamp
+
+    Returns:
+        duration: in days or 0
+        start: start field of closest course run item, or None
+        end: end field of closest course run item, or None
+    """
+    start = None
+    end = None
+    if content_metadata_item.get('content_type') == 'courserun':
+        start = content_metadata_item.get('start')
+        end = content_metadata_item.get('end')
+    elif content_metadata_item.get('content_type') == 'course':
+        course_run = get_advertised_or_closest_course_run(content_metadata_item)
+        if course_run:
+            start = course_run.get('start')
+            end = course_run.get('end')
+    if not start:
+        return 0, None, None
+    start_date = parse_datetime_handle_invalid(start)
+    end_date = parse_datetime_handle_invalid(end)
+    if not start_date or not end_date:
+        return 0, None, None
+    return (end_date - start_date).days, start, end
 
 
 def is_course_run_published(course_run):

@@ -86,7 +86,7 @@ class BlackboardCompleteOAuthView(generics.ListAPIView):
         return render(request, template, context={})
 
     def get(self, request, *args, **kwargs):
-        app_config = apps.get_app_config('blackboard')
+        app_config = apps.get_app_config('blackboard_channel')
         oauth_token_path = app_config.oauth_token_auth_path
 
         # Check if encountered an error when generating the oauth code.

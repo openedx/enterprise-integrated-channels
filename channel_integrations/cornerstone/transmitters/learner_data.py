@@ -28,7 +28,7 @@ class CornerstoneLearnerTransmitter(LearnerTransmitter):
         Args:
             payload: The learner exporter for Cornerstone
         """
-        kwargs['app_label'] = 'cornerstone'
+        kwargs['app_label'] = 'cornerstone_channel'
         kwargs['model_name'] = 'CornerstoneLearnerDataTransmissionAudit'
         kwargs['remote_user_id'] = 'user_guid'
         super().transmit(payload, **kwargs)

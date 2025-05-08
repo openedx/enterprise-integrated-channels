@@ -464,9 +464,9 @@ def channel_code_to_app_label(channel_code):
     if app_label == 'generic':
         app_label = 'channel_integration'
     elif app_label == 'sap':
-        app_label = 'sap_success_factors'
+        app_label = 'sap_success_factors_channel'
     elif app_label == 'csod':
-        app_label = 'cornerstone'
+        app_label = 'cornerstone_channel'
     return app_label
 
 
@@ -505,7 +505,7 @@ def get_enterprise_client_by_channel_code(channel_code):
     # TODO: Other configs
     from channel_integrations.canvas.client import CanvasAPIClient  # pylint: disable=C0415
     _enterprise_client_model_by_channel_code = {
-        'canvas': CanvasAPIClient,
+        'canvas_channel': CanvasAPIClient,
     }
     return _enterprise_client_model_by_channel_code[channel_code]
 

@@ -59,7 +59,7 @@ class BlackboardAPIClient(IntegratedChannelApiClient):
             'BlackboardGlobalConfiguration'
         )
         self.global_blackboard_config = BlackboardGlobalConfiguration.current()
-        self.config = apps.get_app_config('blackboard')
+        self.config = apps.get_app_config('blackboard_channel')
         self.session = None
         self.expires_at = None
 

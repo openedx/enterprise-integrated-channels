@@ -221,7 +221,7 @@ class CanvasEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguratio
         """
         Returns an capitalized identifier for this channel class, unique among subclasses.
         """
-        return 'CANVAS'
+        return 'CANVAS_CHANNEL'
 
     def get_learner_data_transmitter(self):
         return CanvasLearnerTransmitter(self)

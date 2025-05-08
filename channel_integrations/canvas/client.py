@@ -60,7 +60,7 @@ class CanvasAPIClient(IntegratedChannelApiClient):
             configuration model for connecting with Canvas
         """
         super().__init__(enterprise_configuration)
-        self.config = apps.get_app_config('canvas')
+        self.config = apps.get_app_config('canvas_channel')
         self.session = None
         self.expires_at = None
         self.course_create_url = CanvasUtil.course_create_endpoint(self.enterprise_configuration)

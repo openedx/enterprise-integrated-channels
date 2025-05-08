@@ -46,7 +46,10 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             configuration model for connecting with SAP SuccessFactors
         """
         super().__init__(enterprise_configuration)
-        self.global_sap_config = apps.get_model('sap_success_factors', 'SAPSuccessFactorsGlobalConfiguration').current()
+        self.global_sap_config = apps.get_model(
+            'sap_success_factors_channel',
+            'SAPSuccessFactorsGlobalConfiguration'
+        ).current()
         self.session = None
         self.expires_at = None
         self.IntegratedChannelAPIRequestLogs = apps.get_model(

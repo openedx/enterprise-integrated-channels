@@ -28,7 +28,7 @@ class CanvasLearnerTransmitter(LearnerTransmitter):
         Args:
             payload: The learner exporter for Canvas
         """
-        kwargs['app_label'] = 'canvas'
+        kwargs['app_label'] = 'canvas_channel'
         kwargs['model_name'] = 'CanvasLearnerDataTransmissionAudit'
         kwargs['remote_user_id'] = 'canvas_user_email'
         super().transmit(payload, **kwargs)
@@ -40,7 +40,7 @@ class CanvasLearnerTransmitter(LearnerTransmitter):
         Args:
             payload: The learner completion data payload to send to Canvas
         """
-        kwargs['app_label'] = 'canvas'
+        kwargs['app_label'] = 'canvas_channel'
         kwargs['model_name'] = 'CanvasLearnerAssessmentDataTransmissionAudit'
         kwargs['remote_user_id'] = 'canvas_user_email'
         super().single_learner_assessment_grade_transmit(exporter, **kwargs)
@@ -52,7 +52,7 @@ class CanvasLearnerTransmitter(LearnerTransmitter):
         Args:
             payload: The learner completion data payload to send to Canvas
         """
-        kwargs['app_label'] = 'canvas'
+        kwargs['app_label'] = 'canvas_channel'
         kwargs['model_name'] = 'CanvasLearnerAssessmentDataTransmissionAudit'
         kwargs['remote_user_id'] = 'canvas_user_email'
         super().assessment_level_transmit(exporter, **kwargs)
