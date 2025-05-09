@@ -22,7 +22,7 @@ Unreleased
 Added
 =====
 
+* First release on PyPI.
 * Created ``mock_apps`` for testing purposes.
 * Updated requirements in ``base.in`` and run ``make requirements``.
 * Migrated ``integrated_channel`` app from edx-enterprise.
-* First release on PyPI.

@@ -1,26 +1,14 @@
 enterprise-integrated-channels
 ##############################
 
-.. note::
-
-  This README was auto-generated. Maintainer: please review its contents and
-  update all relevant sections. Instructions to you are marked with
-  "PLACEHOLDER" or "TODO". Update or remove those sections, and remove this
-  note when you are done.
-
 |pypi-badge| |ci-badge| |codecov-badge| |doc-badge| |pyversions-badge|
 |license-badge| |status-badge|
 
 Purpose
 *******
 
-An integrated channel is an abstraction meant to represent a third-party system which provides an API that can be used to transmit EdX data to the third-party system.
+An integrated channel is an abstraction meant to represent a third-party system which provides an API that can be used to transmit EdX data to the third-party system. The most common example of such a third-party system is an enterprise-level learning management system (LMS). LMS users are able to discover content made available by many different content providers and manage the learning outcomes that are produced by interaction with the content providers. In such a scenario, EdX would be the content provider while a system like SAP SuccessFactors would be the integrated channel.
 
-TODO: The ``README.rst`` file should start with a brief description of the repository and its purpose.
-It should be described in the context of other repositories under the ``openedx``
-organization. It should make clear where this fits into the overall Open edX
-codebase and should be oriented towards people who are new to the Open edX
-project.
 
 Getting Started with Development
 ********************************
@@ -29,15 +17,6 @@ Please see the Open edX documentation for `guidance on Python development`_ in t
 
 .. _guidance on Python development: https://docs.openedx.org/en/latest/developers/how-tos/get-ready-for-python-dev.html
 
-Deploying
-*********
-
-TODO: How can a new user go about deploying this component? Is it just a few
-commands? Is there a larger how-to that should be linked here?
-
-PLACEHOLDER: For details on how to deploy this component, see the `deployment how-to`_.
-
-.. _deployment how-to: https://docs.openedx.org/projects/enterprise-integrated-channels/how-tos/how-to-deploy-this-component.html
 
 Getting Help
 ************
@@ -45,9 +24,9 @@ Getting Help
 Documentation
 =============
 
-PLACEHOLDER: Start by going through `the documentation`_.  If you need more help see below.
+Start by going through `the documentation`_.  If you need more help see below.
 
-.. _the documentation: https://docs.openedx.org/projects/enterprise-integrated-channels
+.. _the documentation: https://github.com/openedx/enterprise-integrated-channels/blob/main/channel_integrations/README.md
 
 (TODO: `Set up documentation <https://openedx.atlassian.net/wiki/spaces/DOC/pages/21627535/Publish+Documentation+on+Read+the+Docs>`_)
 
