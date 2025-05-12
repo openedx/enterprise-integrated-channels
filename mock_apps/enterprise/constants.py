@@ -20,6 +20,9 @@ HTTP_STATUS_STRINGS = {
 
 ENTERPRISE_ADMIN_ROLE = 'enterprise_admin'
 
+# context to give access to all resources
+ALL_ACCESS_CONTEXT = '*'
+
 # ContentFilter field types for validation.
 CONTENT_FILTER_FIELD_TYPES = {
     'key': {'type': list, 'subtype': str},

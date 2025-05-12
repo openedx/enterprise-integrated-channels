@@ -133,7 +133,7 @@ class MoodleAPIClient(IntegratedChannelApiClient):
             configuration model for connecting with Moodle
         """
         super().__init__(enterprise_configuration)
-        self.config = apps.get_app_config('moodle')
+        self.config = apps.get_app_config('moodle_channel')
         self.token = enterprise_configuration.decrypted_token or self._get_access_token()
         self.api_url = urljoin(self.enterprise_configuration.moodle_base_url, self.MOODLE_API_PATH)
         self.IntegratedChannelAPIRequestLogs = apps.get_model(

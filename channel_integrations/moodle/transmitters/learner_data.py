@@ -28,7 +28,7 @@ class MoodleLearnerTransmitter(LearnerTransmitter):
         Args:
             payload: The learner data exporter for Moodle
         """
-        kwargs['app_label'] = 'moodle'
+        kwargs['app_label'] = 'moodle_channel'
         kwargs['model_name'] = 'MoodleLearnerDataTransmissionAudit'
         kwargs['remote_user_id'] = 'moodle_user_email'
         super().transmit(payload, **kwargs)

@@ -29,8 +29,7 @@ class EnterpriseMockMixin:
         super().setUp()
         cache.clear()
 
-    # TODO: remove `resource` from this method
-    def build_enterprise_api_url(self, resource, *args, **kwargs): # pylint: disable=unused-argument
+    def build_enterprise_catalogs_detail_api_url(self, *args, **kwargs):
         """
         DRY method to make Enterprise API URLs.
 
@@ -117,7 +116,7 @@ class EnterpriseMockMixin:
         """
         responses.add(
             responses.GET,
-            url=self.build_enterprise_api_url('enterprise-catalogs-detail', enterprise_catalog_uuid),
+            url=self.build_enterprise_catalogs_detail_api_url(enterprise_catalog_uuid),
             json=build_fake_enterprise_catalog_detail(
                 enterprise_catalog_uuid=enterprise_catalog_uuid,
                 include_enterprise_context=True,
@@ -148,21 +147,9 @@ class EnterpriseMockMixin:
         """
         responses.add(
             responses.GET,
-            url=self.build_enterprise_api_url('enterprise-catalogs-detail', enterprise_uuid),
+            url=self.build_enterprise_catalogs_detail_api_url(enterprise_uuid),
             json={},
             status=500,
-            content_type='application/json',
-        )
-
-    def mock_empty_response(self, resource, *args, **kwargs):
-        """
-        DRY function to register an empty response from some Enterprise API endpoint.
-        """
-        responses.add(
-            responses.GET,
-            url=self.build_enterprise_api_url(resource, *args, **kwargs),
-            json={},
-            status=200,
             content_type='application/json',
         )
 

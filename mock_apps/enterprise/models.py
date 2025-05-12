@@ -1,5 +1,6 @@
 
 import collections
+import itertools
 import logging
 import json
 from uuid import uuid4
@@ -10,10 +11,12 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 from django.contrib import auth
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from model_utils.models import TimeStampedModel
 from django_countries.fields import CountryField
+from edx_rbac.models import UserRole, UserRoleAssignment
 from jsonfield.encoder import JSONEncoder
 from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError
@@ -21,7 +24,7 @@ from slumber.exceptions import HttpClientError
 from enterprise import utils
 from enterprise.api_client.lms import EnrollmentApiClient, ThirdPartyAuthApiClient
 from enterprise.utils import get_enterprise_worker_user, get_user_valid_idp, CourseEnrollmentDowngradeError, CourseEnrollmentPermissionError
-from enterprise.constants import json_serialized_course_modes
+from enterprise.constants import json_serialized_course_modes, ALL_ACCESS_CONTEXT
 from enterprise.validators import validate_content_filter_fields
 
 
@@ -32,6 +35,26 @@ except ImportError:
 
 User = auth.get_user_model()
 LOGGER = logging.getLogger(__name__)
+
+
+class EnterpriseCustomerManager(models.Manager):
+    """
+    Model manager for :class:`.EnterpriseCustomer` model.
+
+    Filters out inactive Enterprise Customers, otherwise works the same as default model manager.
+    """
+
+    # This manager filters out some records, hence according to the Django docs it must not be used
+    # for related field access. Although False is default value, it still makes sense to set it explicitly
+    # https://docs.djangoproject.com/en/1.10/topics/db/managers/#base-managers
+    use_for_related_fields = False
+
+    def get_queryset(self):
+        """
+        Return a new QuerySet object. Filters out inactive Enterprise Customers.
+        """
+        return super().get_queryset().filter(active=True)
+
 
 class EnterpriseCustomerCatalog(TimeStampedModel):
     """
@@ -75,7 +98,7 @@ class EnterpriseCourseEnrollment(models.Model):
     saved_for_later = models.BooleanField(default=False)
     enterprise_customer_user = models.ForeignKey(
         'enterprise.EnterpriseCustomerUser',
-        related_name='ep_customer_enrollments',
+        related_name='enterprise_enrollments',
         on_delete=models.deletion.CASCADE
     )
 
@@ -126,6 +149,63 @@ class EnterpriseCourseEnrollment(models.Model):
             LOGGER.error('{} does not have a matching student.CourseEnrollment'.format(self))
             return None
 
+    @classmethod
+    def get_enterprise_course_enrollment_id(cls, user, course_id, enterprise_customer):
+        """
+        Return the EnterpriseCourseEnrollment object for a given user in given course_id.
+        """
+        enterprise_course_enrollment_id = None
+        try:
+            enterprise_course_enrollment_id = cls.objects.get(
+                enterprise_customer_user=EnterpriseCustomerUser.objects.get(
+                    enterprise_customer=enterprise_customer,
+                    user_id=user.id
+                ),
+                course_id=course_id
+            ).id
+        except ObjectDoesNotExist:
+            LOGGER.info(
+                'EnterpriseCourseEnrollment entry not found for user: {username}, course: {course_id}, '
+                'enterprise_customer: {enterprise_customer_name}'.format(
+                    username=user.username,
+                    course_id=course_id,
+                    enterprise_customer_name=enterprise_customer.name
+                )
+            )
+        return enterprise_course_enrollment_id
+
+    @classmethod
+    def get_enterprise_uuids_with_user_and_course(cls, user_id, course_run_id, is_customer_active=None):
+        """
+        Returns a list of UUID(s) for EnterpriseCustomer(s) that this enrollment
+        links together with the user_id and course_run_id
+        """
+        try:
+            queryset = cls.objects.filter(
+                course_id=course_run_id,
+                enterprise_customer_user__user_id=user_id,
+            )
+            if is_customer_active is not None:
+                queryset = queryset.filter(
+                    enterprise_customer_user__enterprise_customer__active=is_customer_active,
+                )
+
+            linked_enrollments = queryset.select_related(
+                'enterprise_customer_user',
+                'enterprise_customer_user__enterprise_customer',
+            )
+            return [str(le.enterprise_customer_user.enterprise_customer.uuid) for le in linked_enrollments]
+
+        except ObjectDoesNotExist:
+            LOGGER.info(
+                'EnterpriseCustomerUser entries not found for user id: {username}, course: {course_run_id}.'
+                .format(
+                    username=user_id,
+                    course_run_id=course_run_id,
+                )
+            )
+            return []
+
     class Meta:
         app_label = 'enterprise'
 
@@ -142,6 +222,9 @@ class EnterpriseCustomer(TimeStampedModel):
         (EXTERNALLY_MANAGED, 'Managed externally')
     )
 
+    objects = models.Manager()
+    active_customers = EnterpriseCustomerManager()
+
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=255, blank=False, null=False, help_text=_("Enterprise Customer name."))
     slug = models.SlugField(
@@ -155,7 +238,7 @@ class EnterpriseCustomer(TimeStampedModel):
     country = CountryField(null=True)
     site = models.ForeignKey(
         Site,
-        related_name="ep_cs_site",
+        related_name="enterprise_customers",
         default=get_current_site,
         on_delete=models.deletion.CASCADE
     )
@@ -320,15 +403,82 @@ class EnterpriseCustomerSsoConfiguration(models.Model):
         app_label = 'enterprise'
 
 
-class EnterpriseCustomerUser(models.Model):
+class EnterpriseCustomerUserManager(models.Manager):
+    """
+    Model manager for :class:`.EnterpriseCustomerUser` entity.
+
+    This class should contain methods that create, modify or query :class:`.EnterpriseCustomerUser` entities.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize custom manager.
+
+        kwargs:
+            linked_only (Bool): create a manager with linked learners only if True else all(linked and unlinked) records
+        """
+        self.linked_only = kwargs.pop('linked_only', True)
+        super().__init__(*args, **kwargs)
+
+    def get_queryset(self):
+        """
+        Return linked or unlinked learners based on how the manager is created.
+        """
+        if self.linked_only:
+            return super().get_queryset().filter(linked=True)
+
+        return super().get_queryset()
+
+    def unlink_user(self, enterprise_customer, user_email, is_relinkable=True):
+        """
+        Unlink user email from Enterprise Customer.
+
+        If :class:`django.contrib.auth.models.User` instance with specified email does not exist,
+        :class:`.PendingEnterpriseCustomerUser` instance is deleted instead.
+
+        Raises EnterpriseCustomerUser.DoesNotExist if instance of :class:`django.contrib.auth.models.User` with
+        specified email exists and corresponding :class:`.EnterpriseCustomerUser` instance does not.
+
+        Raises PendingEnterpriseCustomerUser.DoesNotExist exception if instance of
+        :class:`django.contrib.auth.models.User` with specified email exists and corresponding
+        :class:`.PendingEnterpriseCustomerUser` instance does not.
+        """
+        try:
+            existing_user = User.objects.get(email=user_email)
+            # not capturing DoesNotExist intentionally to signal to view that link does not exist
+            link_record = self.get(enterprise_customer=enterprise_customer, user_id=existing_user.id)
+            link_record.linked = False
+            link_record.active = False
+            # If is_relinkable = False, user will be permanently be unlinked from the enterprise
+            link_record.is_relinkable = is_relinkable
+            link_record.save()
+        except User.DoesNotExist:
+            # not capturing DoesNotExist intentionally to signal to view that link does not exist
+            pending_link = PendingEnterpriseCustomerUser.objects.get(
+                enterprise_customer=enterprise_customer, user_email=user_email
+            )
+            pending_link.delete()
+
+        LOGGER.info(
+            'Enterprise learner {%s} successfully unlinked from Enterprise Customer {%s}',
+            user_email,
+            enterprise_customer.name
+        )
+
+
+class EnterpriseCustomerUser(TimeStampedModel):
 
     enterprise_customer = models.ForeignKey(
         EnterpriseCustomer,
         blank=False,
         null=False,
-        related_name='ep_customer_users',
+        related_name='enterprise_customer_users',
         on_delete=models.deletion.CASCADE
     )
+
+    objects = EnterpriseCustomerUserManager()
+    all_objects = EnterpriseCustomerUserManager(linked_only=False)
+
     user_id = models.PositiveIntegerField(null=False, blank=False, db_index=True)
     active = models.BooleanField(default=True)
     linked = models.BooleanField(default=False)
@@ -597,8 +747,103 @@ class PendingEnterpriseCustomerUser(models.Model):
         app_label = 'enterprise'
 
 
-class SystemWideEnterpriseUserRoleAssignment(models.Model):
-    
+class SystemWideEnterpriseRole(UserRole):
+    pass
+
+
+class SystemWideEnterpriseUserRoleAssignment(UserRoleAssignment):
+
+    role = models.ForeignKey(
+        SystemWideEnterpriseRole,
+        related_name="system_wide_role_assignments",
+        on_delete=models.CASCADE,
+    )
+
+    @classmethod
+    def get_distinct_assignments_by_role_name(cls, user, role_names=None):
+        """
+        Returns a mapping of role names to sets of enterprise customer uuids
+        for which the user is assigned that role.
+        """
+        # super().get_assignments() returns pairs of (role name, contexts), where
+        # contexts is a list of 0 or more enterprise uuids (or the ALL_ACCESS_CONTEXT token)
+        # as returned from super().get_context().
+        # To make matters worse, get_context() could return null, meaning the role
+        # applies to any context.  So we should still include it in the list of "customers"
+        # for a given role.
+        # See https://openedx.atlassian.net/browse/ENT-4346 for outstanding technical debt
+        # related to this issue.
+        assigned_customers_by_role = collections.defaultdict(set)
+        for role_name, customer_uuids in super().get_assignments(user, role_names):
+            if customer_uuids is not None:
+                assigned_customers_by_role[role_name].update(customer_uuids)
+            else:
+                assigned_customers_by_role[role_name].add(None)
+        return assigned_customers_by_role
+
+    @classmethod
+    def get_assignments(cls, user, role_names=None):
+        """
+        Return an iterator of (rolename, [enterprise customer uuids]) for the given
+        user (and maybe role_names).
+
+        Differs from super().get_assignments(...) in that it yields (role name, customer uuid list) pairs
+        such that the first item in the customer uuid list for each role
+        corresponds to the currently *active* EnterpriseCustomerUser for the user.
+
+        The resulting generated pairs are sorted by role name, and within role_name, by (active, customer uuid).
+        For example:
+
+          ('enterprise_admin', ['active-enterprise-uuid', 'inactive-enterprise-uuid', 'other-inactive-enterprise-uuid'])
+          ('enterprise_learner', ['active-enterprise-uuid', 'inactive-enterprise-uuid']),
+          ('enterprise_openedx_operator', ['*'])
+        """
+        customers_by_role = cls.get_distinct_assignments_by_role_name(user, role_names)
+        if not customers_by_role:
+            return
+
+        # Filter for a set of only the *active* enterprise uuids for which the user is assigned a role.
+        # A user should typically only have one active enterprise user at a time, but we'll
+        # use sets to cover edge cases.
+        all_customer_uuids_for_user = set(itertools.chain(*customers_by_role.values()))
+
+        # ALL_ACCESS_CONTEXT is not a value UUID on which to filter enterprise customer uuids.
+        all_customer_uuids_for_user.discard(ALL_ACCESS_CONTEXT)
+
+        active_enterprise_uuids_for_user = set(
+            str(customer_uuid) for customer_uuid in
+            EnterpriseCustomerUser.get_active_enterprise_users(
+                user.id,
+                enterprise_customer_uuids=all_customer_uuids_for_user,
+            ).values_list('enterprise_customer', flat=True)
+        )
+
+        for role_name in sorted(customers_by_role):
+            customer_uuids_for_role = customers_by_role[role_name]
+
+            # Determine the *active* enterprise uuids assigned for this role.
+            active_enterprises_for_role = sorted(
+                customer_uuids_for_role.intersection(active_enterprise_uuids_for_user)
+            )
+            # Determine the *inactive* enterprise uuids assigned for this role,
+            # could include the ALL_ACCESS_CONTEXT token.
+            inactive_enterprises_for_role = sorted(
+                customer_uuids_for_role.difference(active_enterprise_uuids_for_user)
+            )
+            ordered_enterprises = active_enterprises_for_role + inactive_enterprises_for_role
+
+            # Sometimes get_context() returns ``None``, and ``None`` is a meaningful downstream value
+            # to the consumers of get_assignments(), either
+            # when constructing JWT roles or when checking for explicit or implicit access to some context.
+            # So if the only unique thing returned by get_context() for this role was ``None``,
+            # we should unpack it from the list before yielding.
+            # See https://openedx.atlassian.net/browse/ENT-4346 for outstanding technical debt
+            # related to this issue.
+            if ordered_enterprises == [None]:
+                yield (role_name, None)
+            else:
+                yield (role_name, ordered_enterprises)
+
     class Meta:
         app_label = 'enterprise'
 

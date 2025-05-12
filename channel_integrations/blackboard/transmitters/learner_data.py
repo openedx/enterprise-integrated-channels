@@ -28,7 +28,7 @@ class BlackboardLearnerTransmitter(LearnerTransmitter):
         Args:
             payload: The learner completion exporter for Blackboard
         """
-        kwargs['app_label'] = 'blackboard'
+        kwargs['app_label'] = 'blackboard_channel'
         kwargs['model_name'] = 'BlackboardLearnerDataTransmissionAudit'
         kwargs['remote_user_id'] = 'blackboard_user_email'
         super().transmit(payload, **kwargs)
@@ -40,7 +40,7 @@ class BlackboardLearnerTransmitter(LearnerTransmitter):
         Args:
             exporter: The learner completion data payload to send to blackboard
         """
-        kwargs['app_label'] = 'blackboard'
+        kwargs['app_label'] = 'blackboard_channel'
         kwargs['model_name'] = 'BlackboardLearnerAssessmentDataTransmissionAudit'
         kwargs['remote_user_id'] = 'blackboard_user_email'
         super().single_learner_assessment_grade_transmit(exporter, **kwargs)
@@ -51,7 +51,7 @@ class BlackboardLearnerTransmitter(LearnerTransmitter):
         Args:
             exporter: The learner completion data payload to send to blackboard
         """
-        kwargs['app_label'] = 'blackboard'
+        kwargs['app_label'] = 'blackboard_channel'
         kwargs['model_name'] = 'BlackboardLearnerAssessmentDataTransmissionAudit'
         kwargs['remote_user_id'] = 'blackboard_user_email'
         super().assessment_level_transmit(exporter, **kwargs)

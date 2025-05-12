@@ -5,42 +5,26 @@ Factoryboy factories.
 from random import randint
 from uuid import UUID
 
+from datetime import timezone
+from django.contrib import auth
+from django.contrib.sites.models import Site
+
 import factory
 from faker import Factory as FakerFactory
 from oauth2_provider.models import get_application_model
 
-from django.contrib import auth
-from django.contrib.sites.models import Site
-from django.utils import timezone
-
-from consent.models import DataSharingConsent, DataSharingConsentTextOverrides
+from consent.models import DataSharingConsent
 from enterprise.constants import FulfillmentTypes
 from enterprise.models import (
-    AdminNotification,
-    DefaultEnterpriseEnrollmentIntention,
-    EnrollmentNotificationEmailTemplate,
     EnterpriseCatalogQuery,
     EnterpriseCourseEnrollment,
     EnterpriseCustomer,
-    EnterpriseCustomerBrandingConfiguration,
     EnterpriseCustomerCatalog,
     EnterpriseCustomerIdentityProvider,
-    EnterpriseCustomerInviteKey,
-    EnterpriseCustomerReportingConfiguration,
-    EnterpriseCustomerSsoConfiguration,
     EnterpriseCustomerUser,
-    EnterpriseFeatureRole,
-    EnterpriseFeatureUserRoleAssignment,
-    EnterpriseGroup,
-    EnterpriseGroupMembership,
     LearnerCreditEnterpriseCourseEnrollment,
-    LicensedEnterpriseCourseEnrollment,
-    PendingEnrollment,
-    PendingEnterpriseCustomerAdminUser,
-    PendingEnterpriseCustomerUser,
-    SystemWideEnterpriseUserRoleAssignment,
 )
-from enterprise.utils import SELF_ENROLL_EMAIL_TEMPLATE_TYPE, localized_utcnow
+from enterprise.utils import localized_utcnow
 from channel_integrations.blackboard.models import (
     BlackboardEnterpriseCustomerConfiguration,
     BlackboardGlobalConfiguration,
@@ -66,6 +50,7 @@ from channel_integrations.sap_success_factors.models import (
     SAPSuccessFactorsGlobalConfiguration,
     SapSuccessFactorsLearnerDataTransmissionAudit,
 )
+from channel_integrations.xapi.models import XAPILearnerDataTransmissionAudit, XAPILRSConfiguration
 
 FAKER = FakerFactory.create()
 User = auth.get_user_model()
@@ -126,105 +111,6 @@ class EnterpriseCustomerFactory(factory.django.DjangoModelFactory):
     learner_portal_sidebar_content = 'Test message'
 
 
-class EnrollmentNotificationEmailTemplateFactory(factory.django.DjangoModelFactory):
-    """
-    EnrollmentNotificationEmailTemplate factory.
-
-    Creates an instance of EnrollmentNotificationEmailTemplate with minimal boilerplate.
-    Defaults to using template_type=enterprise.utils.SELF_ENROLL_EMAIL_TEMPLATE_TYPE
-    and enterprise_customer None
-    """
-
-    class Meta:
-        """
-        Meta for EnrollmentNotificationEmailTemplateFactory.
-        """
-
-        model = EnrollmentNotificationEmailTemplate
-
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    plaintext_template = ("{% load i18n %}{% if user_name %}{% blocktrans %}Dear {{ user_name }} "
-                          + "{% endblocktrans %}{% endif %}{{ enrolled_in.url }}, "
-                          + "{{ enrolled_in.name }}, {{ organization_name }}")
-    html_template = ("{% load i18n %}<html>"
-                     + "<body>{% if user_name %}{% blocktrans %}Dear {{ user_name }} "
-                     + "{% endblocktrans %}{% endif %}"
-                     + "{{ enrolled_in.url }}, {{ enrolled_in.name }}, {{ organization_name }}"
-                     + "</body></html>")
-
-    subject_line = 'You\'ve been enrolled in {course_name}!'
-    template_type = SELF_ENROLL_EMAIL_TEMPLATE_TYPE
-
-
-class PendingEnterpriseCustomerUserFactory(factory.django.DjangoModelFactory):
-    """
-    PendingEnterpriseCustomerUser factory.
-
-    Creates an instance of PendingEnterpriseCustomerUser with minimal boilerplate - uses
-    this class' attributes as default parameters for PendingEnterpriseCustomerUser constructor.
-    """
-
-    class Meta:
-        """
-        Meta for PendingEnterpriseCustomerUserFactory.
-        """
-
-        model = PendingEnterpriseCustomerUser
-
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    user_email = factory.LazyAttribute(lambda x: FAKER.email())
-
-
-class PendingEnterpriseCustomerAdminUserFactory(factory.django.DjangoModelFactory):
-    """
-    PendingEnterpriseCustomerAdminUser factory.
-
-    Creates an instance of PendingEnterpriseCustomerAdminUser with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for PendingEnterpriseCustomerAdminUserFactory.
-        """
-
-        model = PendingEnterpriseCustomerAdminUser
-
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    user_email = factory.LazyAttribute(lambda x: FAKER.email())
-
-
-class SystemWideEnterpriseUserRoleAssignmentFactory(factory.django.DjangoModelFactory):
-    """
-    SystemWideEnterpriseUserRoleAssignment factory.
-
-    Creates an instance of SystemWideEnterpriseUserRoleAssignment.
-    """
-
-    class Meta:
-        """
-        Meta for SystemWideEnterpriseUserRoleAssignmentFactory.
-        """
-
-        model = SystemWideEnterpriseUserRoleAssignment
-
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    applies_to_all_contexts = False
-
-
-class GroupFactory(factory.django.DjangoModelFactory):
-    """
-    Group factory.
-
-    Creates an instance of Group with minimal boilerplate.
-    """
-
-    class Meta:
-        model = auth.models.Group
-        django_get_or_create = ('name', )
-
-    name = factory.Sequence('group{}'.format)
-
-
 class UserFactory(factory.django.DjangoModelFactory):
     """
     User factory.
@@ -273,55 +159,6 @@ class EnterpriseCustomerUserFactory(factory.django.DjangoModelFactory):
     invite_key = None
 
 
-class EnterpriseFeatureRoleFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseFeatureRole factory.
-    Creates an instance of EnterpriseFeatureRole with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseFeatureRoleFactory.
-        """
-
-        model = EnterpriseFeatureRole
-
-    name = factory.LazyAttribute(lambda x: FAKER.word())
-
-
-class EnterpriseFeatureUserRoleAssignmentFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseFeatureUserRoleAssignment factory.
-    Creates an instance of EnterpriseFeatureUserRoleAssignment with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseFeatureUserRoleAssignmentFactory.
-        """
-
-        model = EnterpriseFeatureUserRoleAssignment
-
-    role = factory.SubFactory(EnterpriseFeatureRoleFactory)
-    user = factory.SubFactory(UserFactory)
-
-
-class AnonymousUserFactory(factory.Factory):
-    """
-    Anonymous User factory.
-
-    Creates an instance of AnonymousUser with minimal boilerplate - uses this class' attributes as default
-    parameters for AnonymousUser constructor.
-    """
-
-    class Meta:
-        """
-        Meta for AnonymousUserFactory.
-        """
-
-        model = auth.models.AnonymousUser
-
-
 class EnterpriseCustomerIdentityProviderFactory(factory.django.DjangoModelFactory):
     """
     Factory class for EnterpriseCustomerIdentityProvider model.
@@ -338,48 +175,6 @@ class EnterpriseCustomerIdentityProviderFactory(factory.django.DjangoModelFactor
     enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
     provider_id = factory.LazyAttribute(lambda x: FAKER.slug())
     default_provider = False
-
-
-class PendingEnrollmentFactory(factory.django.DjangoModelFactory):
-    """
-    PendingEnrollment factory.
-
-    Create an instance of PendingEnrollment with minimal boilerplate
-    """
-
-    class Meta:
-        """
-        Meta for ``PendingEnrollmentFactory``.
-        """
-
-        model = PendingEnrollment
-
-    course_id = factory.LazyAttribute(lambda x: FAKER.slug())
-    course_mode = 'audit'
-    user = factory.SubFactory(PendingEnterpriseCustomerUserFactory)
-    cohort_name = None
-
-
-class EnterpriseCustomerBrandingConfigurationFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseCustomerBrandingConfiguration factory.
-
-    Creates an instance of EnterpriseCustomerBrandingConfiguration with minimal boilerplate - uses this class'
-     attributes as default parameters for EnterpriseCustomerBrandingFactory constructor.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseCustomerBrandingConfigurationFactory.
-        """
-
-        model = EnterpriseCustomerBrandingConfiguration
-
-    logo = factory.LazyAttribute(lambda x: FAKER.image_url())
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    primary_color = '#000000'
-    secondary_color = '#ffffff'
-    tertiary_color = '#888888'
 
 
 class EnterpriseCourseEnrollmentFactory(factory.django.DjangoModelFactory):
@@ -399,24 +194,6 @@ class EnterpriseCourseEnrollmentFactory(factory.django.DjangoModelFactory):
     course_id = factory.LazyAttribute(lambda x: FAKER.slug())
     saved_for_later = False
     enterprise_customer_user = factory.SubFactory(EnterpriseCustomerUserFactory)
-
-
-class LicensedEnterpriseCourseEnrollmentFactory(factory.django.DjangoModelFactory):
-    """
-    LicensedEnterpriseCourseEnrollment factory.
-    """
-
-    class Meta:
-        """
-        Meta for LicensedEnterpriseCourseEnrollment.
-        """
-
-        model = LicensedEnterpriseCourseEnrollment
-
-    license_uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    enterprise_course_enrollment = factory.SubFactory(EnterpriseCourseEnrollmentFactory)
-    is_revoked = False
-    fulfillment_type = FulfillmentTypes.LICENSE
 
 
 class LearnerCreditEnterpriseCourseEnrollmentFactory(factory.django.DjangoModelFactory):
@@ -495,24 +272,6 @@ class DataSharingConsentFactory(factory.django.DjangoModelFactory):
     granted = True
 
 
-class DataSharingConsentTextOverridesFactory(factory.django.DjangoModelFactory):
-    """
-    ``DataSharingConsentTextOverrides`` factory.
-
-    Creates an instance of ``DataSharingConsentTextOverrides`` with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for ``DataSharingConsentTextOverridesFactory``.
-        """
-
-        model = DataSharingConsentTextOverrides
-
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    published = True
-
-
 class LearnerDataTransmissionAuditFactory(factory.django.DjangoModelFactory):
     """
     ``LearnerDataTransmissionAudit`` factory.
@@ -547,28 +306,6 @@ class GenericLearnerDataTransmissionAuditFactory(LearnerDataTransmissionAuditFac
         """
 
         model = GenericLearnerDataTransmissionAudit
-
-
-class EnterpriseCustomerReportingConfigFactory(factory.django.DjangoModelFactory):
-    """
-    ``EnterpriseCustomerReportingConfiguration`` factory.
-
-    Creates an instance of EnterpriseCustomerReportingConfiguration with minimal boilerplate
-    uses this class' attributes as default parameters for EnterpriseCustomerReportingConfiguration constructor.
-    """
-
-    class Meta:
-        """
-        Meta for ``EnterpriseCustomerReportingConfigFactory``.
-        """
-
-        model = EnterpriseCustomerReportingConfiguration
-
-    active = True
-    email = factory.LazyAttribute(lambda x: FAKER.email())
-    day_of_month = 1
-    hour_of_day = 1
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
 
 
 class GenericEnterpriseCustomerPluginConfigurationFactory(factory.django.DjangoModelFactory):
@@ -746,45 +483,44 @@ class CornerstoneGlobalConfigurationFactory(factory.django.DjangoModelFactory):
     languages = {"Languages": ["es-ES", "en-US", "ja-JP", "zh-CN"]}
 
 
-# TODO: Uncomment when XAPI channel is added
-# class XAPILRSConfigurationFactory(factory.django.DjangoModelFactory):
-#     """
-#     ``XAPILRSConfiguration`` factory.
+class XAPILRSConfigurationFactory(factory.django.DjangoModelFactory):
+    """
+    ``XAPILRSConfiguration`` factory.
 
-#     Creates an instance of ``XAPILRSConfiguration`` with minimal boilerplate.
-#     """
+    Creates an instance of ``XAPILRSConfiguration`` with minimal boilerplate.
+    """
 
-#     class Meta:
-#         """
-#         Meta for ``XAPILRSConfiguration``.
-#         """
+    class Meta:
+        """
+        Meta for ``XAPILRSConfiguration``.
+        """
 
-#         model = XAPILRSConfiguration
+        model = XAPILRSConfiguration
 
-#     enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-#     version = '1.0.1'
-#     endpoint = factory.LazyAttribute(lambda x: FAKER.url())
-#     key = factory.LazyAttribute(lambda x: FAKER.slug())
-#     secret = factory.LazyAttribute(lambda x: FAKER.uuid4())
-#     active = True
+    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
+    version = '1.0.1'
+    endpoint = factory.LazyAttribute(lambda x: FAKER.url())
+    key = factory.LazyAttribute(lambda x: FAKER.slug())
+    secret = factory.LazyAttribute(lambda x: FAKER.uuid4())
+    active = True
 
 
-# class XAPILearnerDataTransmissionAuditFactory(factory.django.DjangoModelFactory):
-#     """
-#     ``XAPILearnerDataTransmissionAudit`` factory.
+class XAPILearnerDataTransmissionAuditFactory(factory.django.DjangoModelFactory):
+    """
+    ``XAPILearnerDataTransmissionAudit`` factory.
 
-#     Creates an instance of ``XAPILearnerDataTransmissionAudit`` with minimal boilerplate.
-#     """
+    Creates an instance of ``XAPILearnerDataTransmissionAudit`` with minimal boilerplate.
+    """
 
-#     class Meta:
-#         """
-#         Meta for ``XAPILearnerDataTransmissionAuditFactory``.
-#         """
+    class Meta:
+        """
+        Meta for ``XAPILearnerDataTransmissionAuditFactory``.
+        """
 
-#         model = XAPILearnerDataTransmissionAudit
+        model = XAPILearnerDataTransmissionAudit
 
-#     user_id = factory.LazyAttribute(lambda x: FAKER.pyint())
-#     course_id = factory.LazyAttribute(lambda x: FAKER.slug())
+    user_id = factory.LazyAttribute(lambda x: FAKER.pyint())
+    course_id = factory.LazyAttribute(lambda x: FAKER.slug())
 
 
 class BlackboardGlobalConfigurationFactory(factory.django.DjangoModelFactory):
@@ -868,26 +604,6 @@ class MoodleEnterpriseCustomerConfigurationFactory(factory.django.DjangoModelFac
     decrypted_token = factory.LazyAttribute(lambda x: FAKER.slug())
 
 
-class AdminNotificationFactory(factory.django.DjangoModelFactory):
-    """
-    ``AdminNotification`` factory.
-
-    Creates an instance of ``AdminNotification`` with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for ``AdminNotification``.
-        """
-
-        model = AdminNotification
-
-    is_active = True
-    text = factory.LazyAttribute(lambda x: FAKER.word())
-    start_date = factory.Faker('date_object')
-    expiration_date = factory.Faker('date_object')
-
-
 class ContentMetadataItemTransmissionFactory(factory.django.DjangoModelFactory):
     """
     ``ContentMetadataItemTransmission`` factory.
@@ -942,151 +658,3 @@ class OrphanedContentTransmissionsFactory(factory.django.DjangoModelFactory):
     plugin_configuration_id = factory.LazyAttribute(lambda x: FAKER.random_int(min=1))
     resolved = False
     transmission = factory.Iterator(ContentMetadataItemTransmission.objects.all())
-
-
-class EnterpriseCustomerInviteKeyFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseCustomerInviteKey factory.
-
-    Creates an instance of EnterpriseCustomerInviteKey with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseCustomerInviteKeyFactory.
-        """
-
-        model = EnterpriseCustomerInviteKey
-
-    uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    usage_limit = 10
-    expiration_date = localized_utcnow()
-    is_active = True
-
-
-class EnterpriseCustomerReportingConfigurationFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseCustomerReportingConfiguration factory.
-
-    Creates an instance of EnterpriseCustomerReportingConfiguration with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseCustomerReportingConfiguration.
-        """
-
-        model = EnterpriseCustomerReportingConfiguration
-
-    uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    active = True
-    delivery_method = 'email'
-    data_type = 'progress_v3'
-    report_type = 'json'
-    frequency = 'daily'
-    hour_of_day = 1
-
-
-class EnterpriseCustomerApiCredentialsFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseCustomerApiCredentials factory.
-    Creates an instance of EnterpriseCustomerApiCredentials with minimal boilerplate.
-    """
-    class Meta:
-        """
-        Meta for Application
-        """
-
-        model = Application
-
-    user = factory.SubFactory(UserFactory)
-    authorization_grant_type = 'client-credentials'
-    client_type = 'confidential'
-    redirect_uris = factory.LazyAttribute(lambda x: FAKER.url())
-    name = factory.LazyAttribute(lambda x: FAKER.company())
-    client_id = factory.LazyAttribute(lambda x: FAKER.word())
-    client_secret = factory.LazyAttribute(lambda x: FAKER.word())
-
-
-class EnterpriseCustomerSsoConfigurationFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseCustomerSsoConfiguration factory.
-
-    Creates an instance of EnterpriseCustomerSsoConfiguration with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseCustomerSsoConfiguration.
-        """
-
-        model = EnterpriseCustomerSsoConfiguration
-
-    uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    active = True
-    identity_provider = factory.LazyAttribute(lambda x: FAKER.name())
-    metadata_url = factory.LazyAttribute(lambda x: FAKER.url())
-    entity_id = factory.LazyAttribute(lambda x: FAKER.url())
-    update_from_metadata = True
-
-
-class EnterpriseGroupFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseGroup factory.
-
-    Creates an instance of EnterpriseGroup with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseGroupFactory.
-        """
-
-        model = EnterpriseGroup
-
-    uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    name = factory.LazyAttribute(lambda x: FAKER.company())
-
-
-class EnterpriseGroupMembershipFactory(factory.django.DjangoModelFactory):
-    """
-    EnterpriseGroupMembership factory.
-
-    Creates an instance of EnterpriseGroupMembership with minimal boilerplate.
-    """
-
-    class Meta:
-        """
-        Meta for EnterpriseGroupMembershipFactory.
-        """
-
-        model = EnterpriseGroupMembership
-
-    uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    group = factory.SubFactory(EnterpriseGroupFactory)
-    enterprise_customer_user = factory.SubFactory(EnterpriseCustomerUserFactory)
-    pending_enterprise_customer_user = factory.SubFactory(PendingEnterpriseCustomerUserFactory)
-
-
-class DefaultEnterpriseEnrollmentIntentionFactory(factory.django.DjangoModelFactory):
-    """
-    DefaultEnterpriseEnrollmentIntention factory.
-
-    Creates an instance of the DefaultEnterpriseEnrollmentIntention
-    """
-
-    class Meta:
-        """
-        Meta for DefaultEnterpriseEnrollmentIntention.
-        """
-
-        model = DefaultEnterpriseEnrollmentIntention
-
-    uuid = factory.LazyAttribute(lambda x: UUID(FAKER.uuid4()))
-    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
-    content_type = DefaultEnterpriseEnrollmentIntention.COURSE
-    content_key = "edX+DemoX"

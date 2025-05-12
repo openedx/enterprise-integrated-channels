@@ -53,7 +53,7 @@ class Degreed2APIClient(IntegratedChannelApiClient):
         super().__init__(enterprise_configuration)
         self.session = None
         self.expires_at = None
-        app_config = apps.get_app_config('degreed2')
+        app_config = apps.get_app_config('degreed2_channel')
         self.oauth_api_path = app_config.oauth_api_path
         self.courses_api_path = app_config.courses_api_path
         self.completions_api_path = app_config.completions_api_path
