@@ -43,7 +43,7 @@ class TestIntegratedChannelsUtils(unittest.TestCase):
         ('2018-01-01T00:00:00', '2020-01-01T00:00:00', False),
     )
     @ddt.unpack
-    @mock.patch('channel_integrations.utils.timezone')
+    @mock.patch('channel_integrations.utils.datetime')
     def test_current_time_in_interval(self, start, end, expected, fake_timezone):
         fake_timezone.now.return_value = parse_lms_api_datetime('2016-01-01T00:00:00Z')
         assert utils.current_time_is_in_interval(start, end) is expected

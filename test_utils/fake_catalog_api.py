@@ -3,7 +3,7 @@ Fake responses for course catalog api.
 """
 
 import copy
-import datetime
+from datetime import datetime, timedelta
 from collections import OrderedDict
 from functools import reduce
 from unittest import mock
@@ -1611,7 +1611,7 @@ def get_fake_catalog_diff_w_one_each():
     """
     items_to_create = [{'content_key': FAKE_COURSE_RUN['key']}]
     items_to_delete = [{'content_key': FAKE_SEARCH_ALL_PROGRAM_RESULT_1['uuid']}]
-    matched_items = [{'content_key': FAKE_COURSE['key'], 'date_updated': datetime.datetime.now()}]
+    matched_items = [{'content_key': FAKE_COURSE['key'], 'date_updated': datetime.now()}]
     return items_to_create, items_to_delete, matched_items
 
 
@@ -1626,7 +1626,7 @@ def get_fake_catalog_diff_w_one_each_2():
         [{'content_key': FAKE_SEARCH_ALL_PROGRAM_RESULT_1['uuid']}],
         [{
             'content_key': FAKE_COURSE_TO_CREATE['key'],
-            'date_updated': datetime.datetime.now() - datetime.timedelta(seconds=3)
+            'date_updated': datetime.now() - timedelta(seconds=3)
         }]
     )
 

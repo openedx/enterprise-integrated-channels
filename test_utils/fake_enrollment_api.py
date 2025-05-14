@@ -2,7 +2,7 @@
 Fake implementation of the Enrollment API.
 """
 
-import datetime
+from datetime import datetime
 import json
 import re
 
@@ -175,7 +175,7 @@ def enroll_user_in_course(user, course_id, mode, cohort=None, enterprise_uuid=No
         "mode": mode,
         "cohort": cohort,
         "enterprise_uuid": enterprise_uuid,
-        "created": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        "created": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     }
 
 
@@ -195,7 +195,7 @@ def get_course_enrollment(username, course_id):
         "course_details": course_details,
         "is_active": True,
         "mode": 'verified',
-        "created": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        "created": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     }
 
 

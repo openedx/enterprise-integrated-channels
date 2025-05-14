@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from logging import getLogger
 import pytz
 from uuid import UUID
@@ -48,7 +48,7 @@ def get_content_metadata_item_id(content_metadata_item):
 
 
 def localized_utcnow():
-    return pytz.UTC.localize(datetime.datetime.utcnow())  # pylint: disable=no-value-for-parameter
+    return pytz.UTC.localize(datetime.utcnow())  # pylint: disable=no-value-for-parameter
 
 
 def truncate_string(string, max_length=MAX_ALLOWED_TEXT_LENGTH):
@@ -76,7 +76,7 @@ def parse_datetime_handle_invalid(datetime_value):
     if not datetime_value:
         return None
     try:
-        if not isinstance(datetime_value, datetime.datetime):
+        if not isinstance(datetime_value, datetime):
             datetime_value = parse_datetime(datetime_value)
         if not datetime_value:
             return None
@@ -102,19 +102,19 @@ def get_configuration_value_for_site(site, key, default=None):
 
 
 def parse_lms_api_datetime(datetime_string, datetime_format=LMS_API_DATETIME_FORMAT):
-    if isinstance(datetime_string, datetime.datetime):
+    if isinstance(datetime_string, datetime):
         date_time = datetime_string
     else:
         try:
-            date_time = datetime.datetime.strptime(datetime_string, datetime_format)
+            date_time = datetime.strptime(datetime_string, datetime_format)
         except ValueError:
-            date_time = datetime.datetime.strptime(datetime_string, LMS_API_DATETIME_FORMAT_WITHOUT_TIMEZONE)
+            date_time = datetime.strptime(datetime_string, LMS_API_DATETIME_FORMAT_WITHOUT_TIMEZONE)
 
     # If the datetime format didn't include a timezone, then set to UTC.
     # Note that if we're using the default LMS_API_DATETIME_FORMAT, it ends in 'Z',
     # which denotes UTC for ISO-8661.
     if date_time.tzinfo is None:
-        date_time = date_time.replace(tzinfo=datetime.timezone.utc)
+        date_time = date_time.replace(tzinfo=timezone.utc)
     return date_time
 
 
@@ -541,8 +541,8 @@ def is_course_run_enrollable(course_run):
     if not is_course_run_published(course_run):
         return False
 
-    now = datetime.datetime.now(pytz.UTC)
-    reasonable_enrollment_window = now + datetime.timedelta(days=1)
+    now = datetime.now(pytz.UTC)
+    reasonable_enrollment_window = now + timedelta(days=1)
     end = parse_datetime_handle_invalid(course_run.get('end'))
     enrollment_start = parse_datetime_handle_invalid(course_run.get('enrollment_start'))
     enrollment_end = parse_datetime_handle_invalid(course_run.get('enrollment_end'))

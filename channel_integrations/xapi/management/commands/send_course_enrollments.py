@@ -2,7 +2,7 @@
 Send xAPI statements to the LRS configured via admin.
 """
 
-import datetime
+from datetime import datetime, timedelta
 from logging import getLogger
 
 from django.core.management.base import BaseCommand, CommandError
@@ -256,7 +256,7 @@ class Command(BaseCommand):
         )
 
         course_enrollments = CourseEnrollment.objects.filter(
-            created__gt=datetime.datetime.now() - datetime.timedelta(days=days)
+            created__gt=datetime.now() - timedelta(days=days)
         ).filter(user_id__in=enterprise_customer.enterprise_customer_users.values_list('user_id', flat=True))
 
         pertinent_enrollments = self.get_pertinent_course_enrollments(course_enrollments, xapi_transmissions)

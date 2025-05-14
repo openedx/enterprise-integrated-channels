@@ -5,12 +5,13 @@ Database models for Enterprise Integrated Channel.
 import json
 import logging
 
+from datetime import timezone, datetime, timedelta
+
 from django.contrib import auth
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from enterprise.constants import TRANSMISSION_MARK_CREATE, TRANSMISSION_MARK_DELETE, TRANSMISSION_MARK_UPDATE
 from enterprise.models import EnterpriseCustomer, EnterpriseCustomerCatalog
@@ -26,7 +27,7 @@ from channel_integrations.utils import channel_code_to_app_label, convert_comma_
 
 LOGGER = logging.getLogger(__name__)
 User = auth.get_user_model()
-LAST_24_HRS = timezone.now() - timezone.timedelta(hours=24)
+LAST_24_HRS = datetime.now(timezone.utc) - timedelta(hours=24)
 
 
 def set_default_display_name(*args, **kw):

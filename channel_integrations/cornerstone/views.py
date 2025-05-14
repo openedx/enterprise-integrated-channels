@@ -2,10 +2,10 @@
 Views containing APIs for cornerstone integrated channel
 """
 
-import datetime
 import json
 import time
 from logging import getLogger
+from datetime import datetime
 
 from dateutil import parser
 from django.apps import apps
@@ -172,7 +172,7 @@ class CornerstoneCoursesListView(BaseViewSet):
                                 f'integrated_channel_course_key={item["ID"]}, '
                                 f'LastModifiedUTC={item["LastModifiedUTC"]} '
                                 f'fixing modified/header mismatch')
-                    if_modified_since_dt = datetime.datetime.fromtimestamp(if_modified_since)
+                    if_modified_since_dt = datetime.fromtimestamp(if_modified_since)
                     item['LastModifiedUTC'] = if_modified_since_dt.strftime(ISO_8601_DATE_FORMAT)
         duration_seconds = time.time() - start_time
         headers_dict = dict(request.headers)

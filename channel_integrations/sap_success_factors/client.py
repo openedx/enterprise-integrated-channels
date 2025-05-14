@@ -2,7 +2,7 @@
 Client for connecting to SAP SuccessFactors.
 """
 
-import datetime
+from datetime import datetime
 import json
 import logging
 import time
@@ -113,7 +113,7 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
 
         try:
             data = response.json()
-            return data['access_token'], datetime.datetime.utcfromtimestamp(data['expires_in'] + int(time.time()))
+            return data['access_token'], datetime.utcfromtimestamp(data['expires_in'] + int(time.time()))
         except (KeyError, TypeError, ValueError) as error:
             LOGGER.error(
                 generate_formatted_log(
@@ -132,7 +132,7 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
         """
         Instantiate a new session object for use in connecting with SAP SuccessFactors
         """
-        now = datetime.datetime.utcnow()
+        now = datetime.utcnow()
         if self.session is None or self.expires_at is None or now >= self.expires_at:
             # Create a new session with a valid token
             if self.session:
