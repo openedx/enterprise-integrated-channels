@@ -7,18 +7,18 @@ import itertools
 import json
 import math
 import re
-from datetime import datetime, timedelta
+
 from itertools import islice
 from logging import getLogger
 from string import Formatter
 from urllib.parse import urlparse
+from datetime import timezone, datetime, timedelta
 
 import pytz
 import requests
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.html import strip_tags
 from enterprise.utils import parse_datetime_handle_invalid, parse_lms_api_datetime
 
@@ -94,7 +94,7 @@ def current_time_is_in_interval(start, end):
     """
     interval_start = parse_lms_api_datetime(start or UNIX_MIN_DATE_STRING)
     interval_end = parse_lms_api_datetime(end or UNIX_MAX_DATE_STRING)
-    return interval_start <= timezone.now() <= interval_end
+    return interval_start <= datetime.now(timezone.utc) <= interval_end
 
 
 def chunks(dictionary, chunk_size):
@@ -110,7 +110,7 @@ def strfdelta(tdelta, fmt='{D:02}d {H:02}h {M:02}m {S:02}s', input_type='timedel
     """
     Convert a datetime.timedelta object or a regular number to a custom-formatted string.
 
-    This function works like the strftime() method works for datetime.datetime
+    This function works like the strftime() method works for datetime
     objects.
 
     The fmt argument allows custom formatting to be specified.  Fields can

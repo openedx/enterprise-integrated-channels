@@ -1,7 +1,7 @@
 """
 Tests for the integrated channel models.
 """
-import datetime
+from datetime import datetime, timedelta
 import unittest
 from unittest import mock
 
@@ -79,11 +79,11 @@ class TestContentMetadataItemTransmission(unittest.TestCase, EnterpriseMockMixin
             integrated_channel_code=self.config.channel_code(),
             content_id=FAKE_COURSE_RUN['key'],
             channel_metadata={},
-            content_last_changed=datetime.datetime.now() - datetime.timedelta(hours=1),
+            content_last_changed=datetime.now() - timedelta(hours=1),
             enterprise_customer_catalog_uuid=self.config.enterprise_customer.enterprise_customer_catalogs.first().uuid,
-            remote_created_at=datetime.datetime.utcnow(),
+            remote_created_at=datetime.utcnow(),
             remote_updated_at=None,
-            remote_deleted_at=datetime.datetime.utcnow(),
+            remote_deleted_at=datetime.utcnow(),
             api_response_status_code=500,
             api_record=api_record,
         )
@@ -108,10 +108,10 @@ class TestContentMetadataItemTransmission(unittest.TestCase, EnterpriseMockMixin
             integrated_channel_code=self.config.channel_code(),
             content_id=FAKE_COURSE_RUN['key'],
             channel_metadata={},
-            content_last_changed=datetime.datetime.now() - datetime.timedelta(hours=1),
+            content_last_changed=datetime.now() - timedelta(hours=1),
             enterprise_customer_catalog_uuid=self.config.enterprise_customer.enterprise_customer_catalogs.first().uuid,
-            remote_created_at=datetime.datetime.utcnow(),
-            remote_updated_at=datetime.datetime.utcnow(),
+            remote_created_at=datetime.utcnow(),
+            remote_updated_at=datetime.utcnow(),
             remote_deleted_at=None,
             api_response_status_code=500,
             api_record=api_record,
@@ -135,7 +135,7 @@ class TestContentMetadataItemTransmission(unittest.TestCase, EnterpriseMockMixin
             integrated_channel_code=self.config.channel_code(),
             content_id=FAKE_COURSE_RUN['key'],
             channel_metadata={},
-            content_last_changed=datetime.datetime.now() - datetime.timedelta(hours=1),
+            content_last_changed=datetime.now() - timedelta(hours=1),
             enterprise_customer_catalog_uuid=self.config.enterprise_customer.enterprise_customer_catalogs.first().uuid,
             remote_created_at=None,
             remote_updated_at=None,
@@ -162,9 +162,9 @@ class TestContentMetadataItemTransmission(unittest.TestCase, EnterpriseMockMixin
             integrated_channel_code=self.config.channel_code(),
             content_id=FAKE_COURSE_RUN['key'],
             channel_metadata={},
-            content_last_changed=datetime.datetime.now() - datetime.timedelta(hours=1),
+            content_last_changed=datetime.now() - timedelta(hours=1),
             enterprise_customer_catalog_uuid=self.config.enterprise_customer.enterprise_customer_catalogs.first().uuid,
-            remote_created_at=datetime.datetime.utcnow(),
+            remote_created_at=datetime.utcnow(),
             remote_updated_at=None,
             remote_deleted_at=None,
             api_response_status_code=500,
@@ -197,7 +197,7 @@ class TestEnterpriseCustomerPluginConfiguration(unittest.TestCase, EnterpriseMoc
         """
         Test synced_at timestamps for content data.
         """
-        first_timestamp = datetime.datetime.fromtimestamp(1400000000).replace(tzinfo=pytz.utc)
+        first_timestamp = datetime.fromtimestamp(1400000000).replace(tzinfo=pytz.utc)
         self.config.update_content_synced_at(first_timestamp, True)
         assert self.config.last_sync_attempted_at == first_timestamp
         assert self.config.last_content_sync_attempted_at == first_timestamp
@@ -206,7 +206,7 @@ class TestEnterpriseCustomerPluginConfiguration(unittest.TestCase, EnterpriseMoc
         assert self.config.last_content_sync_errored_at is None
         assert self.config.last_learner_sync_errored_at is None
 
-        second_timestamp = datetime.datetime.fromtimestamp(1500000000).replace(tzinfo=pytz.utc)
+        second_timestamp = datetime.fromtimestamp(1500000000).replace(tzinfo=pytz.utc)
         self.config.update_content_synced_at(second_timestamp, False)
         assert self.config.last_sync_attempted_at == second_timestamp
         assert self.config.last_content_sync_attempted_at == second_timestamp
@@ -224,7 +224,7 @@ class TestEnterpriseCustomerPluginConfiguration(unittest.TestCase, EnterpriseMoc
         """
         Test synced_at timestamps for learner data.
         """
-        first_timestamp = datetime.datetime.fromtimestamp(1400000000).replace(tzinfo=pytz.utc)
+        first_timestamp = datetime.fromtimestamp(1400000000).replace(tzinfo=pytz.utc)
         self.config.update_learner_synced_at(first_timestamp, True)
         assert self.config.last_sync_attempted_at == first_timestamp
         assert self.config.last_content_sync_attempted_at is None
@@ -233,7 +233,7 @@ class TestEnterpriseCustomerPluginConfiguration(unittest.TestCase, EnterpriseMoc
         assert self.config.last_content_sync_errored_at is None
         assert self.config.last_learner_sync_errored_at is None
 
-        second_timestamp = datetime.datetime.fromtimestamp(1500000000).replace(tzinfo=pytz.utc)
+        second_timestamp = datetime.fromtimestamp(1500000000).replace(tzinfo=pytz.utc)
         self.config.update_learner_synced_at(second_timestamp, False)
         assert self.config.last_sync_attempted_at == second_timestamp
         assert self.config.last_content_sync_attempted_at is None
@@ -251,7 +251,7 @@ class TestEnterpriseCustomerPluginConfiguration(unittest.TestCase, EnterpriseMoc
         """
         Test ENT-6661 comparison bug of offset-naive and offset-aware datetimes
         """
-        self.config.last_sync_attempted_at = datetime.datetime.fromtimestamp(1500000000).replace(tzinfo=pytz.utc)
+        self.config.last_sync_attempted_at = datetime.fromtimestamp(1500000000).replace(tzinfo=pytz.utc)
         first_timestamp = localized_utcnow()
         self.config.update_content_synced_at(first_timestamp, True)
         assert self.config.last_sync_attempted_at == first_timestamp

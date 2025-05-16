@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import django.utils.timezone
+from datetime import timezone, datetime, timedelta
 import jsonfield.fields
 import model_utils.fields
 
