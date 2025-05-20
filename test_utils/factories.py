@@ -4,8 +4,8 @@ Factoryboy factories.
 
 from random import randint
 from uuid import UUID
-
 from datetime import timezone
+
 from django.contrib import auth
 from django.contrib.sites.models import Site
 

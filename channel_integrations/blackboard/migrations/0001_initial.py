@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import django.utils.timezone
+from datetime import timezone, datetime, timedelta
 import fernet_fields.fields
 import model_utils.fields
 import uuid

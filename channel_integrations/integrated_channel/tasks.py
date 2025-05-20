@@ -4,13 +4,13 @@ Celery tasks for integrated channel management commands.
 
 import time
 from functools import wraps
+from datetime import timezone, datetime
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.contrib import auth
 from django.core.cache import cache
-from django.utils import timezone
 from edx_django_utils.monitoring import set_code_owner_attribute
 from enterprise.utils import get_enterprise_uuids_for_user_and_course
 
@@ -361,7 +361,7 @@ def transmit_single_learner_data(username, course_run_id):
             integrated_channel.transmit_single_learner_data(
                 learner_to_transmit=user,
                 course_run_id=course_run_id,
-                completed_date=timezone.now(),
+                completed_date=datetime.now(timezone.utc),
                 grade='Pass',
                 is_passing=True
             )

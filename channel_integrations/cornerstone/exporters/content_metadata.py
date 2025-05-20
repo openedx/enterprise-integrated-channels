@@ -2,7 +2,7 @@
 Content metadata exporter for Cornerstone.
 """
 
-import datetime
+from datetime import datetime
 from logging import getLogger
 
 import pytz
@@ -127,7 +127,7 @@ class CornerstoneContentMetadataExporter(ContentMetadataExporter):
         """
         Return the modified datetime of closest course run`.
         """
-        modified_datetime = datetime.datetime.now(pytz.UTC).strftime(ISO_8601_DATE_FORMAT)
+        modified_datetime = datetime.now(pytz.UTC).strftime(ISO_8601_DATE_FORMAT)
         course_runs = content_metadata_item.get('course_runs')
         if course_runs:
             closest_course_run = get_closest_course_run(course_runs)
