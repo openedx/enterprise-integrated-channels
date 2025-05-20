@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 class Command(IntegratedChannelCommandMixin, BaseCommand):
     """
     Remove content transmission audit records that do not contain a catalog UUID.
-    ./manage.py lms remove_null_catalog_transmission_audits
+    ./manage.py lms ic_remove_null_catalog_transmission_audits
     """
 
     def handle(self, *args, **options):

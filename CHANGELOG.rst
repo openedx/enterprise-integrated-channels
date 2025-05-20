@@ -16,8 +16,17 @@ Unreleased
 
 *
 
+0.1.1 – 2025-05-20
+******************
+
+Added
+=====
+
+* Renamed jobs to avoid conflicts with existing jobs in edx-enterprise.
+
+
 0.1.0 – 2025-01-16
-**********************************************
+******************
 
 Added
 =====
