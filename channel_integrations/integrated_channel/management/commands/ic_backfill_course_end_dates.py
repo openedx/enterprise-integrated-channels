@@ -16,7 +16,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
     """
     Update content transmission items to have their respective catalog's uuid.
 
-    ./manage.py lms backfill_course_end_dates
+    ./manage.py lms ic_backfill_course_end_dates
     """
     def handle(self, *args, **options):
         """

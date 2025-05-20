@@ -21,7 +21,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
     """
     Add skill metadata to existing Degreed courses.
 
-    ./manage.py lms assign_skills_to_degreed_courses
+    ./manage.py lms ic_assign_skills_to_degreed_courses
     """
 
     def add_arguments(self, parser):

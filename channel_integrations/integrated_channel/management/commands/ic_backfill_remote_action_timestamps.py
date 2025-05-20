@@ -20,7 +20,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
     """
     Update content transmission items to have the new remote_created_at and remote_updated_at values.
 
-    ./manage.py lms backfill_remote_action_timestamps
+    ./manage.py lms ic_backfill_remote_action_timestamps
     """
 
     def handle(self, *args, **options):

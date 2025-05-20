@@ -27,10 +27,6 @@ from channel_integrations.degreed2.models import (
     Degreed2EnterpriseCustomerConfiguration,
     Degreed2LearnerDataTransmissionAudit,
 )
-from channel_integrations.degreed.models import (
-    DegreedEnterpriseCustomerConfiguration,
-    DegreedLearnerDataTransmissionAudit,
-)
 from channel_integrations.integrated_channel.management.commands import IntegratedChannelCommandMixin
 from channel_integrations.integrated_channel.models import (
     ContentMetadataItemTransmission,
@@ -51,7 +47,6 @@ MODELS = {
     'BLACKBOARD_ASMT': [BlackboardEnterpriseCustomerConfiguration, BlackboardLearnerAssessmentDataTransmissionAudit],
     'CANVAS': [CanvasEnterpriseCustomerConfiguration, CanvasLearnerDataTransmissionAudit],
     'CANVAS_ASMT': [CanvasEnterpriseCustomerConfiguration, CanvasLearnerAssessmentDataTransmissionAudit],
-    'DEGREED': [DegreedEnterpriseCustomerConfiguration, DegreedLearnerDataTransmissionAudit],
     'DEGREED2': [Degreed2EnterpriseCustomerConfiguration, Degreed2LearnerDataTransmissionAudit],
     'GENERIC': [GenericEnterpriseCustomerPluginConfiguration, GenericLearnerDataTransmissionAudit],
     'SAP': [SAPSuccessFactorsEnterpriseCustomerConfiguration, SapSuccessFactorsLearnerDataTransmissionAudit],

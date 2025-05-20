@@ -13,7 +13,7 @@ class Command(BaseCommand):
     Management command which resets SAPSF learner course completion data between two dates.
     That would allow us to resend course completion data.
 
-    `./manage.py lms reset_sapsf_learner_transmissions
+    `./manage.py lms ic_reset_sapsf_learner_transmissions
     --start_datetime=2020-01-14T00:00:00Z --end_datetime=2020-01-14T15:11:00Z`
     """
     help = _('''

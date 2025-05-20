@@ -20,7 +20,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
     """
     Mark for re-send all CSOD content transmission with a remote_deleted_at but no api_response_status_code
 
-    ./manage.py lms reset_csod_remote_deleted_at
+    ./manage.py lms ic_reset_csod_remote_deleted_at
     """
 
     def handle(self, *args, **options):

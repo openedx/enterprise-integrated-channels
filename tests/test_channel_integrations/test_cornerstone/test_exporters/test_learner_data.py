@@ -212,7 +212,7 @@ class TestCornerstoneLearnerExporter(unittest.TestCase):
         }
         mock_get_course_certificate.return_value = certificate
 
-        call_command('transmit_learner_data', '--api_user', self.staff_user.username, '--channel', 'CSOD')
+        call_command('ic_transmit_learner_data', '--api_user', self.staff_user.username, '--channel', 'CSOD')
 
         expected_url = '{base_url}{callback_url}{completion_path}?sessionToken={session_token}'.format(
             base_url=self.config.cornerstone_base_url,
@@ -277,7 +277,7 @@ class TestCornerstoneLearnerExporter(unittest.TestCase):
         }
         mock_get_course_certificate.return_value = certificate
 
-        call_command('transmit_learner_data', '--api_user', self.staff_user.username, '--channel', 'CSOD')
+        call_command('ic_transmit_learner_data', '--api_user', self.staff_user.username, '--channel', 'CSOD')
         expected_url = '{base_url}{callback_url}{completion_path}?sessionToken={session_token}'.format(
             base_url=self.config.cornerstone_base_url,
             callback_url=self.callback_url,

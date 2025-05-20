@@ -15,7 +15,7 @@ class Command(IntegratedChannelCommandMixin, BaseCommand):
     """
     Mark all content metadata audit records not directly connected to a customer's catalogs as orphaned.
 
-    ./manage.py lms mark_orphaned_content_metadata_audits
+    ./manage.py lms ic_mark_orphaned_content_metadata_audits
     """
 
     def handle(self, *args, **options):
