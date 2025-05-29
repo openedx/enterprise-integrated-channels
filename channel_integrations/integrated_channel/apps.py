@@ -10,5 +10,5 @@ class IntegratedChannelConfig(AppConfig):
     Configuration for the Enterprise Integrated Channel Django application.
     """
     name = 'channel_integrations.integrated_channel'
-    verbose_name = "Enterprise Integrated Channels"
+    verbose_name = "Enterprise Integrated Channels (Experimental)"
     label = 'channel_integration'

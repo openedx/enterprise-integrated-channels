@@ -10,5 +10,5 @@ class SAPSuccessFactorsConfig(AppConfig):
     Configuration for the Enterprise Integrated Channel SAP SuccessFactors Django application.
     """
     name = 'channel_integrations.sap_success_factors'
-    verbose_name = "Enterprise SAP SuccessFactors Integration"
+    verbose_name = "Enterprise SAP SuccessFactors Integration (Experimental)"
     label = 'sap_success_factors_channel'

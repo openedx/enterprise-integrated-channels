@@ -5,7 +5,7 @@ Enterprise Integrated Channel Blackboard Django application initialization.
 from django.apps import AppConfig
 
 CHANNEL_NAME = 'channel_integrations.blackboard'
-VERBOSE_NAME = 'Enterprise Blackboard Integration'
+VERBOSE_NAME = 'Enterprise Blackboard Integration (Experimental)'
 BRIEF_CHANNEL_NAME = 'blackboard'
 
 

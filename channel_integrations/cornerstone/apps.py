@@ -10,5 +10,5 @@ class CornerstoneConfig(AppConfig):
     Configuration for the Enterprise Integrated Channel Cornerstone Django application.
     """
     name = 'channel_integrations.cornerstone'
-    verbose_name = "Enterprise Cornerstone Integration"
+    verbose_name = "Enterprise Cornerstone Integration (Experimental)"
     label = 'cornerstone_channel'
