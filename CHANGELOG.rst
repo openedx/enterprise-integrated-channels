@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.2 – 2025-05-30
+******************
+
+Added
+=====
+
+* Added management command to copy data from legacy tables to new tables.
+* Added ``(Experimental)`` tag to app name in the admin interface.
+
 0.1.1 – 2025-05-20
 ******************
 

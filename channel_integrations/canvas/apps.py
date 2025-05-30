@@ -11,6 +11,6 @@ class CanvasConfig(AppConfig):
     """
 
     name = "channel_integrations.canvas"
-    verbose_name = "Enterprise Canvas Integration"
+    verbose_name = "Enterprise Canvas Integration (Experimental)"
     label = "canvas_channel"
     oauth_token_auth_path = "login/oauth2/token"
