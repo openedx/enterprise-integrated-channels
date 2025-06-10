@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.3 – 2025-06-10
+******************
+
+Added
+=====
+
+*  Add DB migrations against ``index_together`` changes.
+
+
 0.1.2 – 2025-05-30
 ******************
 
