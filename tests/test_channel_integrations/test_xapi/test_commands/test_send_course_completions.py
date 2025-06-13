@@ -14,13 +14,13 @@ from enterprise.utils import NotConnectedToOpenEdX
 from channel_integrations.exceptions import ClientError
 from test_utils import factories
 
-MODULE_PATH = 'channel_integrations.xapi.management.commands.send_course_completions.'
+MODULE_PATH = 'channel_integrations.xapi.management.commands.ic_send_course_completions.'
 
 
 @mark.django_db
 class TestSendCourseCompletions(unittest.TestCase):
     """
-    Tests for the ``send_course_completions`` management command.
+    Tests for the ``ic_send_course_completions`` management command.
     """
 
     @mock.patch(
@@ -42,7 +42,7 @@ class TestSendCourseCompletions(unittest.TestCase):
                 match='Enterprise customer with uuid "{enterprise_customer_uuid}" '
                       'does not exist.'.format(enterprise_customer_uuid=enterprise_uuid)
         ):
-            call_command('send_course_completions', days=1, enterprise_customer_uuid=enterprise_uuid)
+            call_command('ic_send_course_completions', days=1, enterprise_customer_uuid=enterprise_uuid)
 
     @mock.patch(
         MODULE_PATH + 'PersistentCourseGrade',
@@ -62,7 +62,7 @@ class TestSendCourseCompletions(unittest.TestCase):
                 match='No xAPI Configuration found for '
                       '"{enterprise_customer}"'.format(enterprise_customer=enterprise_customer.name)
         ):
-            call_command('send_course_completions', days=1, enterprise_customer_uuid=enterprise_customer.uuid)
+            call_command('ic_send_course_completions', days=1, enterprise_customer_uuid=enterprise_customer.uuid)
 
     @mock.patch(
         MODULE_PATH + 'CourseOverview',
@@ -80,7 +80,7 @@ class TestSendCourseCompletions(unittest.TestCase):
                 match='This package must be installed in an OpenEdX environment.'
         ):
             call_command(
-                'send_course_completions',
+                'ic_send_course_completions',
                 days=1,
                 enterprise_customer_uuid=xapi_config.enterprise_customer.uuid,
             )
@@ -99,7 +99,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         Make sure get_course_completions works as expected
         """
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_completions import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_completions import Command
 
         user = factories.UserFactory()
         enterprise_course_enrollments = [
@@ -117,7 +117,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         """
         # Import is placed here because if placed at the top it affects mocking.
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_completions import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_completions import Command
 
         user = factories.UserFactory()
         enrollment_grades = {42: mock.Mock(user_id=user.id)}
@@ -147,7 +147,7 @@ class TestSendCourseCompletions(unittest.TestCase):
                 match='This package must be installed in an OpenEdX environment.'
         ):
             call_command(
-                'send_course_completions',
+                'ic_send_course_completions',
                 enterprise_customer_uuid=xapi_config.enterprise_customer.uuid,
             )
 
@@ -191,7 +191,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         """
         xapi_config = factories.XAPILRSConfigurationFactory()
         if mock_catalog_client is not None:
-            call_command('send_course_completions', enterprise_customer_uuid=xapi_config.enterprise_customer.uuid)
+            call_command('ic_send_course_completions', enterprise_customer_uuid=xapi_config.enterprise_customer.uuid)
         assert mock_send_completion_statement.called
 
     @mock.patch(
@@ -245,7 +245,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         Make command runs successfully and sends correct data to the LRS.
         """
         factories.XAPILRSConfigurationFactory.create_batch(5)
-        call_command('send_course_completions')
+        call_command('ic_send_course_completions')
         assert mock_send_completion_statement.call_count == 5
 
     @mock.patch(
@@ -295,7 +295,7 @@ class TestSendCourseCompletions(unittest.TestCase):
     @mock.patch('enterprise.api_client.discovery.CourseCatalogApiServiceClient', mock.MagicMock())
     def test_command_send_statement_error_response(self):
         factories.XAPILRSConfigurationFactory()
-        call_command('send_course_completions')
+        call_command('ic_send_course_completions')
 
     def test_get_object_type(self):
         """
@@ -303,7 +303,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         """
         # Import is placed here because if placed at the top it affects mocking.
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_completions import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_completions import Command
 
         xapi_transmission = mock.Mock(course_id='edX+DemoX')
         assert Command.get_object_type(xapi_transmission) == 'course'
@@ -318,7 +318,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         """
         # Import is placed here because if placed at the top it affects mocking.
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_completions import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_completions import Command
 
         enterprise_enrollment_ids = [2, 24, 632]
         Command.get_xapi_transmission_queryset(enterprise_enrollment_ids)
@@ -330,7 +330,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         """
         # Import is placed here because if placed at the top it affects mocking.
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_completions import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_completions import Command
 
         mock_transmission_queryset = mock.MagicMock(return_value=[mock.Mock(
             id=1234,
@@ -353,7 +353,7 @@ class TestSendCourseCompletions(unittest.TestCase):
         Make sure get_course_completions works as expected
         """
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_completions import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_completions import Command
 
         user = factories.UserFactory()
         enterprise_course_enrollments = [
