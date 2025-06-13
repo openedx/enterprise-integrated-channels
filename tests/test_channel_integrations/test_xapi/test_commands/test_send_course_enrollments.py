@@ -14,13 +14,13 @@ from django.core.management import CommandError, call_command
 from enterprise.utils import NotConnectedToOpenEdX
 from test_utils import factories
 
-MODULE_PATH = 'channel_integrations.xapi.management.commands.send_course_enrollments.'
+MODULE_PATH = 'channel_integrations.xapi.management.commands.ic_send_course_enrollments.'
 
 
 @mark.django_db
 class TestSendCourseEnrollments(unittest.TestCase):
     """
-    Tests for the ``send_course_enrollments`` management command.
+    Tests for the ``ic_send_course_enrollments`` management command.
     """
     def setUp(self):
         super().setUp()
@@ -48,7 +48,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
                 match='Enterprise customer with uuid "{enterprise_customer_uuid}" '
                       'does not exist.'.format(enterprise_customer_uuid=enterprise_uuid)
         ):
-            call_command('send_course_enrollments', days=1, enterprise_customer_uuid=enterprise_uuid)
+            call_command('ic_send_course_enrollments', days=1, enterprise_customer_uuid=enterprise_uuid)
 
     @mock.patch(
         MODULE_PATH + 'CourseEnrollment',
@@ -64,7 +64,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
                 match='No xAPI Configuration found for '
                       '"{enterprise_customer}"'.format(enterprise_customer=enterprise_customer.name)
         ):
-            call_command('send_course_enrollments', days=1, enterprise_customer_uuid=enterprise_customer.uuid)
+            call_command('ic_send_course_enrollments', days=1, enterprise_customer_uuid=enterprise_customer.uuid)
 
     @mock.patch(
         MODULE_PATH + 'send_course_enrollment_statement',
@@ -82,7 +82,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
                 match='This package must be installed in an OpenEdX environment.'
         ):
             call_command(
-                'send_course_enrollments',
+                'ic_send_course_enrollments',
                 days=1,
                 enterprise_customer_uuid=xapi_config.enterprise_customer.uuid,
             )
@@ -91,7 +91,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
         with mock.patch(
                 MODULE_PATH + 'CourseEnrollment'
         ) as mock_enrollments:
-            call_command('send_course_enrollments')
+            call_command('ic_send_course_enrollments')
             assert mock_enrollments.objects.filter.called
 
     @mock.patch(
@@ -122,7 +122,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
         """
         xapi_config = factories.XAPILRSConfigurationFactory()
         if mock_catalog_client is not None:
-            call_command('send_course_enrollments', enterprise_customer_uuid=xapi_config.enterprise_customer.uuid)
+            call_command('ic_send_course_enrollments', enterprise_customer_uuid=xapi_config.enterprise_customer.uuid)
         assert mock_send_statement.called
 
     @mock.patch(
@@ -153,7 +153,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
         """
         factories.XAPILRSConfigurationFactory.create_batch(5)
         if mock_catalog_client is not None:
-            call_command('send_course_enrollments')
+            call_command('ic_send_course_enrollments')
         assert mock_send_statement.call_count == 5
 
     @mock.patch(
@@ -179,11 +179,11 @@ class TestSendCourseEnrollments(unittest.TestCase):
     @mock.patch('enterprise.api_client.discovery.CourseCatalogApiServiceClient', mock.MagicMock())
     def test_command_send_statement_error_response(self):
         factories.XAPILRSConfigurationFactory()
-        call_command('send_course_enrollments')
+        call_command('ic_send_course_enrollments')
 
     def test_save_xapi_learner_data_transmission_audit(self):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         Command.save_xapi_learner_data_transmission_audit(
             factories.UserFactory(),
@@ -196,7 +196,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
     @mock.patch(MODULE_PATH + 'XAPILearnerDataTransmissionAudit')
     def test_save_xapi_learner_data_transmission_audit_preexisting(self, mock_transmission_audit):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         mock_transmission_audit.objects.get_or_create.return_value = (mock.MagicMock(), False)
         Command.save_xapi_learner_data_transmission_audit(
@@ -213,7 +213,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
     )
     def test_get_pertinent_course_enrollments(self):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
@@ -237,7 +237,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
     )
     def test_get_pertinent_course_enrollments_already_transmitted(self):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
@@ -257,7 +257,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
 
     def test_get_pertinent_course_enrollments_no_enrollments(self):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
@@ -276,7 +276,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
 
     def test_is_already_transmitted(self):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         user_id = 12
         course_id = 'course-v1:edX+DemoX+Demo_Course'
@@ -294,7 +294,7 @@ class TestSendCourseEnrollments(unittest.TestCase):
     @mock.patch(MODULE_PATH + 'send_course_enrollment_statement')
     def test_transmit_course_enrollments_transmit_fail_skip(self, mock_send_statement):
         # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.send_course_enrollments import Command
+        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         lrs_configuration = factories.XAPILRSConfigurationFactory()
         user = factories.UserFactory()
