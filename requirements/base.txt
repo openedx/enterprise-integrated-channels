@@ -14,7 +14,7 @@ billiard==4.2.1
     # via celery
 celery==5.5.3
     # via -r requirements/base.in
-certifi==2025.4.26
+certifi==2025.6.15
     # via requests
 cffi==1.17.1
     # via
@@ -35,12 +35,12 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==45.0.3
+cryptography==45.0.4
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
-django==4.2.22
+django==4.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -76,7 +76,7 @@ django-simple-history==3.0.0
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
-django-waffle==4.2.0
+django-waffle==5.0.0
     # via
     #   edx-django-utils
     #   edx-drf-extensions
@@ -136,7 +136,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.13.0
+pymongo==4.13.1
     # via edx-opaque-keys
 pynacl==1.5.0
     # via edx-django-utils
@@ -146,7 +146,7 @@ pytz==2025.2
     # via
     #   -r requirements/base.in
     #   edx-tincan-py35
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements/base.in
     #   django-oauth-toolkit

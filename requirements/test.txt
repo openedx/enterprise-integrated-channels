@@ -23,7 +23,7 @@ billiard==4.2.1
     #   celery
 celery==5.5.3
     # via -r requirements/base.txt
-certifi==2025.4.26
+certifi==2025.6.15
     # via
     #   -r requirements/base.txt
     #   requests
@@ -61,9 +61,9 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.0
     # via -r requirements/test.in
-coverage[toml]==7.8.2
+coverage[toml]==7.9.1
     # via pytest-cov
-cryptography==45.0.3
+cryptography==45.0.4
     # via
     #   -r requirements/base.txt
     #   django-fernet-fields-v2
@@ -112,7 +112,7 @@ django-simple-history==3.0.0
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.txt
-django-waffle==4.2.0
+django-waffle==5.0.0
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
@@ -153,7 +153,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.txt
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==37.3.0
+faker==37.4.0
     # via factory-boy
 freezegun==1.5.2
     # via -r requirements/test.in
@@ -200,6 +200,7 @@ pluggy==1.6.0
     # via
     #   diff-cover
     #   pytest
+    #   pytest-cov
 prompt-toolkit==3.0.51
     # via
     #   -r requirements/base.txt
@@ -222,7 +223,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.13.0
+pymongo==4.13.1
     # via
     #   -r requirements/base.txt
     #   edx-opaque-keys
@@ -234,7 +235,7 @@ pytest==8.4.0
     # via
     #   pytest-cov
     #   pytest-django
-pytest-cov==6.1.1
+pytest-cov==6.2.1
     # via -r requirements/test.in
 pytest-django==4.11.1
     # via -r requirements/test.in
@@ -253,7 +254,7 @@ pyyaml==6.0.2
     # via
     #   code-annotations
     #   responses
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements/base.txt
     #   django-oauth-toolkit
