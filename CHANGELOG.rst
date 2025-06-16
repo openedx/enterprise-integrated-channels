@@ -16,6 +16,24 @@ Unreleased
 
 *
 
+0.1.5 – 2025-06-16
+******************
+
+Added
+=====
+
+*  Rename xAPI management commands to avoid conflicts with existing commands in edx-enterprise.
+
+
+0.1.4 – 2025-06-11
+******************
+
+Added
+=====
+
+*  Added django52 support.
+
+
 0.1.3 – 2025-06-10
 ******************
 
