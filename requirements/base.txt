@@ -31,7 +31,7 @@ click==8.2.1
     #   edx-django-utils
 click-didyoumean==0.3.1
     # via celery
-click-plugins==1.1.1
+click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
@@ -117,7 +117,7 @@ jwcrypto==1.5.6
     # via django-oauth-toolkit
 kombu==5.5.4
     # via celery
-oauthlib==3.2.2
+oauthlib==3.3.1
     # via django-oauth-toolkit
 openedx-atlas==0.7.0
     # via -r requirements/base.in
@@ -136,7 +136,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.13.1
+pymongo==4.13.2
     # via edx-opaque-keys
 pynacl==1.5.0
     # via edx-django-utils
