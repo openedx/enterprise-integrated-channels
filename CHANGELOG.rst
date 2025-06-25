@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.7 – 2025-06-25
+******************
+
+Added
+=====
+
+*  add migrations for various channel integrations
+
+
 0.1.6 – 2025-06-25
 ******************
 
