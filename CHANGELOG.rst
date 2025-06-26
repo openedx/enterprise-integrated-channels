@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.8 – 2025-06-26
+******************
+
+Added
+=====
+
+*  fix `test_migrations_are_in_sync` test on edx-platform
+
+
 0.1.7 – 2025-06-25
 ******************
 
