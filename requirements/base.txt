@@ -8,7 +8,7 @@ amqp==5.3.1
     # via kombu
 aniso8601==10.0.1
     # via edx-tincan-py35
-asgiref==3.8.1
+asgiref==3.9.0
     # via django
 billiard==4.2.1
     # via celery
@@ -35,7 +35,7 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==45.0.4
+cryptography==45.0.5
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
@@ -111,7 +111,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.in
 idna==3.10
     # via requests
-jsonfield==3.1.0
+jsonfield==3.2.0
     # via -r requirements/base.in
 jwcrypto==1.5.6
     # via django-oauth-toolkit
@@ -167,7 +167,7 @@ stevedore==5.4.1
     # via
     #   edx-django-utils
     #   edx-opaque-keys
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   edx-opaque-keys
     #   jwcrypto
