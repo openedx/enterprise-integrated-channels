@@ -21,7 +21,7 @@ urlpatterns = [
         name='blackboard',
     ),
     re_path(
-        r'^integrated_channels/api/',
+        r'^channel_integrations/api/',
         include('channel_integrations.api.urls')
     ),
 ]

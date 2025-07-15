@@ -89,7 +89,7 @@ class CanvasEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin.Mode
                 {obj.enterprise_customer.name}>” was not updated successfully.''',
             )
         return HttpResponseRedirect(
-            "/admin/canvas/canvasenterprisecustomerconfiguration"
+            "/admin/canvas_channel/canvasenterprisecustomerconfiguration"
         )
     force_content_metadata_transmission.label = "Force content metadata transmission"
 

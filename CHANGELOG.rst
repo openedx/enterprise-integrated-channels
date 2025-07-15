@@ -16,6 +16,16 @@ Unreleased
 
 *
 
+0.1.10 – 2025-07-15
+******************
+
+Added
+=====
+
+*  Fix admin redirects for various channel integrations to use the correct app namespace.
+*  Upgrade Python Requirements
+
+
 0.1.9 – 2025-07-04
 ******************
 

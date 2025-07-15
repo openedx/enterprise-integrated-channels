@@ -78,7 +78,9 @@ class Degreed2EnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin.Mo
                 “<Degreed2EnterpriseCustomerConfiguration for Enterprise
                 {obj.enterprise_customer.name}>” was not updated successfully.''',
             )
-        return HttpResponseRedirect('/admin/degreed2/degreed2enterprisecustomerconfiguration')
+        return HttpResponseRedirect(
+            '/admin/degreed2_channel/degreed2enterprisecustomerconfiguration'
+        )
     force_content_metadata_transmission.label = "Force content metadata transmission"
 
 

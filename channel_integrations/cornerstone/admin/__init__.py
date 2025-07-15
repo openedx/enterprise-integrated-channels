@@ -95,7 +95,7 @@ class CornerstoneEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin
                 {obj.enterprise_customer.name}>” was not updated successfully.''',
             )
         return HttpResponseRedirect(
-            "/admin/cornerstone/cornerstoneenterprisecustomerconfiguration"
+            "/admin/cornerstone_channel/cornerstoneenterprisecustomerconfiguration"
         )
     force_content_metadata_transmission.label = "Force content metadata transmission"
 

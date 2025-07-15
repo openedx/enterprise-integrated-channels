@@ -105,7 +105,7 @@ class BlackboardEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin.
                 {obj.enterprise_customer.name}>” was not updated successfully.''',
             )
         return HttpResponseRedirect(
-            "/admin/blackboard/blackboardenterprisecustomerconfiguration"
+            "/admin/blackboard_channel/blackboardenterprisecustomerconfiguration"
         )
     force_content_metadata_transmission.label = "Force content metadata transmission"
 
