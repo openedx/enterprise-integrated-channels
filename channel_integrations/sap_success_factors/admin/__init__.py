@@ -144,7 +144,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
                 {obj.enterprise_customer.name}>” was not updated successfully.''',
             )
         return HttpResponseRedirect(
-            "/admin/sap_success_factors/sapsuccessfactorsenterprisecustomerconfiguration"
+            "/admin/sap_success_factors_channel/sapsuccessfactorsenterprisecustomerconfiguration"
         )
     force_content_metadata_transmission.label = "Force content metadata transmission"
 

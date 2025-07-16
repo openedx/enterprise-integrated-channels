@@ -69,7 +69,7 @@ class MoodleEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin.Mode
                 {obj.enterprise_customer.name}>” was not updated successfully.''',
             )
         return HttpResponseRedirect(
-            "/admin/moodle/moodleenterprisecustomerconfiguration"
+            "/admin/moodle_channel/moodleenterprisecustomerconfiguration"
         )
     force_content_metadata_transmission.label = "Force content metadata transmission"
 

@@ -75,5 +75,5 @@ class XAPILRSConfigurationAdmin(DjangoObjectActions, admin.ModelAdmin):
                 “<XAPILRSConfiguration for Enterprise {obj.enterprise_customer.name}>”
                 was not updated successfully.''',
             )
-        return HttpResponseRedirect("/admin/xapi/xapilrsconfiguration/")
+        return HttpResponseRedirect("/admin/xapi_channel/xapilrsconfiguration/")
     force_content_metadata_transmission.label = "Force content metadata transmission"

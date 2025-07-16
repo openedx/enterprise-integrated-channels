@@ -176,7 +176,7 @@ class CornerstoneLearnerInformationViewTests(APITest):
         )
         self.cornerstone_config.save()
         self.course_key = 'edX+DemoX'
-        self.path = settings.TEST_SERVER + '/integrated_channels/api/v1/cornerstone/save-learner-information'
+        self.path = settings.TEST_SERVER + '/channel_integrations/api/v1/cornerstone/save-learner-information'
 
     def test_save_learner_endpoint_happy_path(self):
         """
