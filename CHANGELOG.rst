@@ -16,8 +16,17 @@ Unreleased
 
 *
 
+0.1.11 – 2025-07-15
+*******************
+
+Added
+=====
+
+*  Update CHANGELOG and README
+
+
 0.1.10 – 2025-07-15
-******************
+*******************
 
 Added
 =====
@@ -41,7 +50,7 @@ Added
 Added
 =====
 
-*  fix `test_migrations_are_in_sync` test on edx-platform
+*  fix ``test_migrations_are_in_sync`` test on edx-platform
 
 
 0.1.7 – 2025-06-25

@@ -28,7 +28,6 @@ Start by going through `the documentation`_.  If you need more help see below.
 
 .. _the documentation: https://github.com/openedx/enterprise-integrated-channels/blob/main/channel_integrations/README.md
 
-(TODO: `Set up documentation <https://openedx.atlassian.net/wiki/spaces/DOC/pages/21627535/Publish+Documentation+on+Read+the+Docs>`_)
 
 More Help
 =========
