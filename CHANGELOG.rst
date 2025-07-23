@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.13 – 2025-07-23
+*******************
+
+Added
+=====
+
+*  Add ``__init__.py`` to ``api/v1/`` directory to ensure it is recognized as a package.
+
+
 0.1.12 – 2025-07-22
 *******************
 
