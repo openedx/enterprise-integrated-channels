@@ -13,3 +13,6 @@ disable+=
     too-many-positional-arguments,
     logging-format-interpolation,
     missing-timeout,
+    missing-function-docstring,
+    missing-module-docstring,
+    missing-class-docstring,
