@@ -116,7 +116,7 @@ class LearnerSyncStatusSerializer(serializers.ModelSerializer):
         return None
 
     @classmethod
-    def get_completion_class_by_channel_code(this_cls, channel_code):
+    def get_completion_class_by_channel_code(this_cls, channel_code):  # pylint: disable=bad-classmethod-argument
         """
         return the `LearnerDataTransmissionAudit` completion related sync-status
         serializer for a particular channel_code

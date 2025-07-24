@@ -13,7 +13,6 @@ from channel_integrations.api.v1.blackboard.serializers import BlackboardConfigS
 from channel_integrations.api.v1.canvas.serializers import CanvasEnterpriseCustomerConfigurationSerializer
 from channel_integrations.api.v1.cornerstone.serializers import CornerstoneConfigSerializer
 from channel_integrations.api.v1.degreed2.serializers import Degreed2ConfigSerializer
-from channel_integrations.api.v1.mixins import PermissionRequiredForIntegratedChannelMixin
 from channel_integrations.api.v1.moodle.serializers import MoodleConfigSerializer
 from channel_integrations.api.v1.sap_success_factors.serializers import SAPSuccessFactorsConfigSerializer
 from channel_integrations.blackboard.models import BlackboardEnterpriseCustomerConfiguration

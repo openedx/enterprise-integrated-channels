@@ -26,8 +26,8 @@ class PermissionRequiredForIntegratedChannelMixin(PermissionRequiredForListingMi
             return None
         try:
             return UUID(enterprise_customer_uuid)
-        except ValueError:
-            raise ParseError('{} is not a valid uuid.'.format(enterprise_customer_uuid))
+        except ValueError as exc:
+            raise ParseError('{} is not a valid uuid.'.format(enterprise_customer_uuid)) from exc
 
     def get_permission_object(self):
         """

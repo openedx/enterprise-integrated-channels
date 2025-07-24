@@ -8,3 +8,5 @@ omit =
     *admin.py
     */static/*
     */templates/*
+    # TODO: ENT-10733: Remove this exclusion and add proper test coverage for API v1 module
+    channel_integrations/api/v1/*

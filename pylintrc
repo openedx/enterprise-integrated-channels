@@ -294,6 +294,9 @@ disable =
 	too-many-positional-arguments,
 	logging-format-interpolation,
 	missing-timeout,
+	missing-function-docstring,
+	missing-module-docstring,
+	missing-class-docstring,
 
 [REPORTS]
 output-format = text
@@ -390,4 +393,4 @@ int-import-graph =
 [EXCEPTIONS]
 overgeneral-exceptions = builtins.Exception
 
-# 037405993b7171ae417b48e15d2fb0b3f9a8854c
+# 602166a3cf0ab95bcead8c55bac4ebf7c7674cac

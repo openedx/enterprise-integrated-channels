@@ -1,7 +1,7 @@
 """
 Viewsets for channel_integrations/v1/blackboard/
 """
-from rest_framework import exceptions, permissions, status, viewsets
+from rest_framework import permissions, viewsets
 
 from channel_integrations.api.v1.mixins import PermissionRequiredForIntegratedChannelMixin
 from channel_integrations.blackboard.models import (
