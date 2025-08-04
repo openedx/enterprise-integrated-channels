@@ -14,7 +14,7 @@ billiard==4.2.1
     # via celery
 celery==5.5.3
     # via -r requirements/base.in
-certifi==2025.7.14
+certifi==2025.8.3
     # via requests
 cffi==1.17.1
     # via
@@ -42,13 +42,14 @@ cryptography==45.0.5
     #   pyjwt
 django==4.2.23
     # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -c https:/raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
     #   django-config-models
     #   django-crum
     #   django-fernet-fields-v2
     #   django-model-utils
     #   django-oauth-toolkit
+    #   django-simple-history
     #   django-waffle
     #   djangorestframework
     #   drf-jwt
@@ -72,10 +73,8 @@ django-oauth-toolkit==3.0.1
     # via -r requirements/base.in
 django-object-actions==5.0.0
     # via -r requirements/base.in
-django-simple-history==3.0.0
-    # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
-    #   -r requirements/base.in
+django-simple-history==3.10.1
+    # via -r requirements/base.in
 django-waffle==5.0.0
     # via
     #   edx-django-utils
@@ -175,10 +174,8 @@ tzdata==2025.2
     # via kombu
 unicodecsv==0.14.1
     # via -r requirements/base.in
-urllib3==2.2.3
-    # via
-    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
-    #   requests
+urllib3==2.5.0
+    # via requests
 vine==5.1.0
     # via
     #   amqp
