@@ -34,7 +34,7 @@ cffi==1.17.1
     #   pynacl
 chardet==5.2.0
     # via diff-cover
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via
     #   -r requirements/base.txt
     #   requests
@@ -61,9 +61,9 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.0
     # via -r requirements/test.in
-coverage[toml]==7.10.1
+coverage[toml]==7.10.3
     # via pytest-cov
-cryptography==45.0.5
+cryptography==45.0.6
     # via
     #   -r requirements/base.txt
     #   django-fernet-fields-v2
@@ -116,7 +116,7 @@ django-waffle==5.0.0
     #   -r requirements/base.txt
     #   edx-django-utils
     #   edx-drf-extensions
-djangorestframework==3.16.0
+djangorestframework==3.16.1
     # via
     #   -r requirements/base.txt
     #   django-config-models
@@ -154,7 +154,7 @@ factory-boy==3.3.3
     # via -r requirements/test.in
 faker==37.5.3
     # via factory-boy
-freezegun==1.5.4
+freezegun==1.5.5
     # via -r requirements/test.in
 idna==3.10
     # via
@@ -222,7 +222,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.13.2
+pymongo==4.14.0
     # via
     #   -r requirements/base.txt
     #   edx-opaque-keys
@@ -261,7 +261,7 @@ requests==2.32.4
     #   edx-rest-api-client
     #   responses
     #   slumber
-responses==0.25.7
+responses==0.25.8
     # via -r requirements/test.in
 semantic-version==2.10.0
     # via
