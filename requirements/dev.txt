@@ -51,7 +51,7 @@ chardet==5.2.0
     #   -r requirements/quality.txt
     #   diff-cover
     #   tox
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -92,11 +92,11 @@ colorama==0.4.6
     # via
     #   -r requirements/ci.txt
     #   tox
-coverage[toml]==7.10.1
+coverage[toml]==7.10.3
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
-cryptography==45.0.5
+cryptography==45.0.6
     # via
     #   -r requirements/quality.txt
     #   django-fernet-fields-v2
@@ -160,7 +160,7 @@ django-waffle==5.0.0
     #   -r requirements/quality.txt
     #   edx-django-utils
     #   edx-drf-extensions
-djangorestframework==3.16.0
+djangorestframework==3.16.1
     # via
     #   -r requirements/quality.txt
     #   django-config-models
@@ -209,7 +209,7 @@ filelock==3.18.0
     #   -r requirements/ci.txt
     #   tox
     #   virtualenv
-freezegun==1.5.4
+freezegun==1.5.5
     # via -r requirements/quality.txt
 idna==3.10
     # via
@@ -322,7 +322,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pylint==3.3.7
+pylint==3.3.8
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -342,7 +342,7 @@ pylint-plugin-utils==0.9.0
     #   -r requirements/quality.txt
     #   pylint-celery
     #   pylint-django
-pymongo==4.13.2
+pymongo==4.14.0
     # via
     #   -r requirements/quality.txt
     #   edx-opaque-keys
@@ -395,7 +395,7 @@ requests==2.32.4
     #   edx-rest-api-client
     #   responses
     #   slumber
-responses==0.25.7
+responses==0.25.8
     # via -r requirements/quality.txt
 semantic-version==2.10.0
     # via
@@ -459,7 +459,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.33.0
+virtualenv==20.33.1
     # via
     #   -r requirements/ci.txt
     #   tox

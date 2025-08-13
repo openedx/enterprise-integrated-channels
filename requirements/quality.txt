@@ -40,7 +40,7 @@ chardet==5.2.0
     # via
     #   -r requirements/test.txt
     #   diff-cover
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via
     #   -r requirements/test.txt
     #   requests
@@ -73,11 +73,11 @@ code-annotations==2.3.0
     # via
     #   -r requirements/test.txt
     #   edx-lint
-coverage[toml]==7.10.1
+coverage[toml]==7.10.3
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==45.0.5
+cryptography==45.0.6
     # via
     #   -r requirements/test.txt
     #   django-fernet-fields-v2
@@ -132,7 +132,7 @@ django-waffle==5.0.0
     #   -r requirements/test.txt
     #   edx-django-utils
     #   edx-drf-extensions
-djangorestframework==3.16.0
+djangorestframework==3.16.1
     # via
     #   -r requirements/test.txt
     #   django-config-models
@@ -174,7 +174,7 @@ faker==37.5.3
     # via
     #   -r requirements/test.txt
     #   factory-boy
-freezegun==1.5.4
+freezegun==1.5.5
     # via -r requirements/test.txt
 idna==3.10
     # via
@@ -261,7 +261,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pylint==3.3.7
+pylint==3.3.8
     # via
     #   edx-lint
     #   pylint-celery
@@ -275,7 +275,7 @@ pylint-plugin-utils==0.9.0
     # via
     #   pylint-celery
     #   pylint-django
-pymongo==4.13.2
+pymongo==4.14.0
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys
@@ -318,7 +318,7 @@ requests==2.32.4
     #   edx-rest-api-client
     #   responses
     #   slumber
-responses==0.25.7
+responses==0.25.8
     # via -r requirements/test.txt
 semantic-version==2.10.0
     # via
