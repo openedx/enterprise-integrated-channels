@@ -122,7 +122,7 @@ openedx-atlas==0.7.0
     # via -r requirements/base.in
 packaging==25.0
     # via kombu
-pbr==6.1.1
+pbr==7.0.0
     # via stevedore
 prompt-toolkit==3.0.51
     # via click-repl
