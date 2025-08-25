@@ -61,7 +61,7 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.0
     # via -r requirements/test.in
-coverage[toml]==7.10.3
+coverage[toml]==7.10.5
     # via pytest-cov
 cryptography==45.0.6
     # via
@@ -191,7 +191,7 @@ packaging==25.0
     #   -r requirements/base.txt
     #   kombu
     #   pytest
-pbr==6.1.1
+pbr==7.0.1
     # via
     #   -r requirements/base.txt
     #   stevedore
@@ -222,7 +222,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.14.0
+pymongo==4.14.1
     # via
     #   -r requirements/base.txt
     #   edx-opaque-keys
@@ -253,7 +253,7 @@ pyyaml==6.0.2
     # via
     #   code-annotations
     #   responses
-requests==2.32.4
+requests==2.32.5
     # via
     #   -r requirements/base.txt
     #   django-oauth-toolkit

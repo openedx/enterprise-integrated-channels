@@ -92,7 +92,7 @@ colorama==0.4.6
     # via
     #   -r requirements/ci.txt
     #   tox
-coverage[toml]==7.10.3
+coverage[toml]==7.10.5
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
@@ -204,7 +204,7 @@ faker==37.5.3
     # via
     #   -r requirements/quality.txt
     #   factory-boy
-filelock==3.18.0
+filelock==3.19.1
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -238,7 +238,7 @@ kombu==5.5.4
     # via
     #   -r requirements/quality.txt
     #   celery
-lxml[html-clean]==6.0.0
+lxml[html-clean]==6.0.1
     # via
     #   edx-i18n-tools
     #   lxml-html-clean
@@ -272,7 +272,7 @@ packaging==25.0
     #   tox
 path==16.16.0
     # via edx-i18n-tools
-pbr==6.1.1
+pbr==7.0.1
     # via
     #   -r requirements/quality.txt
     #   stevedore
@@ -342,7 +342,7 @@ pylint-plugin-utils==0.9.0
     #   -r requirements/quality.txt
     #   pylint-celery
     #   pylint-django
-pymongo==4.14.0
+pymongo==4.14.1
     # via
     #   -r requirements/quality.txt
     #   edx-opaque-keys
@@ -387,7 +387,7 @@ pyyaml==6.0.2
     #   code-annotations
     #   edx-i18n-tools
     #   responses
-requests==2.32.4
+requests==2.32.5
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
@@ -459,7 +459,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.33.1
+virtualenv==20.34.0
     # via
     #   -r requirements/ci.txt
     #   tox
