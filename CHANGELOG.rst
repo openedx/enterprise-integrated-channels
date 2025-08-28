@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.15 – 2025-08-28
+*******************
+
+Added
+=====
+
+*  Enhanced migration command ``ic_migrate_data_from_legacy_app`` with customer-by-customer filtering support.
+
+
 0.1.14 – 2025-08-13
 *******************
 
