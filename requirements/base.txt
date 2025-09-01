@@ -122,9 +122,7 @@ openedx-atlas==0.7.0
     # via -r requirements/base.in
 packaging==25.0
     # via kombu
-pbr==6.1.1
-    # via stevedore
-prompt-toolkit==3.0.51
+prompt-toolkit==3.0.52
     # via click-repl
 psutil==7.0.0
     # via edx-django-utils
@@ -135,7 +133,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.14.0
+pymongo==4.14.1
     # via edx-opaque-keys
 pynacl==1.5.0
     # via edx-django-utils
@@ -145,7 +143,7 @@ pytz==2025.2
     # via
     #   -r requirements/base.in
     #   edx-tincan-py35
-requests==2.32.4
+requests==2.32.5
     # via
     #   -r requirements/base.in
     #   django-oauth-toolkit
@@ -162,11 +160,11 @@ slumber==0.7.1
     # via -r requirements/base.in
 sqlparse==0.5.3
     # via django
-stevedore==5.4.1
+stevedore==5.5.0
     # via
     #   edx-django-utils
     #   edx-opaque-keys
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   edx-opaque-keys
     #   jwcrypto
