@@ -35,12 +35,12 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==45.0.6
+cryptography==45.0.7
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
-django==4.2.23
+django==4.2.24
     # via
     #   -c https:/raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -84,7 +84,7 @@ djangorestframework==3.16.1
     #   django-config-models
     #   drf-jwt
     #   edx-drf-extensions
-dnspython==2.7.0
+dnspython==2.8.0
     # via pymongo
 drf-jwt==1.19.2
     # via edx-drf-extensions
