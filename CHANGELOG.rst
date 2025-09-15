@@ -16,16 +16,16 @@ Unreleased
 
 *
 
-0.1.15 – 2025-09-15
+0.1.16 – 2025-09-15
 *******************
 
 Added
 =====
 
-*  Add explicit index naming for SAP SuccessFactors audit table and corresponding database migration.
+*  Enhances the migration command with customer-specific functionality to support targeted data migration during the integrated channels transition.
 
 
-0.1.16 – 2025-09-01
+0.1.15 – 2025-09-01
 *******************
 
 Added
