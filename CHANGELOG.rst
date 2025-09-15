@@ -16,6 +16,15 @@ Unreleased
 
 *
 
+0.1.16 – 2025-09-15
+*******************
+
+Added
+=====
+
+*  Enhances the migration command with customer-specific functionality to support targeted data migration during the integrated channels transition.
+
+
 0.1.15 – 2025-09-01
 *******************
 
