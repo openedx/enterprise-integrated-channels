@@ -375,7 +375,10 @@ class SapSuccessFactorsLearnerDataTransmissionAudit(LearnerDataTransmissionAudit
             )
         ]
         indexes = [
-            models.Index(fields=['enterprise_customer_uuid', 'plugin_configuration_id']),
+            models.Index(
+                fields=['enterprise_customer_uuid', 'plugin_configuration_id'],
+                name='sap_success_factors_audit_idx'
+            ),
         ]
 
     def __str__(self):
