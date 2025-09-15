@@ -26,11 +26,7 @@ Added
 
 
 0.1.15 – 2025-09-01
-*******************
-
-Added
-=====
-
+=======
 *  Add explicit index naming for SAP SuccessFactors audit table and corresponding database migration.
 
 
