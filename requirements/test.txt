@@ -17,7 +17,7 @@ asgiref==3.9.1
     #   -r requirements/base.txt
     #   django
     #   django-countries
-billiard==4.2.1
+billiard==4.2.2
     # via
     #   -r requirements/base.txt
     #   celery
@@ -38,7 +38,7 @@ charset-normalizer==3.4.3
     # via
     #   -r requirements/base.txt
     #   requests
-click==8.2.1
+click==8.3.0
     # via
     #   -r requirements/base.txt
     #   celery
@@ -61,9 +61,9 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.0
     # via -r requirements/test.in
-coverage[toml]==7.10.6
+coverage[toml]==7.10.7
     # via pytest-cov
-cryptography==45.0.7
+cryptography==46.0.1
     # via
     #   -r requirements/base.txt
     #   django-fernet-fields-v2
@@ -152,7 +152,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.txt
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==37.6.0
+faker==37.8.0
     # via factory-boy
 freezegun==1.5.5
     # via -r requirements/test.in
@@ -200,7 +200,7 @@ prompt-toolkit==3.0.52
     # via
     #   -r requirements/base.txt
     #   click-repl
-psutil==7.0.0
+psutil==7.1.0
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
@@ -218,7 +218,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.15.0
+pymongo==4.15.1
     # via
     #   -r requirements/base.txt
     #   edx-opaque-keys

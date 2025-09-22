@@ -21,7 +21,7 @@ astroid==3.3.11
     # via
     #   pylint
     #   pylint-celery
-billiard==4.2.1
+billiard==4.2.2
     # via
     #   -r requirements/test.txt
     #   celery
@@ -44,7 +44,7 @@ charset-normalizer==3.4.3
     # via
     #   -r requirements/test.txt
     #   requests
-click==8.2.1
+click==8.3.0
     # via
     #   -r requirements/test.txt
     #   celery
@@ -73,11 +73,11 @@ code-annotations==2.3.0
     # via
     #   -r requirements/test.txt
     #   edx-lint
-coverage[toml]==7.10.6
+coverage[toml]==7.10.7
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==45.0.7
+cryptography==46.0.1
     # via
     #   -r requirements/test.txt
     #   django-fernet-fields-v2
@@ -170,7 +170,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/test.txt
 factory-boy==3.3.3
     # via -r requirements/test.txt
-faker==37.6.0
+faker==37.8.0
     # via
     #   -r requirements/test.txt
     #   factory-boy
@@ -234,7 +234,7 @@ prompt-toolkit==3.0.52
     # via
     #   -r requirements/test.txt
     #   click-repl
-psutil==7.0.0
+psutil==7.1.0
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
@@ -271,7 +271,7 @@ pylint-plugin-utils==0.9.0
     # via
     #   pylint-celery
     #   pylint-django
-pymongo==4.15.0
+pymongo==4.15.1
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys
