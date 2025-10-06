@@ -8,13 +8,13 @@ amqp==5.3.1
     # via kombu
 aniso8601==10.0.1
     # via edx-tincan-py35
-asgiref==3.9.2
+asgiref==3.10.0
     # via django
 billiard==4.2.2
     # via celery
 celery==5.5.3
     # via -r requirements/base.in
-certifi==2025.8.3
+certifi==2025.10.5
     # via requests
 cffi==2.0.0
     # via
@@ -35,14 +35,14 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==46.0.1
+cryptography==46.0.2
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
-django==4.2.24
+django==4.2.25
     # via
-    #   -c https:/raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
     #   django-config-models
     #   django-crum
@@ -69,7 +69,7 @@ django-model-utils==5.0.0
     # via
     #   -r requirements/base.in
     #   edx-rbac
-django-oauth-toolkit==3.0.1
+django-oauth-toolkit==3.1.0
     # via -r requirements/base.in
 django-object-actions==5.0.0
     # via -r requirements/base.in
@@ -88,7 +88,7 @@ dnspython==2.8.0
     # via pymongo
 drf-jwt==1.19.2
     # via edx-drf-extensions
-edx-django-utils==8.0.0
+edx-django-utils==8.0.1
     # via
     #   -r requirements/base.in
     #   django-config-models
@@ -133,7 +133,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.15.1
+pymongo==4.15.2
     # via edx-opaque-keys
 pynacl==1.6.0
     # via edx-django-utils

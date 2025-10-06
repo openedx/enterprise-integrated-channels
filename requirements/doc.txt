@@ -16,7 +16,7 @@ aniso8601==10.0.1
     # via
     #   -r requirements/test.txt
     #   edx-tincan-py35
-asgiref==3.9.2
+asgiref==3.10.0
     # via
     #   -r requirements/test.txt
     #   django
@@ -27,7 +27,7 @@ babel==2.17.0
     #   sphinx
 backports-tarfile==1.2.0
     # via jaraco-context
-beautifulsoup4==4.14.0
+beautifulsoup4==4.14.2
     # via pydata-sphinx-theme
 billiard==4.2.2
     # via
@@ -37,7 +37,7 @@ build==1.3.0
     # via -r requirements/doc.in
 celery==5.5.3
     # via -r requirements/test.txt
-certifi==2025.8.3
+certifi==2025.10.5
     # via
     #   -r requirements/test.txt
     #   requests
@@ -81,7 +81,7 @@ coverage[toml]==7.10.7
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==46.0.1
+cryptography==46.0.2
     # via
     #   -r requirements/test.txt
     #   django-fernet-fields-v2
@@ -92,9 +92,9 @@ ddt==1.3.1
     # via -r requirements/test.txt
 diff-cover==9.7.1
     # via -r requirements/test.txt
-django==4.2.24
+django==4.2.25
     # via
-    #   -c https:/raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
     #   django-config-models
     #   django-crum
@@ -124,7 +124,7 @@ django-model-utils==5.0.0
     # via
     #   -r requirements/test.txt
     #   edx-rbac
-django-oauth-toolkit==3.0.1
+django-oauth-toolkit==3.1.0
     # via -r requirements/test.txt
 django-object-actions==5.0.0
     # via -r requirements/test.txt
@@ -158,7 +158,7 @@ drf-jwt==1.19.2
     # via
     #   -r requirements/test.txt
     #   edx-drf-extensions
-edx-django-utils==8.0.0
+edx-django-utils==8.0.1
     # via
     #   -r requirements/test.txt
     #   django-config-models
@@ -296,7 +296,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.15.1
+pymongo==4.15.2
     # via
     #   -r requirements/test.txt
     #   edx-opaque-keys

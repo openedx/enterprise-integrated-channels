@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.19 – 2025-10-09
+*******************
+
+Added
+=====
+
+*  Upgrade Python Requirements
+
+
 0.1.18 – 2025-10-03
 *******************
 
