@@ -108,7 +108,7 @@ edx-rest-api-client==6.2.0
     # via -r requirements/base.in
 edx-tincan-py35==2.0.0
     # via -r requirements/base.in
-idna==3.10
+idna==3.11
     # via requests
 jsonfield==3.2.0
     # via -r requirements/base.in
@@ -133,7 +133,7 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.15.2
+pymongo==4.15.3
     # via edx-opaque-keys
 pynacl==1.6.0
     # via edx-django-utils
