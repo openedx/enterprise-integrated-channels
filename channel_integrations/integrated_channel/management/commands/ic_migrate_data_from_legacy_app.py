@@ -215,13 +215,6 @@ class Command(BaseCommand):  # pragma: no cover
                 'log',
             ),
             ('integrated_channel', 'ApiResponseRecord', 'channel_integration', 'ApiResponseRecord', 'log'),
-            (
-                'integrated_channel',
-                'IntegratedChannelAPIRequestLogs',
-                'channel_integration',
-                'IntegratedChannelAPIRequestLogs',
-                'log',
-            ),
             # SAP Success Factors Models
             (
                 'sap_success_factors',

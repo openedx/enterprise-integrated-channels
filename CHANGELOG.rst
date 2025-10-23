@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.22 – 2025-10-23
+*******************
+
+Added
+=====
+
+*  feat: Optimize data migration command by implementing bulk inserts for improved performance.
+*  feat: Add management command to truncate non-empty destination tables before data migration.
+
 0.1.21 – 2025-10-22
 *******************
 
