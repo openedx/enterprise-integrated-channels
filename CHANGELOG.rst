@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+[0.1.24] - 2025-11-14
+*********************
+* fix: pin `pip<25.3` to resolve make upgrade build failure
+* See issue https://github.com/openedx/public-engineering/issues/440 for details.
+
 0.1.23 – 2025-10-30
 *******************
 
