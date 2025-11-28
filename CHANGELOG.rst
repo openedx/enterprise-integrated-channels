@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.25 – 2025-11-28
+*******************
+
+Added
+=====
+
+* feat: fetch SAP userid by remote_id_field_name
+
 0.1.24 – 2025-11-24
 *******************
 
