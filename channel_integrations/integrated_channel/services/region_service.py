@@ -4,6 +4,9 @@ Service for determining user region from SSO metadata.
 import logging
 from typing import Optional
 
+from enterprise.models import EnterpriseCustomerUser
+from social_django.models import UserSocialAuth
+
 log = logging.getLogger(__name__)
 
 # EU Country Codes (GDPR region)
@@ -30,8 +33,6 @@ def get_user_region(user) -> str:
         str: One of 'US', 'EU', 'UK', 'OTHER'
     """
     try:
-        from social_django.models import UserSocialAuth
-        
         # Priority 1: Explicit region in SSO extra_data
         social_auth = UserSocialAuth.objects.filter(user=user).first()
         if social_auth and social_auth.extra_data:
@@ -49,7 +50,6 @@ def get_user_region(user) -> str:
                 return region
         
         # Priority 3: Check enterprise customer location (if available)
-        from enterprise.models import EnterpriseCustomerUser
         ecu = EnterpriseCustomerUser.objects.filter(user=user, active=True).first()
         if ecu and hasattr(ecu.enterprise_customer, 'country'):
             country_code = ecu.enterprise_customer.country

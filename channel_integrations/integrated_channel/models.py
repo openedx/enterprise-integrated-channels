@@ -2,8 +2,10 @@
 Database models for Enterprise Integrated Channel.
 """
 
+import ipaddress
 import json
 import logging
+from urllib.parse import urlparse
 
 from django.contrib import auth
 from django.core.exceptions import ValidationError
@@ -1086,9 +1088,6 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         """Validate webhook configuration."""
         super().clean()
         if self.webhook_url:
-            from urllib.parse import urlparse
-            import ipaddress
-
             # 1. Must use HTTPS
             if not self.webhook_url.startswith('https://'):
                 raise ValidationError('Webhook URL must use HTTPS')

@@ -4,6 +4,7 @@ These handlers are called directly by the consume_events management command.
 """
 import logging
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from openedx_events.learning.data import (
     PersistentGradeData,
     CourseEnrollmentData
@@ -119,7 +120,6 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):
 
 def _prepare_completion_payload(grade_data, user, enterprise_customer):
     """Prepare webhook payload for course completion event."""
-    from django.utils import timezone
     return {
         'event_type': 'course_completion',
         'event_version': '2.0',
@@ -148,7 +148,6 @@ def _prepare_completion_payload(grade_data, user, enterprise_customer):
 
 def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
     """Prepare webhook payload for course enrollment event."""
-    from django.utils import timezone
     return {
         'event_type': 'course_enrollment',
         'event_version': '2.0',
