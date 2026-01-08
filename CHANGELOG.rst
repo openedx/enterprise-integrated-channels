@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+[0.1.24] - 2026-01-08
+*********************
+
+Added
+=====
+
+* fix: update pip-tools to 7.5.2
+* See issue https://github.com/openedx/public-engineering/issues/440 for details.
+
 0.1.25 – 2025-11-28
 *******************
 
