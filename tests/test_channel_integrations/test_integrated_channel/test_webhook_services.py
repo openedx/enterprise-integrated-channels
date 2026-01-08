@@ -1,7 +1,7 @@
 """
 Tests for Webhook services.
 """
-import threading
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -79,8 +79,13 @@ class TestWebhookRouting:
         )
 
         payload = {'event': 'test'}
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay') as mock_delay:
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ) as mock_delay:
                 queue_item = route_webhook_by_region(
                     user=user,
                     enterprise_customer=enterprise,
@@ -106,8 +111,13 @@ class TestWebhookRouting:
 
         payload = {'event': 'test'}
         # User is in EU, but no EU config exists
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='EU'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'):
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='EU'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
                 queue_item = route_webhook_by_region(
                     user=user,
                     enterprise_customer=enterprise,
@@ -124,7 +134,10 @@ class TestWebhookRouting:
         user = User.objects.create(username='testuser')
 
         payload = {'event': 'test'}
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
             with pytest.raises(NoWebhookConfigured):
                 route_webhook_by_region(
                     user=user,
@@ -145,8 +158,13 @@ class TestWebhookRouting:
         )
 
         payload = {'event': 'test'}
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay') as mock_delay:
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ) as mock_delay:
                 # First call
                 item1 = route_webhook_by_region(user, enterprise, 'course-id', 'course_completion', payload)
                 assert mock_delay.call_count == 1
@@ -168,10 +186,17 @@ class TestWebhookRouting:
         )
 
         payload = {'event': 'test'}
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'):
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
                 # Create first item
-                item1 = route_webhook_by_region(user, enterprise, 'frozen-course', 'course_completion', payload)
+                item1 = route_webhook_by_region(
+                    user, enterprise, 'frozen-course', 'course_completion', payload
+                )
 
                 # Create duplicate - should return same item
                 item2 = route_webhook_by_region(user, enterprise, 'frozen-course', 'course_completion', payload)
@@ -227,7 +252,6 @@ class TestWebhookRouting:
 
     def test_route_webhook_logging(self, caplog):
         """Verify appropriate log messages are generated during routing."""
-        import logging
         caplog.set_level(logging.INFO)
 
         enterprise = EnterpriseCustomerFactory()
@@ -239,9 +263,16 @@ class TestWebhookRouting:
         )
 
         payload = {'event': 'test'}
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'):
-                route_webhook_by_region(user, enterprise, 'course-id', 'course_completion', payload)
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
+                route_webhook_by_region(
+                    user, enterprise, 'course-id', 'course_completion', payload
+                )
 
         # Verify logging occurred
         assert any('Queued' in record.message or 'webhook' in record.message.lower()
@@ -276,9 +307,16 @@ class TestWebhookRouting:
         )
 
         # Today's event should create a new queue item
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'):
-                new_item = route_webhook_by_region(user, enterprise, 'retry-course', 'course_completion', payload)
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
+                new_item = route_webhook_by_region(
+                    user, enterprise, 'retry-course', 'course_completion', payload
+                )
 
                 # Should be a different item
                 assert new_item.id != old_item.id

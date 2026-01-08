@@ -3,26 +3,26 @@ Event handlers for OpenEdX Events consumed from event bus.
 These handlers are called directly by the consume_events management command.
 """
 import logging
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from openedx_events.learning.data import (
-    PersistentCourseGradeData,
-    CourseEnrollmentData
-)
 from enterprise.models import EnterpriseCustomerUser
+from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
+
 from channel_integrations.integrated_channel.services.webhook_routing import (
+    NoWebhookConfigured,
     route_webhook_by_region,
-    NoWebhookConfigured
 )
 
 User = get_user_model()
 log = logging.getLogger(__name__)
 
-def handle_grade_change_for_webhooks(sender, signal, **kwargs):
+
+def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disable=unused-argument
     """
     Handle grade change event from event bus.
     Called directly by consume_events command.
-    
+
     Args:
         sender: The sender class
         signal: The signal definition (for context)
@@ -32,24 +32,24 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):
     if not grade_data:
         log.warning('[Webhook] PERSISTENT_GRADE_SUMMARY_CHANGED event without grade data')
         return
-    
+
     # Only process passing grades
     if not grade_data.passed_timestamp:
         log.debug(f'[Webhook] Skipping non-passing grade for user {grade_data.user_id}')
         return
-    
+
     try:
         user = User.objects.get(id=grade_data.user_id)
     except User.DoesNotExist:
         log.error(f'[Webhook] User {grade_data.user_id} not found')
         return
-    
+
     # Check if enterprise learner
     enterprise_customer_users = EnterpriseCustomerUser.objects.filter(
         user_id=user.id,
         active=True
     )
-    
+
     for ecu in enterprise_customer_users:
         try:
             payload = _prepare_completion_payload(grade_data, user, ecu.enterprise_customer)
@@ -67,13 +67,14 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):
             )
         except NoWebhookConfigured as e:
             log.debug(f'[Webhook] No webhook configured: {e}')
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             log.error(
                 f'[Webhook] Failed to queue completion webhook: {e}',
                 exc_info=True
             )
 
-def handle_enrollment_for_webhooks(sender, signal, **kwargs):
+
+def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable=unused-argument
     """
     Handle enrollment event from event bus.
     Called directly by consume_events command.
@@ -82,19 +83,19 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):
     if not enrollment_data:
         log.warning('[Webhook] COURSE_ENROLLMENT_CREATED event without enrollment data')
         return
-    
+
     try:
         user = User.objects.get(id=enrollment_data.user.id)
     except User.DoesNotExist:
         log.error(f'[Webhook] User {enrollment_data.user.id} not found')
         return
-    
+
     # Check if enterprise learner
     enterprise_customer_users = EnterpriseCustomerUser.objects.filter(
         user_id=user.id,
         active=True
     )
-    
+
     for ecu in enterprise_customer_users:
         try:
             payload = _prepare_enrollment_payload(enrollment_data, user, ecu.enterprise_customer)
@@ -112,11 +113,12 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):
             )
         except NoWebhookConfigured as e:
             log.debug(f'[Webhook] No webhook configured: {e}')
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             log.error(
                 f'[Webhook] Failed to queue enrollment webhook: {e}',
                 exc_info=True
             )
+
 
 def _prepare_completion_payload(grade_data, user, enterprise_customer):
     """Prepare webhook payload for course completion event."""
@@ -145,6 +147,7 @@ def _prepare_completion_payload(grade_data, user, enterprise_customer):
             'is_passing': True,
         },
     }
+
 
 def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
     """Prepare webhook payload for course enrollment event."""

@@ -1,6 +1,7 @@
 """
 Integration tests for Webhook event handlers.
 """
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -19,6 +20,7 @@ from channel_integrations.integrated_channel.handlers import (
     handle_enrollment_for_webhooks,
     handle_grade_change_for_webhooks,
 )
+from channel_integrations.integrated_channel.services.webhook_routing import NoWebhookConfigured
 from test_utils.factories import EnterpriseCustomerFactory, EnterpriseCustomerUserFactory
 
 User = get_user_model()
@@ -196,7 +198,6 @@ class TestWebhookHandlers:
 
     def test_handle_grade_change_logging(self, caplog):
         """Verify appropriate log messages for grade change events."""
-        import logging
         caplog.set_level(logging.INFO)
 
         enterprise = EnterpriseCustomerFactory()
@@ -224,7 +225,6 @@ class TestWebhookHandlers:
 
     def test_handle_grade_change_missing_data(self, caplog):
         """Verify handling of grade change events without grade data."""
-        import logging
         caplog.set_level(logging.WARNING)
 
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
@@ -236,7 +236,6 @@ class TestWebhookHandlers:
 
     def test_handle_enrollment_missing_data(self, caplog):
         """Verify handling of enrollment events without enrollment data."""
-        import logging
         caplog.set_level(logging.WARNING)
 
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
@@ -248,7 +247,6 @@ class TestWebhookHandlers:
 
     def test_handle_grade_change_user_not_found(self, caplog):
         """Verify handling when user does not exist."""
-        import logging
         caplog.set_level(logging.ERROR)
 
         course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
@@ -272,7 +270,6 @@ class TestWebhookHandlers:
 
     def test_handle_enrollment_user_not_found(self, caplog):
         """Verify handling when user does not exist for enrollment."""
-        import logging
         caplog.set_level(logging.ERROR)
 
         course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
@@ -291,3 +288,105 @@ class TestWebhookHandlers:
 
         # Check for error log
         assert any('not found' in record.message for record in caplog.records)
+
+    def test_handle_grade_change_no_webhook_configured(self, caplog):
+        """Verify handling when no webhook is configured (NoWebhookConfigured exception)."""
+        caplog.set_level(logging.DEBUG)
+
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            course_edited_timestamp=timezone.now(),
+            course_version='1',
+            grading_policy_hash='hash',
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            mock_route.side_effect = NoWebhookConfigured("No webhook configured for this enterprise")
+            handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
+
+        # Check for debug log
+        assert any('No webhook configured' in record.message for record in caplog.records)
+
+    def test_handle_grade_change_generic_exception(self, caplog):
+        """Verify handling of generic exceptions during grade change processing."""
+        caplog.set_level(logging.ERROR)
+
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            course_edited_timestamp=timezone.now(),
+            course_version='1',
+            grading_policy_hash='hash',
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            mock_route.side_effect = RuntimeError("Unexpected error")
+            handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
+
+        # Check for error log
+        assert any('Failed to queue completion webhook' in record.message for record in caplog.records)
+
+    def test_handle_enrollment_no_webhook_configured(self, caplog):
+        """Verify handling when no webhook is configured for enrollment."""
+        caplog.set_level(logging.DEBUG)
+
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            mode='verified',
+            is_active=True,
+            creation_date=timezone.now()
+        )
+
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            mock_route.side_effect = NoWebhookConfigured("No webhook configured for this enterprise")
+            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
+
+        # Check for debug log
+        assert any('No webhook configured' in record.message for record in caplog.records)
+
+    def test_handle_enrollment_generic_exception(self, caplog):
+        """Verify handling of generic exceptions during enrollment processing."""
+        caplog.set_level(logging.ERROR)
+
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            mode='verified',
+            is_active=True,
+            creation_date=timezone.now()
+        )
+
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            mock_route.side_effect = RuntimeError("Unexpected error")
+            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
+
+        # Check for error log
+        assert any('Failed to queue enrollment webhook' in record.message for record in caplog.records)

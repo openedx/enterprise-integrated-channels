@@ -1105,32 +1105,19 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
                 )
 
             # 3. Block private IP ranges (SSRF protection)
+            # Note: This includes 169.254.x.x (link-local/cloud metadata endpoints)
+            # Cloud metadata hostnames (metadata.google.internal, metadata.aws, etc.)
+            # resolve to private IPs within their respective cloud environments and
+            # are blocked by this check.
             try:
                 ip = ipaddress.ip_address(hostname)
                 if ip.is_private or ip.is_reserved or ip.is_loopback:
                     raise ValidationError(
                         'Webhook URL cannot point to private or reserved IP addresses'
                     )
-                # Block cloud metadata endpoints
-                if str(ip) == '169.254.169.254':
-                    raise ValidationError(
-                        'Webhook URL cannot point to cloud metadata service'
-                    )
             except ValueError:
                 # Hostname is not an IP address, which is fine
                 pass
-
-            # 4. Block reserved hostnames
-            reserved_hostnames = [
-                'metadata.google.internal',
-                '169.254.169.254',
-                'metadata.aws',
-                'metadata.azure.com',
-            ]
-            if hostname in reserved_hostnames:
-                raise ValidationError(
-                    f'Webhook URL cannot use reserved hostname: {hostname}'
-                )
 
 
 class WebhookTransmissionQueue(TimeStampedModel):

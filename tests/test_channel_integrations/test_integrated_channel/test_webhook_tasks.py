@@ -1,6 +1,7 @@
 """
 Tests for Webhook delivery Celery task.
 """
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -452,7 +453,6 @@ class TestWebhookTasks:
 
     def test_process_webhook_queue_logging(self, caplog):
         """Verify that appropriate log messages are generated."""
-        import logging
         caplog.set_level(logging.INFO)
 
         enterprise = EnterpriseCustomerFactory()
@@ -478,3 +478,55 @@ class TestWebhookTasks:
 
         process_webhook_queue(queue_item.id)
         assert "No active webhook configuration found" in caplog.text or "Error processing" in caplog.text
+
+    def test_process_webhook_queue_skips_completed_items(self):
+        """
+        Verify that queue items with success or cancelled status are not reprocessed.
+        This tests the early return path in process_webhook_queue for already-completed items.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_completed')
+
+        # Test case 1: Queue item with 'success' status
+        success_queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test'},
+            deduplication_key='key-success',
+            status='success',
+            attempt_count=1
+        )
+
+        # Call process_webhook_queue - should return early without processing
+        process_webhook_queue(success_queue_item.id)
+
+        # Verify the item was not modified (attempt_count should still be 1)
+        success_queue_item.refresh_from_db()
+        assert success_queue_item.attempt_count == 1
+        assert success_queue_item.status == 'success'
+
+        # Test case 2: Queue item with 'cancelled' status
+        cancelled_queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id-2',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test2'},
+            deduplication_key='key-cancelled',
+            status='cancelled',
+            attempt_count=2
+        )
+
+        # Call process_webhook_queue - should return early without processing
+        process_webhook_queue(cancelled_queue_item.id)
+
+        # Verify the item was not modified (attempt_count should still be 2)
+        cancelled_queue_item.refresh_from_db()
+        assert cancelled_queue_item.attempt_count == 2
+        assert cancelled_queue_item.status == 'cancelled'

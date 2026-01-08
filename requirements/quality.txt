@@ -21,6 +21,10 @@ astroid==3.3.11
     # via
     #   pylint
     #   pylint-celery
+attrs==25.4.0
+    # via
+    #   -r requirements/test.txt
+    #   openedx-events
 billiard==4.2.2
     # via
     #   -r requirements/test.txt
@@ -146,6 +150,10 @@ drf-jwt==1.19.2
     # via
     #   -r requirements/test.txt
     #   edx-drf-extensions
+edx-ccx-keys==2.0.2
+    # via
+    #   -r requirements/test.txt
+    #   openedx-events
 edx-django-utils==8.0.1
     # via
     #   -r requirements/test.txt
@@ -174,6 +182,10 @@ faker==37.12.0
     # via
     #   -r requirements/test.txt
     #   factory-boy
+fastavro==1.12.1
+    # via
+    #   -r requirements/test.txt
+    #   openedx-events
 freezegun==1.5.5
     # via -r requirements/test.txt
 idna==3.11
@@ -216,6 +228,8 @@ oauthlib==3.3.1
     #   -r requirements/test.txt
     #   django-oauth-toolkit
 openedx-atlas==0.7.0
+    # via -r requirements/test.txt
+openedx-events==9.14.1
     # via -r requirements/test.txt
 packaging==25.0
     # via
@@ -330,6 +344,12 @@ slumber==0.7.1
     # via -r requirements/test.txt
 snowballstemmer==3.0.1
     # via pydocstyle
+social-auth-app-django==5.4.3
+    # via -r requirements/test.txt
+social-auth-core==4.8.1
+    # via
+    #   -r requirements/test.txt
+    #   social-auth-app-django
 sqlparse==0.5.3
     # via
     #   -r requirements/test.txt

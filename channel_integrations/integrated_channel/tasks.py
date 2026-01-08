@@ -555,7 +555,7 @@ def process_webhook_queue(queue_item_id):
             LOGGER.warning(f"[Webhook] Failed to transmit item {queue_item.id}: HTTP {response.status_code}")
             _schedule_retry(queue_item, config)
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         queue_item.status = 'failed'
         # Get a meaningful error message
         error_msg = str(e) if str(e) else repr(e)

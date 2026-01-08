@@ -17,6 +17,8 @@ asgiref==3.10.0
     #   -r requirements/base.txt
     #   django
     #   django-countries
+attrs==25.4.0
+    # via openedx-events
 billiard==4.2.2
     # via
     #   -r requirements/base.txt
@@ -130,6 +132,8 @@ drf-jwt==1.19.2
     # via
     #   -r requirements/base.txt
     #   edx-drf-extensions
+edx-ccx-keys==2.0.2
+    # via openedx-events
 edx-django-utils==8.0.1
     # via
     #   -r requirements/base.txt
@@ -154,6 +158,8 @@ factory-boy==3.3.3
     # via -r requirements/test.in
 faker==37.12.0
     # via factory-boy
+fastavro==1.12.1
+    # via openedx-events
 freezegun==1.5.5
     # via -r requirements/test.in
 idna==3.11
@@ -186,6 +192,8 @@ oauthlib==3.3.1
     #   django-oauth-toolkit
 openedx-atlas==0.7.0
     # via -r requirements/base.txt
+openedx-events==9.14.1
+    # via -r requirements/test.in
 packaging==25.0
     # via
     #   -r requirements/base.txt
@@ -270,6 +278,10 @@ six==1.17.0
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/base.txt
+social-auth-app-django==5.4.3
+    # via -r requirements/test.in
+social-auth-core==4.8.1
+    # via social-auth-app-django
 sqlparse==0.5.3
     # via
     #   -r requirements/base.txt

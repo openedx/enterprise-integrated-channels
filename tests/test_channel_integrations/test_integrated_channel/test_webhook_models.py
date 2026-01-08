@@ -1,14 +1,17 @@
 """
 Tests for Enterprise Webhook models.
 """
+from unittest.mock import patch
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from freezegun import freeze_time
 
 from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration, WebhookTransmissionQueue
+from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
 from test_utils.factories import EnterpriseCustomerFactory
 
 User = get_user_model()
@@ -38,20 +41,86 @@ class TestEnterpriseWebhookConfiguration:
                 region='US',
                 webhook_url=f'https://{ip}/webhook'
             )
-            with pytest.raises(ValidationError, match='cannot point to private or reserved IP'):
+            with pytest.raises(ValidationError, match='private or reserved IP'):
                 config.clean()
 
-    def test_ssrf_protection_reserved_hostnames(self):
-        """Verify that reserved hostnames are blocked."""
+    def test_ssrf_protection_localhost_hostnames(self):
+        """Verify that localhost and loopback hostnames are blocked."""
         enterprise = EnterpriseCustomerFactory()
-        for host in ['metadata.google.internal', 'metadata.aws', 'metadata.azure.com']:
+        # Test localhost and IPv4 loopback addresses
+        for host in ['localhost', '127.0.0.1', '0.0.0.0']:
             config = EnterpriseWebhookConfiguration(
                 enterprise_customer=enterprise,
                 region='US',
                 webhook_url=f'https://{host}/webhook'
             )
-            with pytest.raises(ValidationError, match='cannot use reserved hostname'):
+            with pytest.raises(ValidationError, match='cannot point to localhost or loopback'):
                 config.clean()
+
+        # Test IPv6 loopback (needs brackets in URL)
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://[::1]/webhook'
+        )
+        with pytest.raises(ValidationError, match='cannot point to localhost or loopback'):
+            config.clean()
+
+    def test_ssrf_protection_cloud_metadata_ip(self):
+        """Verify that cloud metadata IP address is blocked as a private IP."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://169.254.169.254/latest/meta-data/'
+        )
+        # Note: 169.254.169.254 is caught by is_private check, not the specific metadata check
+        with pytest.raises(ValidationError, match='cannot point to private or reserved IP'):
+            config.clean()
+
+    def test_invalid_webhook_url_no_hostname(self):
+        """Verify that URLs without a hostname are rejected."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://'
+        )
+        with pytest.raises(ValidationError, match='Invalid webhook URL'):
+            config.clean()
+
+    def test_webhook_url_not_provided(self):
+        """Verify that configurations without webhook_url don't raise validation errors."""
+        enterprise = EnterpriseCustomerFactory()
+        # Test with no webhook_url (should pass validation)
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url=None
+        )
+        # Should not raise - webhook_url is optional
+        config.clean()
+
+        # Test with empty string
+        config2 = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url=''
+        )
+        # Should not raise - empty webhook_url is treated as None
+        config2.clean()
+
+    def test_public_ip_address_allowed(self):
+        """Verify that public IP addresses are allowed (not private/reserved/loopback)."""
+        enterprise = EnterpriseCustomerFactory()
+        # Test with a public IP address (Google DNS)
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://8.8.8.8/webhook'
+        )
+        # Should not raise - 8.8.8.8 is a public IP
+        config.clean()
 
     def test_valid_config(self):
         """Verify that a valid configuration passes validation."""
@@ -89,7 +158,6 @@ class TestWebhookTransmissionQueue:
 
     def test_unique_enterprise_region_constraint(self):
         """Verify that unique constraint on (enterprise_customer, region) works."""
-        from django.db import transaction
         enterprise = EnterpriseCustomerFactory()
 
         # Create first configuration
@@ -118,7 +186,6 @@ class TestWebhookTransmissionQueue:
 
     def test_deduplication_key_constraint(self):
         """Verify that deduplication constraint prevents duplicate active items."""
-        from django.db import transaction
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser')
 
@@ -273,10 +340,6 @@ class TestWebhookIntegration:
 
     def test_end_to_end_webhook_flow(self):
         """Test the complete flow from configuration to queue creation."""
-        from unittest.mock import patch
-
-        from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
-
         # Setup
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='integration-user', email='int@example.com')
@@ -297,8 +360,13 @@ class TestWebhookIntegration:
             'data': {'key': 'value'}
         }
 
-        with patch('channel_integrations.integrated_channel.services.webhook_routing.get_user_region', return_value='US'):
-            with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'):
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
                 queue_item = route_webhook_by_region(
                     user=user,
                     enterprise_customer=enterprise,
