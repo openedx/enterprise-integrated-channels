@@ -6,7 +6,7 @@ import logging
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from openedx_events.learning.data import (
-    PersistentGradeData,
+    PersistentCourseGradeData,
     CourseEnrollmentData
 )
 from enterprise.models import EnterpriseCustomerUser
@@ -26,9 +26,9 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):
     Args:
         sender: The sender class
         signal: The signal definition (for context)
-        **kwargs: Contains 'grade' key with PersistentGradeData object
+        **kwargs: Contains 'grade' key with PersistentCourseGradeData object
     """
-    grade_data: PersistentGradeData = kwargs.get('grade')
+    grade_data: PersistentCourseGradeData = kwargs.get('grade')
     if not grade_data:
         log.warning('[Webhook] PERSISTENT_GRADE_SUMMARY_CHANGED event without grade data')
         return
@@ -168,6 +168,6 @@ def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
         'enrollment': {
             'mode': enrollment_data.mode,
             'is_active': enrollment_data.is_active,
-            'enrollment_date': enrollment_data.time.isoformat(),
+            'enrollment_date': enrollment_data.creation_date.isoformat(),
         },
     }

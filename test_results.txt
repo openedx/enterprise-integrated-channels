@@ -1,0 +1,1790 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/bin/python3
+cachedir: .pytest_cache
+django: version: 4.2.16, settings: test_settings (from env)
+rootdir: /Users/irfan.ahmad/src-edx/enterprise-integrated-channels
+configfile: tox.ini
+plugins: django-4.11.1, Faker-37.12.0, cov-7.0.0
+collecting ... collected 54 items
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success FAILED [  1%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_non_passing FAILED [  3%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_success FAILED [  5%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_non_enterprise FAILED [  7%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_complete_payload_structure FAILED [  9%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_complete_payload_structure FAILED [ 11%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_logging FAILED [ 12%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_missing_data PASSED [ 14%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_missing_data PASSED [ 16%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_user_not_found FAILED [ 18%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_user_not_found FAILED [ 20%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_https_requirement PASSED [ 22%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_ssrf_protection_localhost FAILED [ 24%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_ssrf_protection_private_ip PASSED [ 25%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_ssrf_protection_metadata_service FAILED [ 27%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_ssrf_protection_reserved_hostnames PASSED [ 29%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_valid_config PASSED [ 31%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_queue_creation PASSED [ 33%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_unique_enterprise_region_constraint FAILED [ 35%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_deduplication_key_constraint FAILED [ 37%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_webhook_configuration_default_values PASSED [ 38%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_webhook_configuration_validators PASSED [ 40%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_queue_item_status_choices PASSED [ 42%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_queue_timestamps PASSED [ 44%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_multiple_enterprises_same_region PASSED [ 46%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookIntegration::test_end_to_end_webhook_flow PASSED [ 48%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookIntegration::test_webhook_config_cascade_delete PASSED [ 50%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_explicit FAILED [ 51%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_country_mapping FAILED [ 53%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_uk_mapping FAILED [ 55%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_fallback_other PASSED [ 57%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_success PASSED [ 59%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_fallback_other PASSED [ 61%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_no_config PASSED [ 62%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_deduplication PASSED [ 64%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_with_frozen_time PASSED [ 66%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_get_user_region_with_empty_extra_data FAILED [ 68%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_get_user_region_with_none_values FAILED [ 70%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_get_user_region_with_multiple_sso_providers FAILED [ 72%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_logging PASSED [ 74%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_after_retry_success PASSED [ 75%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_success PASSED [ 77%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_retry PASSED [ 79%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_max_retries PASSED [ 81%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_no_config FAILED [ 83%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_timeout FAILED [ 85%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_connection_error FAILED [ 87%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_response_truncation PASSED [ 88%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_4xx_errors PASSED [ 90%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_5xx_errors PASSED [ 92%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_exponential_backoff_delays PASSED [ 94%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_exponential_backoff_cap_at_one_hour PASSED [ 96%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_logging PASSED [ 98%]
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_route_webhook_concurrent_deduplication PASSED [100%]
+
+=================================== FAILURES ===================================
+_____________ TestWebhookHandlers.test_handle_grade_change_success _____________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113e281c0>
+
+    def test_handle_grade_change_success(self):
+        """Verify that a passing grade event queues a completion webhook."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+>           course=CourseData(course_key=course_key, course_name='Demo Course'),
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'course_name'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:37: TypeError
+---------------------------- Captured stderr setup -----------------------------
+Creating test database for alias 'default'...
+___________ TestWebhookHandlers.test_handle_grade_change_non_passing ___________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113def370>
+
+    def test_handle_grade_change_non_passing(self):
+        """Verify that a non-passing grade event is ignored."""
+        user = User.objects.create(username='testuser')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+>           course=CourseData(course_key=CourseKey.from_string('course-v1:edX+DemoX+Demo_Course'), course_name='Demo'),
+            percent_grade=0.4,
+            letter_grade='F',
+            passed_timestamp=None
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'course_name'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:58: TypeError
+______________ TestWebhookHandlers.test_handle_enrollment_success ______________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113defbb0>
+
+    def test_handle_enrollment_success(self):
+        """Verify that an enrollment event queues an enrollment webhook."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+>           user=UserData(id=user.id, username=user.username, email=user.email),
+            course=CourseData(course_key=course_key, course_name='Demo Course'),
+            mode='verified',
+            is_active=True,
+            time=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'username'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:76: TypeError
+__________ TestWebhookHandlers.test_handle_enrollment_non_enterprise ___________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113def8e0>
+
+    def test_handle_enrollment_non_enterprise(self):
+        """Verify that events for non-enterprise users are ignored."""
+        user = User.objects.create(username='testuser', email='test@example.com')
+        # No EnterpriseCustomerUser record
+    
+        enrollment_data = CourseEnrollmentData(
+>           user=UserData(id=user.id, username=user.username, email=user.email),
+            course=CourseData(course_key=CourseKey.from_string('course-v1:edX+DemoX+Demo_Course'), course_name='Demo'),
+            mode='audit',
+            is_active=True,
+            time=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'username'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:98: TypeError
+___ TestWebhookHandlers.test_handle_grade_change_complete_payload_structure ____
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113e51130>
+
+    def test_handle_grade_change_complete_payload_structure(self):
+        """Verify the complete payload structure for grade change events."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+>           course=CourseData(course_key=course_key, course_name='Demo Course'),
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'course_name'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:118: TypeError
+____ TestWebhookHandlers.test_handle_enrollment_complete_payload_structure _____
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113e51070>
+
+    def test_handle_enrollment_complete_payload_structure(self):
+        """Verify the complete payload structure for enrollment events."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+>           user=UserData(id=user.id, username=user.username, email=user.email),
+            course=CourseData(course_key=course_key, course_name='Demo Course'),
+            mode='verified',
+            is_active=True,
+            time=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'username'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:156: TypeError
+_____________ TestWebhookHandlers.test_handle_grade_change_logging _____________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113e51d30>
+caplog = <_pytest.logging.LogCaptureFixture object at 0x114ff1670>
+
+    def test_handle_grade_change_logging(self, caplog):
+        """Verify appropriate log messages for grade change events."""
+        import logging
+        caplog.set_level(logging.INFO)
+    
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+>           course=CourseData(course_key=course_key, course_name='Demo Course'),
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'course_name'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:194: TypeError
+_________ TestWebhookHandlers.test_handle_grade_change_user_not_found __________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113dee580>
+caplog = <_pytest.logging.LogCaptureFixture object at 0x114fea550>
+
+    def test_handle_grade_change_user_not_found(self, caplog):
+        """Verify handling when user does not exist."""
+        import logging
+        caplog.set_level(logging.ERROR)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=99999,  # Non-existent user
+>           course=CourseData(course_key=course_key, course_name='Demo Course'),
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'course_name'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:239: TypeError
+__________ TestWebhookHandlers.test_handle_enrollment_user_not_found ___________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_handlers.TestWebhookHandlers object at 0x113dee4c0>
+caplog = <_pytest.logging.LogCaptureFixture object at 0x114ff0550>
+
+    def test_handle_enrollment_user_not_found(self, caplog):
+        """Verify handling when user does not exist for enrollment."""
+        import logging
+        caplog.set_level(logging.ERROR)
+    
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+>           user=UserData(id=99999, username='ghost', email='ghost@example.com'),
+            course=CourseData(course_key=course_key, course_name='Demo Course'),
+            mode='audit',
+            is_active=True,
+            time=timezone.now()
+        )
+E       TypeError: __init__() got an unexpected keyword argument 'username'
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py:259: TypeError
+______ TestEnterpriseWebhookConfiguration.test_ssrf_protection_localhost _______
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestEnterpriseWebhookConfiguration object at 0x113ea41f0>
+
+    def test_ssrf_protection_localhost(self):
+        """Verify that localhost/loopback addresses are blocked."""
+        enterprise = EnterpriseCustomerFactory()
+        for host in ['localhost', '127.0.0.1', '::1', '0.0.0.0']:
+            config = EnterpriseWebhookConfiguration(
+                enterprise_customer=enterprise,
+                region='US',
+                webhook_url=f'https://{host}/webhook'
+            )
+            with pytest.raises(ValidationError, match='cannot point to localhost or loopback'):
+>               config.clean()
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <EnterpriseWebhookConfiguration: EnterpriseWebhookConfiguration object (None)>
+
+    def clean(self):
+        """Validate webhook configuration."""
+        super().clean()
+        if self.webhook_url:
+            # 1. Must use HTTPS
+            if not self.webhook_url.startswith('https://'):
+                raise ValidationError('Webhook URL must use HTTPS')
+    
+            parsed = urlparse(self.webhook_url)
+            hostname = parsed.hostname
+    
+            if not hostname:
+>               raise ValidationError('Invalid webhook URL')
+E               django.core.exceptions.ValidationError: ['Invalid webhook URL']
+
+channel_integrations/integrated_channel/models.py:1099: ValidationError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestEnterpriseWebhookConfiguration object at 0x113ea41f0>
+
+    def test_ssrf_protection_localhost(self):
+        """Verify that localhost/loopback addresses are blocked."""
+        enterprise = EnterpriseCustomerFactory()
+        for host in ['localhost', '127.0.0.1', '::1', '0.0.0.0']:
+            config = EnterpriseWebhookConfiguration(
+                enterprise_customer=enterprise,
+                region='US',
+                webhook_url=f'https://{host}/webhook'
+            )
+            with pytest.raises(ValidationError, match='cannot point to localhost or loopback'):
+>               config.clean()
+E               AssertionError: Regex pattern did not match.
+E                Regex: 'cannot point to localhost or loopback'
+E                Input: "['Invalid webhook URL']"
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:44: AssertionError
+___ TestEnterpriseWebhookConfiguration.test_ssrf_protection_metadata_service ___
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestEnterpriseWebhookConfiguration object at 0x113ea4970>
+
+    def test_ssrf_protection_metadata_service(self):
+        """Verify that cloud metadata endpoints are blocked."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://169.254.169.254/webhook'
+        )
+        with pytest.raises(ValidationError, match='cannot point to cloud metadata service'):
+>           config.clean()
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <EnterpriseWebhookConfiguration: EnterpriseWebhookConfiguration object (None)>
+
+    def clean(self):
+        """Validate webhook configuration."""
+        super().clean()
+        if self.webhook_url:
+            # 1. Must use HTTPS
+            if not self.webhook_url.startswith('https://'):
+                raise ValidationError('Webhook URL must use HTTPS')
+    
+            parsed = urlparse(self.webhook_url)
+            hostname = parsed.hostname
+    
+            if not hostname:
+                raise ValidationError('Invalid webhook URL')
+    
+            # 2. Block localhost (SSRF protection)
+            if hostname in ['localhost', '127.0.0.1', '::1', '0.0.0.0']:
+                raise ValidationError(
+                    'Webhook URL cannot point to localhost or loopback addresses'
+                )
+    
+            # 3. Block private IP ranges (SSRF protection)
+            try:
+                ip = ipaddress.ip_address(hostname)
+                if ip.is_private or ip.is_reserved or ip.is_loopback:
+>                   raise ValidationError(
+                        'Webhook URL cannot point to private or reserved IP addresses'
+                    )
+E                   django.core.exceptions.ValidationError: ['Webhook URL cannot point to private or reserved IP addresses']
+
+channel_integrations/integrated_channel/models.py:1111: ValidationError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestEnterpriseWebhookConfiguration object at 0x113ea4970>
+
+    def test_ssrf_protection_metadata_service(self):
+        """Verify that cloud metadata endpoints are blocked."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://169.254.169.254/webhook'
+        )
+        with pytest.raises(ValidationError, match='cannot point to cloud metadata service'):
+>           config.clean()
+E           AssertionError: Regex pattern did not match.
+E            Regex: 'cannot point to cloud metadata service'
+E            Input: "['Webhook URL cannot point to private or reserved IP addresses']"
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:67: AssertionError
+____ TestWebhookTransmissionQueue.test_unique_enterprise_region_constraint _____
+
+self = <django.db.backends.utils.CursorWrapper object at 0x114d34730>
+sql = 'INSERT INTO "channel_integration_enterprisewebhookconfiguration" ("created", "modified", "enterprise_customer_id", "r...") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "channel_integration_enterprisewebhookconfiguration"."id"'
+params = ('2026-01-08 14:22:24.574522', '2026-01-08 14:22:24.574522', '89d86734a35d42869926d5cf45a65e4d', 'US', 'https://us2.example.com/webhook', None, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x114d34730>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x11475ed30>
+query = 'INSERT INTO "channel_integration_enterprisewebhookconfiguration" ("created", "modified", "enterprise_customer_id", "r...", "active") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "channel_integration_enterprisewebhookconfiguration"."id"'
+params = ('2026-01-08 14:22:24.574522', '2026-01-08 14:22:24.574522', '89d86734a35d42869926d5cf45a65e4d', 'US', 'https://us2.example.com/webhook', None, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: channel_integration_enterprisewebhookconfiguration.enterprise_customer_id, channel_integration_enterprisewebhookconfiguration.region
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestWebhookTransmissionQueue object at 0x113ea7970>
+
+    def test_unique_enterprise_region_constraint(self):
+        """Verify that unique constraint on (enterprise_customer, region) works."""
+        enterprise = EnterpriseCustomerFactory()
+    
+        # Create first configuration
+        config1 = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://us1.example.com/webhook'
+        )
+    
+        # Attempt to create duplicate with same enterprise and region
+        with pytest.raises(IntegrityError):
+>           EnterpriseWebhookConfiguration.objects.create(
+                enterprise_customer=enterprise,
+                region='US',
+                webhook_url='https://us2.example.com/webhook'
+            )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/model_utils/models.py:43: in save
+    super().save(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x11475ed30>
+query = 'INSERT INTO "channel_integration_enterprisewebhookconfiguration" ("created", "modified", "enterprise_customer_id", "r...", "active") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "channel_integration_enterprisewebhookconfiguration"."id"'
+params = ('2026-01-08 14:22:24.574522', '2026-01-08 14:22:24.574522', '89d86734a35d42869926d5cf45a65e4d', 'US', 'https://us2.example.com/webhook', None, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: channel_integration_enterprisewebhookconfiguration.enterprise_customer_id, channel_integration_enterprisewebhookconfiguration.region
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestWebhookTransmissionQueue object at 0x113ea7970>
+
+    def test_unique_enterprise_region_constraint(self):
+        """Verify that unique constraint on (enterprise_customer, region) works."""
+        enterprise = EnterpriseCustomerFactory()
+    
+        # Create first configuration
+        config1 = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://us1.example.com/webhook'
+        )
+    
+        # Attempt to create duplicate with same enterprise and region
+        with pytest.raises(IntegrityError):
+            EnterpriseWebhookConfiguration.objects.create(
+                enterprise_customer=enterprise,
+                region='US',
+                webhook_url='https://us2.example.com/webhook'
+            )
+    
+        # Different region should work
+>       config2 = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='EU',
+            webhook_url='https://eu.example.com/webhook'
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/model_utils/models.py:43: in save
+    super().save(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:83: in _execute
+    self.db.validate_no_broken_transaction()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <DatabaseWrapper vendor='sqlite' alias='default'>
+
+    def validate_no_broken_transaction(self):
+        if self.needs_rollback:
+>           raise TransactionManagementError(
+                "An error occurred in the current transaction. You can't "
+                "execute queries until the end of the 'atomic' block."
+            ) from self.rollback_exc
+E           django.db.transaction.TransactionManagementError: An error occurred in the current transaction. You can't execute queries until the end of the 'atomic' block.
+
+venv/lib/python3.9/site-packages/django/db/backends/base/base.py:531: TransactionManagementError
+________ TestWebhookTransmissionQueue.test_deduplication_key_constraint ________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x114e11220>
+sql = 'INSERT INTO "channel_integration_webhooktransmissionqueue" ("created", "modified", "enterprise_customer_id", "user_id... %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "channel_integration_webhooktransmissionqueue"."id"'
+params = ('2026-01-08 14:22:24.864873', '2026-01-08 14:22:24.864873', '033115ccb4fe48028dace203fdd126f2', 1, 'course-id', 'course_completion', ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x114e11220>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x1148ee8b0>
+query = 'INSERT INTO "channel_integration_webhooktransmissionqueue" ("created", "modified", "enterprise_customer_id", "user_id...S (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "channel_integration_webhooktransmissionqueue"."id"'
+params = ('2026-01-08 14:22:24.864873', '2026-01-08 14:22:24.864873', '033115ccb4fe48028dace203fdd126f2', 1, 'course-id', 'course_completion', ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: channel_integration_webhooktransmissionqueue.deduplication_key
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestWebhookTransmissionQueue object at 0x113ea49a0>
+
+    def test_deduplication_key_constraint(self):
+        """Verify that deduplication constraint prevents duplicate active items."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+    
+        # Create first queue item
+        item1 = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test'},
+            deduplication_key='dedup-key-1',
+            status='pending'
+        )
+    
+        # Attempt to create duplicate with same key and active status
+        with pytest.raises(IntegrityError):
+>           WebhookTransmissionQueue.objects.create(
+                enterprise_customer=enterprise,
+                user=user,
+                course_id='course-id',
+                event_type='course_completion',
+                user_region='US',
+                webhook_url='https://example.com/webhook',
+                payload={'event': 'test'},
+                deduplication_key='dedup-key-1',
+                status='pending'
+            )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:162: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/model_utils/models.py:43: in save
+    super().save(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x1148ee8b0>
+query = 'INSERT INTO "channel_integration_webhooktransmissionqueue" ("created", "modified", "enterprise_customer_id", "user_id...S (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "channel_integration_webhooktransmissionqueue"."id"'
+params = ('2026-01-08 14:22:24.864873', '2026-01-08 14:22:24.864873', '033115ccb4fe48028dace203fdd126f2', 1, 'course-id', 'course_completion', ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: channel_integration_webhooktransmissionqueue.deduplication_key
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_models.TestWebhookTransmissionQueue object at 0x113ea49a0>
+
+    def test_deduplication_key_constraint(self):
+        """Verify that deduplication constraint prevents duplicate active items."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+    
+        # Create first queue item
+        item1 = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test'},
+            deduplication_key='dedup-key-1',
+            status='pending'
+        )
+    
+        # Attempt to create duplicate with same key and active status
+        with pytest.raises(IntegrityError):
+            WebhookTransmissionQueue.objects.create(
+                enterprise_customer=enterprise,
+                user=user,
+                course_id='course-id',
+                event_type='course_completion',
+                user_region='US',
+                webhook_url='https://example.com/webhook',
+                payload={'event': 'test'},
+                deduplication_key='dedup-key-1',
+                status='pending'
+            )
+    
+        # Cancelled status should allow duplicate key
+>       item2 = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id-2',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test'},
+            deduplication_key='dedup-key-1',
+            status='cancelled'
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/model_utils/models.py:43: in save
+    super().save(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:83: in _execute
+    self.db.validate_no_broken_transaction()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <DatabaseWrapper vendor='sqlite' alias='default'>
+
+    def validate_no_broken_transaction(self):
+        if self.needs_rollback:
+>           raise TransactionManagementError(
+                "An error occurred in the current transaction. You can't "
+                "execute queries until the end of the 'atomic' block."
+            ) from self.rollback_exc
+E           django.db.transaction.TransactionManagementError: An error occurred in the current transaction. You can't execute queries until the end of the 'atomic' block.
+
+venv/lib/python3.9/site-packages/django/db/backends/base/base.py:531: TransactionManagementError
+_______________ TestRegionService.test_get_user_region_explicit ________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x11477bee0>
+sql = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (%s, %s, %s, %s, %s, %s) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": "EU"}', '2026-01-08 14:22:25.292718', '2026-01-08 14:22:25.292727')
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x11477bee0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x1148f7430>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": "EU"}', '2026-01-08 14:22:25.292718', '2026-01-08 14:22:25.292727')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_services.TestRegionService object at 0x113eb1be0>
+
+    def test_get_user_region_explicit(self):
+        """Verify explicit region in SSO extra_data."""
+        user = User.objects.create(username='testuser')
+>       UserSocialAuth.objects.create(
+            user=user,
+            provider='saml',
+            uid='test-uid',
+            extra_data={'region': 'EU'}
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x1148f7430>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": "EU"}', '2026-01-08 14:22:25.292718', '2026-01-08 14:22:25.292727')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+____________ TestRegionService.test_get_user_region_country_mapping ____________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x114444550>
+sql = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (%s, %s, %s, %s, %s, %s) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"country": "FR"}', '2026-01-08 14:22:25.474776', '2026-01-08 14:22:25.474788')
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x114444550>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x1148d4310>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"country": "FR"}', '2026-01-08 14:22:25.474776', '2026-01-08 14:22:25.474788')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_services.TestRegionService object at 0x113eb1fa0>
+
+    def test_get_user_region_country_mapping(self):
+        """Verify country code mapping in SSO extra_data."""
+        user = User.objects.create(username='testuser')
+>       UserSocialAuth.objects.create(
+            user=user,
+            provider='saml',
+            uid='test-uid',
+            extra_data={'country': 'FR'}
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x1148d4310>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"country": "FR"}', '2026-01-08 14:22:25.474776', '2026-01-08 14:22:25.474788')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+______________ TestRegionService.test_get_user_region_uk_mapping _______________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x1147b56d0>
+sql = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (%s, %s, %s, %s, %s, %s) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"country": "GB"}', '2026-01-08 14:22:25.655852', '2026-01-08 14:22:25.655863')
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x1147b56d0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114578310>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"country": "GB"}', '2026-01-08 14:22:25.655852', '2026-01-08 14:22:25.655863')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_services.TestRegionService object at 0x113ebb3a0>
+
+    def test_get_user_region_uk_mapping(self):
+        """Verify UK country code mapping."""
+        user = User.objects.create(username='testuser')
+>       UserSocialAuth.objects.create(
+            user=user,
+            provider='saml',
+            uid='test-uid',
+            extra_data={'country': 'GB'}
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114578310>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"country": "GB"}', '2026-01-08 14:22:25.655852', '2026-01-08 14:22:25.655863')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+________ TestWebhookRouting.test_get_user_region_with_empty_extra_data _________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x1147a38e0>
+sql = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (%s, %s, %s, %s, %s, %s) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": "", "country": ""}', '2026-01-08 14:22:25.851277', '2026-01-08 14:22:25.851286')
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x1147a38e0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114b6d3a0>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": "", "country": ""}', '2026-01-08 14:22:25.851277', '2026-01-08 14:22:25.851286')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_services.TestWebhookRouting object at 0x113ec1bb0>
+
+    def test_get_user_region_with_empty_extra_data(self):
+        """Verify handling of empty extra_data fields."""
+        user = User.objects.create(username='testuser')
+>       UserSocialAuth.objects.create(
+            user=user,
+            provider='saml',
+            uid='test-uid',
+            extra_data={'region': '', 'country': ''}
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py:231: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114b6d3a0>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": "", "country": ""}', '2026-01-08 14:22:25.851277', '2026-01-08 14:22:25.851286')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+___________ TestWebhookRouting.test_get_user_region_with_none_values ___________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x11474cca0>
+sql = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (%s, %s, %s, %s, %s, %s) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": null, "country": null}', '2026-01-08 14:22:26.030012', '2026-01-08 14:22:26.030022')
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x11474cca0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114be5280>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": null, "country": null}', '2026-01-08 14:22:26.030012', '2026-01-08 14:22:26.030022')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_services.TestWebhookRouting object at 0x113ec1f70>
+
+    def test_get_user_region_with_none_values(self):
+        """Verify handling of None values in extra_data."""
+        user = User.objects.create(username='testuser')
+>       UserSocialAuth.objects.create(
+            user=user,
+            provider='saml',
+            uid='test-uid',
+            extra_data={'region': None, 'country': None}
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114be5280>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid', '{"region": null, "country": null}', '2026-01-08 14:22:26.030012', '2026-01-08 14:22:26.030022')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+_____ TestWebhookRouting.test_get_user_region_with_multiple_sso_providers ______
+
+self = <django.db.backends.utils.CursorWrapper object at 0x114a1d6a0>
+sql = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (%s, %s, %s, %s, %s, %s) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid-1', '{"region": "US"}', '2026-01-08 14:22:26.209418', '2026-01-08 14:22:26.209429')
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x114a1d6a0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114be5ee0>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid-1', '{"region": "US"}', '2026-01-08 14:22:26.209418', '2026-01-08 14:22:26.209429')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_services.TestWebhookRouting object at 0x113ec3370>
+
+    def test_get_user_region_with_multiple_sso_providers(self):
+        """Verify behavior when user has multiple SSO providers."""
+        user = User.objects.create(username='testuser')
+        # Create multiple SSO records
+>       UserSocialAuth.objects.create(
+            user=user,
+            provider='saml',
+            uid='test-uid-1',
+            extra_data={'region': 'US'}
+        )
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py:258: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:658: in create
+    obj.save(force_insert=True, using=self.db)
+venv/lib/python3.9/site-packages/django/db/models/base.py:814: in save
+    self.save_base(
+venv/lib/python3.9/site-packages/django/db/models/base.py:877: in save_base
+    updated = self._save_table(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1020: in _save_table
+    results = self._do_insert(
+venv/lib/python3.9/site-packages/django/db/models/base.py:1061: in _do_insert
+    return manager._insert(
+venv/lib/python3.9/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+venv/lib/python3.9/site-packages/django/db/models/query.py:1805: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+venv/lib/python3.9/site-packages/django/db/models/sql/compiler.py:1822: in execute_sql
+    cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:67: in execute
+    return self._execute_with_wrappers(
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:80: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+venv/lib/python3.9/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+venv/lib/python3.9/site-packages/django/db/backends/utils.py:89: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x114be5ee0>
+query = 'INSERT INTO "social_auth_usersocialauth" ("user_id", "provider", "uid", "extra_data", "created", "modified") VALUES (?, ?, ?, ?, ?, ?) RETURNING "social_auth_usersocialauth"."id"'
+params = (1, 'saml', 'test-uid-1', '{"region": "US"}', '2026-01-08 14:22:26.209418', '2026-01-08 14:22:26.209429')
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.OperationalError: no such table: social_auth_usersocialauth
+
+venv/lib/python3.9/site-packages/django/db/backends/sqlite3/base.py:328: OperationalError
+____________ TestWebhookTasks.test_process_webhook_queue_no_config _____________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_tasks.TestWebhookTasks object at 0x113f89c10>
+
+    def test_process_webhook_queue_no_config(self):
+        """Verify handling when configuration is missing during processing."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+    
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test'},
+            deduplication_key='key4'
+        )
+    
+        # No EnterpriseWebhookConfiguration exists
+        process_webhook_queue(queue_item.id)
+    
+        queue_item.refresh_from_db()
+>       assert queue_item.status == 'failed'
+E       AssertionError: assert 'pending' == 'failed'
+E         
+E         - failed
+E         + pending
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py:158: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    channel_integrations.integrated_channel.tasks:tasks.py:562 [Webhook] Error processing item 1: No active webhook configuration found during processing
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+WARNING  kombu.connection:connection.py:671 No hostname was supplied. Reverting to default 'localhost'
+ERROR    channel_integrations.integrated_channel.tasks:tasks.py:562 [Webhook] Error processing item 1: No active webhook configuration found during processing
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+ERROR    channel_integrations.integrated_channel.tasks:tasks.py:562 [Webhook] Error processing item 1: No active webhook configuration found during processing
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+ERROR    channel_integrations.integrated_channel.tasks:tasks.py:562 [Webhook] Error processing item 1: No active webhook configuration found during processing
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 528, in process_webhook_queue
+    raise Exception("No active webhook configuration found during processing")
+Exception: No active webhook configuration found during processing
+WARNING  channel_integrations.integrated_channel.tasks:tasks.py:585 [Webhook] Max retries reached for item 1
+_____________ TestWebhookTasks.test_process_webhook_queue_timeout ______________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_tasks.TestWebhookTasks object at 0x113f8c040>
+
+    @responses.activate
+    def test_process_webhook_queue_timeout(self):
+        """Verify that timeout errors schedule a retry."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            webhook_retry_attempts=3
+        )
+    
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key5'
+        )
+    
+        # Simulate timeout
+        responses.add(
+            responses.POST,
+            config.webhook_url,
+            body=requests.Timeout()
+        )
+    
+        with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.apply_async') as mock_apply:
+            process_webhook_queue(queue_item.id)
+    
+            queue_item.refresh_from_db()
+            assert queue_item.status == 'pending'
+            assert queue_item.attempt_count == 1
+            assert queue_item.next_retry_at is not None
+>           assert 'Timeout' in queue_item.error_message or 'timed out' in queue_item.error_message.lower()
+E           AssertionError: assert ('Timeout' in '' or 'timed out' in '')
+E            +  where '' = <WebhookTransmissionQueue: WebhookTransmissionQueue object (1)>.error_message
+E            +  and   '' = <built-in method lower of str object at 0x10452c670>()
+E            +    where <built-in method lower of str object at 0x10452c670> = ''.lower
+E            +      where '' = <WebhookTransmissionQueue: WebhookTransmissionQueue object (1)>.error_message
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py:198: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    channel_integrations.integrated_channel.tasks:tasks.py:562 [Webhook] Error processing item 1: 
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 538, in process_webhook_queue
+    response = requests.post(
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/responses/__init__.py", line 1201, in send
+    return self._on_request(adapter, request, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/responses/__init__.py", line 1136, in _on_request
+    request, match.get_response(request)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/responses/__init__.py", line 621, in get_response
+    raise self.body
+requests.exceptions.Timeout
+_________ TestWebhookTasks.test_process_webhook_queue_connection_error _________
+
+self = <test_channel_integrations.test_integrated_channel.test_webhook_tasks.TestWebhookTasks object at 0x113f8c3d0>
+
+    @responses.activate
+    def test_process_webhook_queue_connection_error(self):
+        """Verify that connection errors schedule a retry."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            webhook_retry_attempts=3
+        )
+    
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key6'
+        )
+    
+        # Simulate connection error
+        responses.add(
+            responses.POST,
+            config.webhook_url,
+            body=requests.ConnectionError()
+        )
+    
+        with patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.apply_async') as mock_apply:
+            process_webhook_queue(queue_item.id)
+    
+            queue_item.refresh_from_db()
+            assert queue_item.status == 'pending'
+            assert queue_item.attempt_count == 1
+            assert queue_item.next_retry_at is not None
+>           assert 'Connection' in queue_item.error_message or 'connection' in queue_item.error_message.lower()
+E           AssertionError: assert ('Connection' in '' or 'connection' in '')
+E            +  where '' = <WebhookTransmissionQueue: WebhookTransmissionQueue object (1)>.error_message
+E            +  and   '' = <built-in method lower of str object at 0x10452c670>()
+E            +    where <built-in method lower of str object at 0x10452c670> = ''.lower
+E            +      where '' = <WebhookTransmissionQueue: WebhookTransmissionQueue object (1)>.error_message
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py:238: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    channel_integrations.integrated_channel.tasks:tasks.py:562 [Webhook] Error processing item 1: 
+Traceback (most recent call last):
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/channel_integrations/integrated_channel/tasks.py", line 538, in process_webhook_queue
+    response = requests.post(
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/responses/__init__.py", line 1201, in send
+    return self._on_request(adapter, request, **kwargs)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/responses/__init__.py", line 1136, in _on_request
+    request, match.get_response(request)
+  File "/Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/responses/__init__.py", line 621, in get_response
+    raise self.body
+requests.exceptions.ConnectionError
+=============================== warnings summary ===============================
+venv/lib/python3.9/site-packages/urllib3/__init__.py:35
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py: 34 warnings
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'channel_integration.ContentMetadataItemTransmission' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py: 12 warnings
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'channel_integration.OrphanedContentTransmissions' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'blackboard_channel.BlackboardLearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'canvas_channel.CanvasLearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'cornerstone_channel.CornerstoneLearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'degreed2_channel.Degreed2LearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'moodle_channel.MoodleLearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'sap_success_factors_channel.SapSuccessFactorsLearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+  /Users/irfan.ahmad/src-edx/enterprise-integrated-channels/venv/lib/python3.9/site-packages/django/db/models/options.py:210: RemovedInDjango51Warning: 'index_together' is deprecated. Use 'Meta.indexes' in 'xapi_channel.XAPILearnerDataTransmissionAudit' instead.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.9.6-final-0 ________________
+
+Name                                                                                                                    Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+channel_integrations/__init__.py                                                                                            0      0      0      0   100%
+channel_integrations/api/__init__.py                                                                                        0      0      0      0   100%
+channel_integrations/api/serializers.py                                                                                    15     15      0      0     0%   5-26
+channel_integrations/api/urls.py                                                                                            3      3      0      0     0%   5-8
+channel_integrations/blackboard/__init__.py                                                                                 1      0      0      0   100%
+channel_integrations/blackboard/admin/__init__.py                                                                          45     10      2      0    74%   69, 79-82, 92-107
+channel_integrations/blackboard/apps.py                                                                                    10      0      0      0   100%
+channel_integrations/blackboard/client.py                                                                                 352    278     84      0    17%   56-64, 71-119, 123-171, 175-196, 207-230, 250-273, 283-284, 291-292, 302-305, 316, 323, 332, 335, 353-426, 432-449, 455, 464, 491, 502, 511, 520, 530, 540, 550, 563, 577, 587, 597, 606-621, 627-642, 648-664, 670-685, 697-704, 720-796, 803-815, 821-828, 835-840, 848-857, 864-906, 912-958, 964
+channel_integrations/blackboard/exporters/__init__.py                                                                       0      0      0      0   100%
+channel_integrations/blackboard/exporters/content_metadata.py                                                              19      4      0      0    79%   51, 63, 73-74
+channel_integrations/blackboard/exporters/learner_data.py                                                                  36     27     12      0    19%   34-76, 96-137
+channel_integrations/blackboard/models.py                                                                                 126     40     14      0    61%   48, 100, 106, 144-150, 157, 177-183, 190, 238-244, 255-265, 271, 279, 289, 292, 295, 298, 332, 346, 355, 361, 376, 418, 433, 444, 450
+channel_integrations/blackboard/transmitters/__init__.py                                                                    0      0      0      0   100%
+channel_integrations/blackboard/transmitters/content_metadata.py                                                            7      2      0      0    71%   18, 27
+channel_integrations/blackboard/transmitters/learner_data.py                                                               20     13      0      0    35%   19, 31-34, 43-46, 54-57
+channel_integrations/blackboard/urls.py                                                                                     3      3      0      0     0%   5-9
+channel_integrations/blackboard/utils.py                                                                                    6      6      2      0     0%   6-19
+channel_integrations/blackboard/views.py                                                                                   93     93     24      0     0%   5-212
+channel_integrations/canvas/__init__.py                                                                                     1      0      0      0   100%
+channel_integrations/canvas/admin/__init__.py                                                                              39     10      2      0    71%   53, 63-66, 76-91
+channel_integrations/canvas/apps.py                                                                                         6      0      0      0   100%
+channel_integrations/canvas/client.py                                                                                     332    292     78      0    10%   62-67, 84-143, 149-195, 198-207, 214-243, 246-270, 274, 284-388, 399-417, 436-449, 476-494, 506-540, 550-566, 577-592, 604-620, 630-655, 664-708, 721-745, 767-872, 878-911, 918-937, 945, 961-1021, 1031-1044
+channel_integrations/canvas/exporters/__init__.py                                                                           0      0      0      0   100%
+channel_integrations/canvas/exporters/content_metadata.py                                                                  43     26      4      0    36%   20-27, 56, 63-86, 92, 100, 106, 112, 119, 126
+channel_integrations/canvas/exporters/learner_data.py                                                                      36     26     10      0    22%   36-77, 99-141
+channel_integrations/canvas/models.py                                                                                     117     43     20      0    54%   69-75, 82, 103-109, 116, 170-176, 187-203, 209, 217, 227, 230, 233, 236, 270, 284, 295, 301, 316, 358, 372, 383, 389
+channel_integrations/canvas/transmitters/__init__.py                                                                        0      0      0      0   100%
+channel_integrations/canvas/transmitters/content_metadata.py                                                                7      2      0      0    71%   18, 27
+channel_integrations/canvas/transmitters/learner_data.py                                                                   20     13      0      0    35%   19, 31-34, 43-46, 55-58
+channel_integrations/canvas/urls.py                                                                                         3      3      0      0     0%   5-9
+channel_integrations/canvas/utils.py                                                                                       80     55     26      0    24%   45-65, 88-123, 138-151, 173-197, 214-223, 230, 240, 250
+channel_integrations/canvas/views.py                                                                                       61     61     10      0     0%   5-140
+channel_integrations/catalog_service_utils.py                                                                               8      5      0      0    38%   12-15, 23-27
+channel_integrations/cornerstone/__init__.py                                                                                1      0      0      0   100%
+channel_integrations/cornerstone/admin/__init__.py                                                                         43      8      0      0    81%   72, 82-97, 147
+channel_integrations/cornerstone/apps.py                                                                                    5      0      0      0   100%
+channel_integrations/cornerstone/client.py                                                                                 46     25      2      0    44%   36-42, 49, 56, 63, 70, 76, 93-133, 145
+channel_integrations/cornerstone/exporters/__init__.py                                                                      0      0      0      0   100%
+channel_integrations/cornerstone/exporters/content_metadata.py                                                             89     58     20      0    28%   56-78, 87, 94, 101-105, 112-117, 123-124, 130-136, 142-149, 155, 161-170, 179-182, 188-201
+channel_integrations/cornerstone/exporters/learner_data.py                                                                 26     18      0      0    31%   37-83
+channel_integrations/cornerstone/models.py                                                                                 95     25      8      0    68%   93, 99, 163-171, 177, 185, 203-204, 213, 219, 225, 231, 277, 291, 299-311
+channel_integrations/cornerstone/transmitters/__init__.py                                                                   0      0      0      0   100%
+channel_integrations/cornerstone/transmitters/content_metadata.py                                                          16      9      4      0    35%   14, 25-28, 34, 42-46
+channel_integrations/cornerstone/transmitters/learner_data.py                                                              10      5      0      0    50%   19, 31-34
+channel_integrations/cornerstone/urls.py                                                                                    3      3      0      0     0%   5-9
+channel_integrations/cornerstone/utils.py                                                                                  23     14      0      0    39%   15, 22, 40-65, 78-79, 87-90
+channel_integrations/cornerstone/views.py                                                                                  61     61     12      0     0%   5-190
+channel_integrations/degreed2/__init__.py                                                                                   1      0      0      0   100%
+channel_integrations/degreed2/admin/__init__.py                                                                            35      7      0      0    80%   56, 66-81
+channel_integrations/degreed2/apps.py                                                                                       9      0      0      0   100%
+channel_integrations/degreed2/client.py                                                                                   235    190     40      0    16%   53-70, 75-77, 80, 83, 86, 95, 109, 134-172, 180, 195-224, 242-263, 280-311, 323-342, 355-374, 393-426, 445-469, 475, 487-519, 532-564, 577-609, 622-654, 660, 678-708
+channel_integrations/degreed2/exporters/__init__.py                                                                         0      0      0      0   100%
+channel_integrations/degreed2/exporters/content_metadata.py                                                                74     51     26      0    23%   53, 59-92, 101-125, 135-136, 147, 153, 159, 165, 171-183, 189, 195, 201-207
+channel_integrations/degreed2/exporters/learner_data.py                                                                    25     16      4      0    31%   37-94
+channel_integrations/degreed2/models.py                                                                                    85     33     16      0    51%   63-69, 76, 97-103, 110, 146-161, 167, 175, 188, 194, 200, 206, 249, 263, 274-287
+channel_integrations/degreed2/transmitters/__init__.py                                                                      0      0      0      0   100%
+channel_integrations/degreed2/transmitters/content_metadata.py                                                              7      2      0      0    71%   19, 27
+channel_integrations/degreed2/transmitters/learner_data.py                                                                 10      5      0      0    50%   20, 32-35
+channel_integrations/exceptions.py                                                                                          5      3      0      0    40%   12-14
+channel_integrations/integrated_channel/__init__.py                                                                         1      0      0      0   100%
+channel_integrations/integrated_channel/admin/__init__.py                                                                  36      5      0      0    86%   25-26, 31, 129-130
+channel_integrations/integrated_channel/apps.py                                                                             5      0      0      0   100%
+channel_integrations/integrated_channel/channel_settings.py                                                                 2      0      0      0   100%
+channel_integrations/integrated_channel/client.py                                                                          33     18      4      0    41%   32-36, 45, 54, 60, 66, 72, 78, 84, 93-101
+channel_integrations/integrated_channel/constants.py                                                                        2      0      0      0   100%
+channel_integrations/integrated_channel/exporters/__init__.py                                                               7      4      0      0    43%   24-26, 32
+channel_integrations/integrated_channel/exporters/content_metadata.py                                                     227    196     68      0    11%   81-82, 85, 96, 110-152, 174-225, 245-290, 303-375, 383-430, 436-450, 457-463, 469-592, 600, 607-612, 618-659, 666-691
+channel_integrations/integrated_channel/exporters/learner_data.py                                                         287    230     80      0    16%   70-75, 82, 89, 96, 103, 116-141, 158-210, 217-225, 243-266, 272-278, 297-336, 343-358, 380-473, 485-508, 519-535, 550-569, 586-610, 634-698, 722-747, 769-813, 823-827, 834-841
+channel_integrations/integrated_channel/handlers.py                                                                        55     35     10      2    34%   37-71, 86-116, 123, 151
+channel_integrations/integrated_channel/management/__init__.py                                                              0      0      0      0   100%
+channel_integrations/integrated_channel/management/commands/__init__.py                                                    52     31     16      0    31%   61-69, 88-107, 116-121, 134-152
+channel_integrations/integrated_channel/management/commands/ic_assign_skills_to_degreed_courses.py                         54     54      8      0     0%   4-127
+channel_integrations/integrated_channel/management/commands/ic_backfill_course_end_dates.py                                14     14      2      0     0%   5-41
+channel_integrations/integrated_channel/management/commands/ic_backfill_missing_csod_foreign_keys.py                       36     36      8      0     0%   4-76
+channel_integrations/integrated_channel/management/commands/ic_backfill_missing_foreign_keys.py                            63     63     18      0     0%   4-129
+channel_integrations/integrated_channel/management/commands/ic_backfill_remote_action_timestamps.py                        22     22      4      0     0%   4-53
+channel_integrations/integrated_channel/management/commands/ic_cleanup_duplicate_assignment_records.py                     20     20      2      0     0%   5-60
+channel_integrations/integrated_channel/management/commands/ic_mark_learner_transmissions_transmitted_true.py              13     13      2      0     0%   6-45
+channel_integrations/integrated_channel/management/commands/ic_mark_orphaned_content_metadata_audits.py                    11     11      0      0     0%   4-28
+channel_integrations/integrated_channel/management/commands/ic_migrate_data_from_legacy_app.py                              0      0      0      0   100%
+channel_integrations/integrated_channel/management/commands/ic_remove_duplicate_learner_transmission_audit_records.py      24     24      4      0     0%   4-67
+channel_integrations/integrated_channel/management/commands/ic_remove_null_catalog_transmission_audits.py                  11     11      0      0     0%   4-27
+channel_integrations/integrated_channel/management/commands/ic_remove_stale_integrated_channel_api_logs.py                 18     18      0      0     0%   4-41
+channel_integrations/integrated_channel/management/commands/ic_reset_csod_remote_deleted_at.py                             21     21      4      0     0%   4-55
+channel_integrations/integrated_channel/management/commands/ic_reset_sapsf_learner_transmissions.py                        21     21      4      0     0%   5-67
+channel_integrations/integrated_channel/management/commands/ic_transmit_content_metadata.py                                23     23      2      0     0%   5-54
+channel_integrations/integrated_channel/management/commands/ic_transmit_learner_data.py                                    20     20      2      0     0%   5-57
+channel_integrations/integrated_channel/management/commands/ic_transmit_subsection_learner_data.py                         21     21      2      0     0%   5-57
+channel_integrations/integrated_channel/management/commands/ic_truncate_destination_tables.py                               0      0      0      0   100%
+channel_integrations/integrated_channel/management/commands/ic_unlink_inactive_sap_learners.py                             13     13      4      0     0%   5-31
+channel_integrations/integrated_channel/management/commands/ic_update_content_transmission_catalogs.py                     21     21      2      0     0%   5-50
+channel_integrations/integrated_channel/models.py                                                                         421    163     58      2    56%   40-44, 53, 56, 59, 73-75, 78, 81, 84, 230-231, 234-235, 238, 241-248, 261-269, 280-297, 303-320, 331-333, 340-341, 348-353, 360, 367-370, 376, 382, 388, 395, 401, 407-409, 415-417, 423-425, 431-433, 439-441, 447-449, 455-456, 468, 477, 548, 562, 569, 576, 584-588, 599, 605, 624, 637, 729-740, 753-777, 790-803, 816-829, 835-836, 842, 848, 854, 860, 867-879, 885, 897, 962, 976, 993-1006, 1090->exit, 1115-1116
+channel_integrations/integrated_channel/services/__init__.py                                                                0      0      0      0   100%
+channel_integrations/integrated_channel/services/region_service.py                                                         38     24     14      0    27%   38-58, 69-78
+channel_integrations/integrated_channel/services/webhook_routing.py                                                        24      0      6      0   100%
+channel_integrations/integrated_channel/tasks.py                                                                          236    125     38      1    45%   42-61, 70, 87, 105-114, 130-168, 184-210, 233-251, 266-276, 290-297, 318-327, 346-374, 399-430, 455-463, 476-486, 506
+channel_integrations/integrated_channel/transmitters/__init__.py                                                            6      3      0      0    50%   24-25, 31
+channel_integrations/integrated_channel/transmitters/content_metadata.py                                                  116     91     30      0    17%   35-49, 56, 67, 78-79, 90-95, 104, 113, 119, 130, 137-263
+channel_integrations/integrated_channel/transmitters/learner_data.py                                                      142    121     32      0    12%   33, 40-43, 56-139, 153-259, 272-388, 401-429, 443, 473-479
+channel_integrations/lms_utils.py                                                                                          45     27      8      0    34%   9-11, 30-34, 57-64, 81-88, 102-109, 125-131
+channel_integrations/moodle/__init__.py                                                                                     1      0      0      0   100%
+channel_integrations/moodle/admin/__init__.py                                                                              43     14      4      0    62%   25-32, 56-71
+channel_integrations/moodle/apps.py                                                                                         5      0      0      0   100%
+channel_integrations/moodle/client.py                                                                                     218    173     62      0    16%   28-31, 41-42, 52-106, 135-139, 147-174, 182, 188-224, 234-240, 246-263, 270-293, 304-323, 330-354, 360-365, 371-378, 386-434, 453-472, 475-483, 486-507, 518, 532-543, 547
+channel_integrations/moodle/exporters/__init__.py                                                                           0      0      0      0   100%
+channel_integrations/moodle/exporters/content_metadata.py                                                                  50     34     14      0    25%   37, 47-60, 70-91, 98, 104-107, 113-116, 122-123
+channel_integrations/moodle/exporters/learner_data.py                                                                      22     14      6      0    29%   34-80
+channel_integrations/moodle/models.py                                                                                      97     35     16      0    55%   88-94, 101, 122-128, 135, 156-162, 169, 209-221, 227, 235, 245, 248, 251, 254, 295, 309, 320, 326
+channel_integrations/moodle/transmitters/__init__.py                                                                        0      0      0      0   100%
+channel_integrations/moodle/transmitters/content_metadata.py                                                               16      8      4      0    40%   21, 30-35, 42
+channel_integrations/moodle/transmitters/learner_data.py                                                                   10      5      0      0    50%   19, 31-34
+channel_integrations/sap_success_factors/__init__.py                                                                        1      0      0      0   100%
+channel_integrations/sap_success_factors/admin/__init__.py                                                                 53     12      0      0    77%   93, 109-121, 131-146
+channel_integrations/sap_success_factors/apps.py                                                                            5      0      0      0   100%
+channel_integrations/sap_success_factors/client.py                                                                        135    101     20      0    22%   48-55, 77-129, 135-154, 176-190, 206, 218, 230, 242, 254-288, 301-341, 351-376, 408-420, 426-507
+channel_integrations/sap_success_factors/constants.py                                                                       1      0      0      0   100%
+channel_integrations/sap_success_factors/exporters/__init__.py                                                              0      0      0      0   100%
+channel_integrations/sap_success_factors/exporters/content_metadata.py                                                    119     92     54      0    16%   56-64, 70, 77-80, 86-94, 100-135, 141, 152, 166, 172-182, 193-205, 216-239, 245-258, 264-266, 276, 282-285, 291-316
+channel_integrations/sap_success_factors/exporters/learner_data.py                                                         74     52     20      0    23%   47-109, 125-126, 130-139, 143-156, 166-210
+channel_integrations/sap_success_factors/exporters/utils.py                                                                23     18      8      0    16%   16-30, 38-46
+channel_integrations/sap_success_factors/models.py                                                                        136     50     20      0    55%   64, 70, 117-123, 130, 173-179, 186, 233-240, 256-272, 278, 286, 300, 306, 312, 318, 324, 330, 336-340, 388, 402, 409, 420, 426
+channel_integrations/sap_success_factors/transmitters/__init__.py                                                           0      0      0      0   100%
+channel_integrations/sap_success_factors/transmitters/content_metadata.py                                                  32     21      6      0    29%   23, 33-46, 55-66, 69
+channel_integrations/sap_success_factors/transmitters/learner_data.py                                                      25     14      2      0    41%   28, 40-43, 47-58
+channel_integrations/sap_success_factors/utils.py                                                                           6      6      2      0     0%   6-19
+channel_integrations/urls.py                                                                                                2      2      0      0     0%   4-7
+channel_integrations/utils.py                                                                                             219    168     78      0    17%   39-41, 50-56, 65-67, 78-81, 88, 95-97, 104-106, 145-172, 179, 186-192, 214-228, 235-242, 249-257, 274-286, 310, 318, 354-370, 377-380, 392-403, 410-416, 432-439, 448-455, 463-470, 477, 484, 491-498, 506-510, 526-564
+channel_integrations/xapi/__init__.py                                                                                       1      0      0      0   100%
+channel_integrations/xapi/admin/__init__.py                                                                                27      7      0      0    74%   53, 63-78
+channel_integrations/xapi/apps.py                                                                                           5      0      0      0   100%
+channel_integrations/xapi/client.py                                                                                        16     16      2      0     0%   5-59
+channel_integrations/xapi/constants.py                                                                                      5      5      0      0     0%   6-14
+channel_integrations/xapi/management/__init__.py                                                                            0      0      0      0   100%
+channel_integrations/xapi/management/commands/__init__.py                                                                   0      0      0      0   100%
+channel_integrations/xapi/management/commands/ic_send_course_completions.py                                               122    122     18      0     0%   5-317
+channel_integrations/xapi/management/commands/ic_send_course_enrollments.py                                                98     98     22      0     0%   5-302
+channel_integrations/xapi/models.py                                                                                        32      4      0      0    88%   51, 59, 66, 99
+channel_integrations/xapi/statements/__init__.py                                                                            0      0      0      0   100%
+channel_integrations/xapi/statements/base.py                                                                               24     24      2      0     0%   5-70
+channel_integrations/xapi/statements/learner_course_completion.py                                                          16     16      2      0     0%   5-57
+channel_integrations/xapi/statements/learner_course_enrollment.py                                                           9      9      0      0     0%   5-37
+channel_integrations/xapi/utils.py                                                                                         43     43      4      0     0%   5-152
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                                                    6245   4225   1218      5    27%
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_success
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_non_passing
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_success
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_non_enterprise
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_complete_payload_structure
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_complete_payload_structure
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_logging
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_grade_change_user_not_found
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_handlers.py::TestWebhookHandlers::test_handle_enrollment_user_not_found
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_ssrf_protection_localhost
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestEnterpriseWebhookConfiguration::test_ssrf_protection_metadata_service
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_unique_enterprise_region_constraint
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_models.py::TestWebhookTransmissionQueue::test_deduplication_key_constraint
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_explicit
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_country_mapping
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestRegionService::test_get_user_region_uk_mapping
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_get_user_region_with_empty_extra_data
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_get_user_region_with_none_values
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_services.py::TestWebhookRouting::test_get_user_region_with_multiple_sso_providers
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_no_config
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_timeout
+FAILED tests/test_channel_integrations/test_integrated_channel/test_webhook_tasks.py::TestWebhookTasks::test_process_webhook_queue_connection_error
+================== 22 failed, 32 passed, 61 warnings in 6.05s ==================
