@@ -3,6 +3,7 @@ Send xAPI statements to the LRS configured via admin.
 """
 
 from logging import getLogger
+import time
 
 from django.contrib import auth
 from django.core.management.base import BaseCommand, CommandError
@@ -91,6 +92,7 @@ class Command(BaseCommand):
             raise NotConnectedToOpenEdX("This package must be installed in an OpenEdX environment.")
 
         days, enterprise_customer = self.parse_arguments(*args, **options)
+        LOGGER.info(f"Send course completion xAPI statements")
 
         if enterprise_customer:
             try:
@@ -104,9 +106,12 @@ class Command(BaseCommand):
                 )) from no_config_exception
 
             # Send xAPI analytics data to the configured LRS
+            LOGGER.info(f"Send xAPI analytics data for specific Enterprise Customer: {enterprise_customer.name}")
             self.send_xapi_statements(lrs_configuration, days)
         else:
+            LOGGER.info(f"Send xAPI analytics data that is not tied to any specific Enterprise Customer")
             for lrs_configuration in XAPILRSConfiguration.objects.filter(active=True):
+                LOGGER.info(f"Send xAPI analytics data with lrs_configuration: {lrs_configuration.endpoint}")
                 self.send_xapi_statements(lrs_configuration, days)
 
     def send_xapi_statements(self, lrs_configuration, days):
@@ -148,6 +153,7 @@ class Command(BaseCommand):
 
             default_error_message = 'Days argument has been deprecated.  Value: {days}'.format(days=days)
             response_fields = {'status': 500, 'error_message': default_error_message}
+            start_time = time.perf_counter()
             response_fields = send_course_completion_statement(
                 lrs_configuration,
                 user,
@@ -156,6 +162,9 @@ class Command(BaseCommand):
                 object_type,
                 response_fields
             )
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            LOGGER.info(f"send_course_completion_statement took {elapsed_time:.4f} seconds")
 
             if is_success_response(response_fields):
                 self.save_xapi_learner_data_transmission_audit(
