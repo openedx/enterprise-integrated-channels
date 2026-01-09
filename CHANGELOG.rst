@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.26 – 2026-01-09
+*******************
+
+Added
+=====
+
+* chore: add logging for track sending course completion xAPI statements
+
 0.1.25 – 2025-11-28
 *******************
 
@@ -29,6 +37,7 @@ Added
 =====
 
 *  Feat: Update Moodle serialiser to accomodates changes made in edx-enterprise
+
 
 0.1.23 – 2025-10-30
 *******************
