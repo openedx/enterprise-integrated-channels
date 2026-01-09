@@ -3,6 +3,7 @@ Utility functions for xAPI.
 """
 
 import logging
+import time
 
 from enterprise.tpa_pipeline import get_user_social_auth
 from channel_integrations.exceptions import ClientError
@@ -126,6 +127,17 @@ def send_course_completion_statement(lrs_configuration,
         object_type,
     )
 
+    start_time = time.perf_counter()
+    LOGGER.info(
+        '[Integrated Channel][xAPI] Sending {object_type} {event_type} statement to xAPI LRS for user: {username} for '
+        '{object_type}: {course_id}'.format(
+            object_type=object_type,
+            event_type=event_type,
+            username=username,
+            course_id=course_id,
+        )
+    )
+
     response_fields = _send_statement(
         statement,
         object_type,
@@ -136,6 +148,10 @@ def send_course_completion_statement(lrs_configuration,
         course_id,
         response_fields,
     )
+
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    LOGGER.info(f"_send_statement took {elapsed_time:.4f} seconds")
 
     return response_fields
 
