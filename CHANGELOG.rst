@@ -39,6 +39,7 @@ Added
 *  Feat: Update Moodle serialiser to accomodates changes made in edx-enterprise
 
 
+=======
 0.1.23 – 2025-10-30
 *******************
 

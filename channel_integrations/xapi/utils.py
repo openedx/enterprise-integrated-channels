@@ -63,7 +63,6 @@ def _send_statement(statement, object_type, event_type, lrs_configuration,
         )
     )
     LOGGER.info(f"status:{response_fields['status']} error message:{response_fields['error_message']}")
-    
     return response_fields
 
 
