@@ -202,7 +202,8 @@ class TestWebhookRouting:
                 item2 = route_webhook_by_region(user, enterprise, 'frozen-course', 'course_completion', payload)
 
                 assert item1.id == item2.id
-                assert item1.deduplication_key == f"{user.id}:frozen-course:course_completion:2026-01-08"
+                expected_key = f"{enterprise.uuid}:{user.id}:frozen-course:course_completion:2026-01-08"
+                assert item1.deduplication_key == expected_key
 
     def test_get_user_region_with_empty_extra_data(self):
         """Verify handling of empty extra_data fields."""

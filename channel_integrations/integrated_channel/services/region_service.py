@@ -50,7 +50,7 @@ def get_user_region(user) -> str:
                 return region
 
         # Priority 3: Check enterprise customer location (if available)
-        ecu = EnterpriseCustomerUser.objects.filter(user=user, active=True).first()
+        ecu = EnterpriseCustomerUser.objects.filter(user_id=user.id, active=True).first()
         if ecu and hasattr(ecu.enterprise_customer, 'country'):
             country_code = ecu.enterprise_customer.country
             region = _map_country_to_region(country_code)
@@ -58,7 +58,7 @@ def get_user_region(user) -> str:
             return region
 
     except Exception as e:  # pylint: disable=broad-exception-caught
-        log.warning(f'[Region] Error detecting region for user {user.id}: {e}')
+        log.warning(f'[Region] Error detecting region for user {user.id}: {e}', exc_info=True)
 
     # Priority 4: Default fallback
     log.info(f'[Region] No region metadata for user {user.id}, defaulting to OTHER')
@@ -67,7 +67,8 @@ def get_user_region(user) -> str:
 
 def _map_country_to_region(country_code: str) -> str:
     """Map ISO country code to webhook region."""
-    country_code = country_code.upper()
+    # Handle django_countries.Country objects (convert to string code)
+    country_code = str(country_code).upper()
 
     if country_code == 'US':
         return 'US'

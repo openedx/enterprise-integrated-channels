@@ -59,10 +59,11 @@ def route_webhook_by_region(user, enterprise_customer, course_id, event_type, pa
         )
 
     # 3. Generate Deduplication Key
-    # Key: {user_id}:{course_id}:{event_type}:{date}
+    # Key: {enterprise_uuid}:{user_id}:{course_id}:{event_type}:{date}
     # This prevents duplicate events for the same thing on the same day
+    # BUT allows same user in multiple enterprises to each get their webhook
     today = timezone.now().strftime('%Y-%m-%d')
-    deduplication_key = f"{user.id}:{course_id}:{event_type}:{today}"
+    deduplication_key = f"{enterprise_customer.uuid}:{user.id}:{course_id}:{event_type}:{today}"
 
     # 4. Create Queue Item
     # Use get_or_create to handle race conditions (idempotency)
