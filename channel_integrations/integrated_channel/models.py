@@ -2,11 +2,14 @@
 Database models for Enterprise Integrated Channel.
 """
 
+import ipaddress
 import json
 import logging
+from urllib.parse import urlparse
 
 from django.contrib import auth
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
@@ -1011,3 +1014,220 @@ class IntegratedChannelAPIRequestLogs(TimeStampedModel):
                 f"response_body={response_body}"
                 f"channel_name={channel_name}"
             )
+
+
+class EnterpriseWebhookConfiguration(TimeStampedModel):
+    """
+    Zone-aware webhook configuration for enterprise customers.
+    .. no_pii:
+    """
+    enterprise_customer = models.ForeignKey(
+        EnterpriseCustomer,
+        on_delete=models.CASCADE,
+        related_name='webhook_configurations',
+        help_text='Enterprise customer this webhook belongs to'
+    )
+    region = models.CharField(
+        max_length=10,
+        choices=[
+            ('US', 'United States'),
+            ('EU', 'European Union'),
+            ('UK', 'United Kingdom'),
+            ('OTHER', 'Other'),
+        ],
+        db_index=True,
+        help_text='Geographic region this webhook URL is for'
+    )
+    webhook_url = models.URLField(
+        max_length=500,
+        help_text='HTTPS endpoint to receive webhooks'
+    )
+    webhook_auth_token = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Bearer token for webhook authentication'
+    )
+    webhook_timeout_seconds = models.IntegerField(
+        default=30,
+        validators=[MinValueValidator(5), MaxValueValidator(300)],
+        help_text='HTTP request timeout in seconds (5-300)'
+    )
+    webhook_retry_attempts = models.IntegerField(
+        default=3,
+        validators=[MinValueValidator(0), MaxValueValidator(10)],
+        help_text='Number of retry attempts on failure (0-10)'
+    )
+    max_requests_per_minute = models.IntegerField(
+        default=100,
+        validators=[MinValueValidator(1), MaxValueValidator(1000)],
+        help_text='Maximum webhook requests per minute (1-1000)'
+    )
+    active = models.BooleanField(
+        default=True,
+        help_text='Whether this webhook configuration is active'
+    )
+
+    class Meta:
+        verbose_name = 'Enterprise Webhook Configuration'
+        verbose_name_plural = 'Enterprise Webhook Configurations'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['enterprise_customer', 'region'],
+                name='unique_enterprise_region_webhook'
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=['enterprise_customer', 'region', 'active'],
+                name='webhook_config_lookup_idx'
+            ),
+        ]
+
+    def clean(self):
+        """Validate webhook configuration."""
+        super().clean()
+        if self.webhook_url:
+            # 1. Must use HTTPS
+            if not self.webhook_url.startswith('https://'):
+                raise ValidationError('Webhook URL must use HTTPS')
+
+            parsed = urlparse(self.webhook_url)
+            hostname = parsed.hostname
+
+            if not hostname:
+                raise ValidationError('Invalid webhook URL')
+
+            # 2. Block localhost (SSRF protection)
+            if hostname in ['localhost', '127.0.0.1', '::1', '0.0.0.0']:
+                raise ValidationError(
+                    'Webhook URL cannot point to localhost or loopback addresses'
+                )
+
+            # 3. Block private IP ranges (SSRF protection)
+            # Note: This includes 169.254.x.x (link-local/cloud metadata endpoints)
+            # Cloud metadata hostnames (metadata.google.internal, metadata.aws, etc.)
+            # resolve to private IPs within their respective cloud environments and
+            # are blocked by this check.
+            try:
+                ip = ipaddress.ip_address(hostname)
+                if ip.is_private or ip.is_reserved or ip.is_loopback:
+                    raise ValidationError(
+                        'Webhook URL cannot point to private or reserved IP addresses'
+                    )
+            except ValueError:
+                # Hostname is not an IP address, which is fine
+                pass
+
+
+class WebhookTransmissionQueue(TimeStampedModel):
+    """
+    Queue for webhook transmissions to ensure reliable delivery.
+    .. pii: Contains user email in payload
+    .. pii_types: email_address
+    .. pii_retirement: retained
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    enterprise_customer = models.ForeignKey(
+        EnterpriseCustomer,
+        on_delete=models.CASCADE,
+        help_text='Enterprise customer'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        help_text='User whose event is being transmitted'
+    )
+    course_id = models.CharField(
+        max_length=255,
+        help_text='Course ID'
+    )
+    event_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('course_completion', 'Course Completion'),
+            ('course_enrollment', 'Course Enrollment'),
+        ],
+        help_text='Type of event being transmitted'
+    )
+    user_region = models.CharField(
+        max_length=10,
+        help_text='User region at time of event'
+    )
+    webhook_url = models.URLField(
+        max_length=500,
+        help_text='Webhook URL that was/will be called'
+    )
+    payload = JSONField(
+        help_text='JSON payload to be transmitted'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        db_index=True,
+        help_text='Transmission status'
+    )
+    deduplication_key = models.CharField(
+        max_length=255,
+        db_index=True,
+        help_text='Unique key to prevent duplicate transmissions: {user_id}:{course_id}:{event_type}:{date}'
+    )
+    attempt_count = models.IntegerField(
+        default=0,
+        help_text='Number of transmission attempts'
+    )
+    last_attempt_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Timestamp of last transmission attempt'
+    )
+    next_retry_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Timestamp for next retry attempt'
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Timestamp when transmission completed'
+    )
+    error_message = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Error message from last failed attempt'
+    )
+    http_status_code = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text='HTTP status code from last attempt'
+    )
+    response_body = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Response body from last attempt (truncated to 10KB)'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['deduplication_key'],
+                name='unique_webhook_deduplication',
+                condition=Q(status__in=['pending', 'processing', 'success'])
+            )
+        ]
+        indexes = [
+            models.Index(fields=['status', 'next_retry_at']),
+            models.Index(fields=['enterprise_customer', 'created']),
+            models.Index(fields=['user', 'course_id']),
+            models.Index(fields=['event_type']),
+            models.Index(fields=['deduplication_key']),
+        ]

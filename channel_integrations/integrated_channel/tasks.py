@@ -5,6 +5,7 @@ Celery tasks for integrated channel management commands.
 import time
 from functools import wraps
 
+import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
@@ -19,7 +20,11 @@ from channel_integrations.integrated_channel.management.commands import (
     INTEGRATED_CHANNEL_CHOICES,
     IntegratedChannelCommandUtils,
 )
-from channel_integrations.integrated_channel.models import ContentMetadataItemTransmission, OrphanedContentTransmissions
+from channel_integrations.integrated_channel.models import (
+    ContentMetadataItemTransmission,
+    OrphanedContentTransmissions,
+    WebhookTransmissionQueue,
+)
 from channel_integrations.utils import generate_formatted_log
 
 LOGGER = get_task_logger(__name__)
@@ -478,3 +483,109 @@ def unlink_inactive_learners(channel_code, channel_pk):
 
     duration = time.time() - start
     _log_batch_task_finish('unlink_inactive_learners', channel_code, None, integrated_channel, duration)
+
+
+@shared_task
+@set_code_owner_attribute
+def process_webhook_queue(queue_item_id):
+    """
+    Process a single webhook queue item.
+
+    Args:
+        queue_item_id: ID of WebhookTransmissionQueue item
+    """
+    try:
+        queue_item = WebhookTransmissionQueue.objects.get(id=queue_item_id)
+    except WebhookTransmissionQueue.DoesNotExist:
+        LOGGER.error(f"[Webhook] Queue item {queue_item_id} not found")
+        return
+
+    # Don't process if already done or cancelled
+    if queue_item.status in ['success', 'cancelled']:
+        return
+
+    queue_item.status = 'processing'
+    queue_item.attempt_count += 1
+    queue_item.last_attempt_at = timezone.now()
+    queue_item.save(update_fields=['status', 'attempt_count', 'last_attempt_at'])
+
+    try:
+        # Get configuration for timeout
+        config = queue_item.enterprise_customer.webhook_configurations.filter(
+            region=queue_item.user_region,
+            active=True
+        ).first()
+
+        if not config:
+            # Fallback to OTHER
+            config = queue_item.enterprise_customer.webhook_configurations.filter(
+                region='OTHER',
+                active=True
+            ).first()
+
+        if not config:
+            raise Exception("No active webhook configuration found during processing")
+
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'OpenEdX-Enterprise-Webhook/1.0',
+        }
+
+        if config.webhook_auth_token:
+            headers['Authorization'] = f"Bearer {config.webhook_auth_token}"
+
+        response = requests.post(
+            queue_item.webhook_url,
+            json=queue_item.payload,
+            headers=headers,
+            timeout=config.webhook_timeout_seconds
+        )
+
+        queue_item.http_status_code = response.status_code
+        queue_item.response_body = response.text[:10000]  # Truncate to 10KB
+
+        if 200 <= response.status_code < 300:
+            queue_item.status = 'success'
+            queue_item.completed_at = timezone.now()
+            queue_item.error_message = None
+            LOGGER.info(f"[Webhook] Successfully transmitted item {queue_item.id}")
+        else:
+            queue_item.status = 'failed'
+            queue_item.error_message = f"HTTP {response.status_code}"
+            LOGGER.warning(f"[Webhook] Failed to transmit item {queue_item.id}: HTTP {response.status_code}")
+            _schedule_retry(queue_item, config)
+
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        queue_item.status = 'failed'
+        # Get a meaningful error message
+        error_msg = str(e) if str(e) else repr(e)
+        queue_item.error_message = error_msg
+        LOGGER.error(f"[Webhook] Error processing item {queue_item.id}: {e}", exc_info=True)
+
+        # Only retry on transient errors, not permanent failures like missing config
+        is_permanent_error = "No active webhook configuration found" in error_msg
+        if not is_permanent_error:
+            _schedule_retry(queue_item, config if 'config' in locals() and config else None)
+
+    queue_item.save()
+
+
+def _schedule_retry(queue_item, config):
+    """Schedule a retry if attempts remain."""
+    max_retries = config.webhook_retry_attempts if config else 3
+
+    if queue_item.attempt_count <= max_retries:
+        # Exponential backoff: 30s, 120s, 300s...
+        delay = 30 * (2 ** (queue_item.attempt_count - 1))
+        # Cap at 1 hour
+        delay = min(delay, 3600)
+
+        queue_item.next_retry_at = timezone.now() + timezone.timedelta(seconds=delay)
+        queue_item.status = 'pending'
+
+        LOGGER.info(f"[Webhook] Scheduling retry #{queue_item.attempt_count} for item {queue_item.id} in {delay}s")
+
+        # Re-queue task with delay
+        process_webhook_queue.apply_async((queue_item.id,), countdown=delay)
+    else:
+        LOGGER.warning(f"[Webhook] Max retries reached for item {queue_item.id}")
