@@ -63,6 +63,7 @@ def _send_statement(statement, object_type, event_type, lrs_configuration,
         )
     )
 
+    LOGGER.info(f"status:{response_fields['status']} error message:{response_fields['error_message']}")
     return response_fields
 
 
@@ -152,6 +153,7 @@ def send_course_completion_statement(lrs_configuration,
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     LOGGER.info(f"_send_statement took {elapsed_time:.4f} seconds")
+    LOGGER.info(f"status:{response_fields['status']} error message:{response_fields['error_message']}")
 
     return response_fields
 
