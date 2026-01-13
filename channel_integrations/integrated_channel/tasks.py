@@ -487,6 +487,89 @@ def unlink_inactive_learners(channel_code, channel_pk):
 
 @shared_task
 @set_code_owner_attribute
+def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course_id, payload_dict):
+    """
+    Enrich completion webhook payload with learning time data (if feature enabled) and route it.
+    
+    This task is routed to 'edx.lms.core.webhook_enrichment' queue for processing.
+    
+    Args:
+        user_id: User ID
+        enterprise_customer_uuid: Enterprise customer UUID string
+        course_id: Course key string
+        payload_dict: The webhook payload dictionary
+    """
+    from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
+    from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
+    from enterprise.models import EnterpriseCustomer
+    
+    # Check feature flag
+    feature_enabled = getattr(settings, 'FEATURES', {}).get(
+        'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT', 
+        False
+    )
+    
+    if feature_enabled:
+        try:
+            # Query learning time from Snowflake
+            client = SnowflakeLearningTimeClient()
+            learning_time = client.get_learning_time(
+                user_id=user_id,
+                course_id=course_id,
+                enterprise_uuid=enterprise_customer_uuid
+            )
+            
+            # Add to payload if we got a value
+            if learning_time is not None:
+                payload_dict['learning_time'] = {
+                    'total_seconds': learning_time,
+                    'source': 'snowflake',
+                    'enriched_at': timezone.now().isoformat()
+                }
+                LOGGER.info(
+                    f'[Webhook] Enriched payload with learning_time={learning_time}s '
+                    f'(user={user_id}, course={course_id}, enterprise={enterprise_customer_uuid})'
+                )
+            else:
+                LOGGER.debug(
+                    f'[Webhook] No learning_time data available '
+                    f'(user={user_id}, course={course_id}, enterprise={enterprise_customer_uuid})'
+                )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # Log error but continue - webhook should still be sent
+            LOGGER.warning(
+                f'[Webhook] Failed to enrich with learning_time: {e} '
+                f'(user={user_id}, course={course_id}, enterprise={enterprise_customer_uuid})',
+                exc_info=True
+            )
+    
+    # Route webhook (with or without learning time enrichment)
+    try:
+        user = User.objects.get(id=user_id)
+        enterprise_customer = EnterpriseCustomer.objects.get(uuid=enterprise_customer_uuid)
+        
+        route_webhook_by_region(
+            user=user,
+            enterprise_customer=enterprise_customer,
+            course_id=course_id,
+            event_type='course_completion',
+            payload=payload_dict
+        )
+        LOGGER.info(
+            f'[Webhook] Routed enriched completion webhook '
+            f'(user={user_id}, enterprise={enterprise_customer_uuid}, course={course_id})'
+        )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        LOGGER.error(
+            f'[Webhook] Failed to route enriched webhook: {e} '
+            f'(user={user_id}, enterprise={enterprise_customer_uuid}, course={course_id})',
+            exc_info=True
+        )
+        raise
+
+
+@shared_task
+@set_code_owner_attribute
 def process_webhook_queue(queue_item_id):
     """
     Process a single webhook queue item.

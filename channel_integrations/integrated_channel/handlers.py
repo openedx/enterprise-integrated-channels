@@ -4,6 +4,7 @@ These handlers are called directly by the consume_events management command.
 """
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from enterprise.models import EnterpriseCustomerUser
@@ -13,6 +14,7 @@ from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,
     route_webhook_by_region,
 )
+from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
 
 User = get_user_model()
 log = logging.getLogger(__name__)
@@ -53,18 +55,40 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
     for ecu in enterprise_customer_users:
         try:
             payload = _prepare_completion_payload(grade_data, user, ecu.enterprise_customer)
-            route_webhook_by_region(
-                user=user,
-                enterprise_customer=ecu.enterprise_customer,
-                course_id=str(grade_data.course.course_key),
-                event_type='course_completion',
-                payload=payload
+            
+            # Check if learning time enrichment feature is enabled
+            feature_enabled = getattr(settings, 'FEATURES', {}).get(
+                'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT',
+                False
             )
-            log.info(
-                f'[Webhook] Queued completion webhook for user {user.id}, '
-                f'enterprise {ecu.enterprise_customer.uuid}, '
-                f'course {grade_data.course.course_key}'
-            )
+            
+            if feature_enabled:
+                # Use enrichment task to add learning time data
+                enrich_and_send_completion_webhook.delay(
+                    user_id=user.id,
+                    enterprise_customer_uuid=str(ecu.enterprise_customer.uuid),
+                    course_id=str(grade_data.course.course_key),
+                    payload_dict=payload
+                )
+                log.info(
+                    f'[Webhook] Queued enrichment task for user {user.id}, '
+                    f'enterprise {ecu.enterprise_customer.uuid}, '
+                    f'course {grade_data.course.course_key}'
+                )
+            else:
+                # Standard webhook routing (backward compatible)
+                route_webhook_by_region(
+                    user=user,
+                    enterprise_customer=ecu.enterprise_customer,
+                    course_id=str(grade_data.course.course_key),
+                    event_type='course_completion',
+                    payload=payload
+                )
+                log.info(
+                    f'[Webhook] Queued completion webhook for user {user.id}, '
+                    f'enterprise {ecu.enterprise_customer.uuid}, '
+                    f'course {grade_data.course.course_key}'
+                )
         except NoWebhookConfigured as e:
             log.debug(f'[Webhook] No webhook configured: {e}')
         except Exception as e:  # pylint: disable=broad-exception-caught
