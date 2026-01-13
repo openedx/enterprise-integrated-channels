@@ -14,22 +14,34 @@ Change Log
 Unreleased
 **********
 
+0.1.28 – 2026-01-13
+*******************
+
+Fixed
+=====
+
+* fix: change webhook model id fields to AutoField for edx-platform compatibility
+
 0.1.27 – 2026-01-12
 *******************
 
 Added
 =====
 
+* feat: Region-aware webhook system for enterprise course completion
 * chore: add logging for track sending course completion xAPI statements
+
+Fixed
+=====
+
+* fix: update pip-tools to 7.5.2
+* See issue https://github.com/openedx/public-engineering/issues/440 for details.
 
 [0.1.26] - 2026-01-08
 *********************
 
 Added
 =====
-
-* fix: update pip-tools to 7.5.2
-* See issue https://github.com/openedx/public-engineering/issues/440 for details.
 
 0.1.25 – 2025-11-28
 *******************
