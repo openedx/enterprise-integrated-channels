@@ -516,16 +516,16 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
             learning_time = client.get_learning_time(
                 user_id=user_id,
                 course_id=course_id,
-                enterprise_uuid=enterprise_customer_uuid
+                enterprise_customer_uuid=enterprise_customer_uuid
             )
             
             # Add to payload if we got a value
             if learning_time is not None:
-                payload_dict['learning_time'] = {
-                    'total_seconds': learning_time,
-                    'source': 'snowflake',
-                    'enriched_at': timezone.now().isoformat()
-                }
+                # Add learning_time to the completion section
+                if 'completion' not in payload_dict:
+                    payload_dict['completion'] = {}
+                payload_dict['completion']['learning_time'] = learning_time
+                
                 LOGGER.info(
                     f'[Webhook] Enriched payload with learning_time={learning_time}s '
                     f'(user={user_id}, course={course_id}, enterprise={enterprise_customer_uuid})'
