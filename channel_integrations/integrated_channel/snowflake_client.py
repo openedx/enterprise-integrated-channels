@@ -130,7 +130,7 @@ class SnowflakeLearningTimeClient:
         SELECT SUM(LEARNING_TIME_SECONDS) as total_learning_time
         FROM PROD.BUSINESS_INTELLIGENCE.LEARNING_TIME
         WHERE USER_ID = %s
-          AND COURSE_KEY = %s
+          AND COURSERUN_KEY = %s
           AND ENTERPRISE_CUSTOMER_UUID = %s
         """
         
