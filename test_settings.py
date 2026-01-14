@@ -95,7 +95,9 @@ ENTERPRISE_ENROLLMENT_API_URL = LMS_INTERNAL_ROOT_URL + LMS_ENROLLMENT_API_PATH
 
 ENTERPRISE_COURSE_ENROLLMENT_AUDIT_MODES = ['audit', 'honor']
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Keep AutoField to match edx-platform (not BigAutoField)
+# edx-platform uses: DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 OAUTH_ID_TOKEN_EXPIRATION = 60 * 60  # in seconds
 
 SITE_ID = 1
