@@ -46,7 +46,7 @@ class TestCeleryTaskRouting:
         assert hasattr(enrich_and_send_completion_webhook, 'apply_async'), \
             "Task missing 'apply_async' method - not a Celery task?"
 
-    @patch('channel_integrations.integrated_channel.snowflake_client.SnowflakeLearningTimeClient')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
     def test_enrichment_task_execution_with_settings(self, mock_route, mock_snowflake):
         """

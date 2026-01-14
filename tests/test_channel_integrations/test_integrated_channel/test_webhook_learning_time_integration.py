@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class TestWebhookLearningTimeIntegration:
     """Integration tests for the complete learning time enrichment flow."""
 
-    @patch('channel_integrations.integrated_channel.snowflake_client.SnowflakeLearningTimeClient')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_enrichment_task_adds_learning_time_to_payload(self, mock_route, mock_snowflake_class):
@@ -82,7 +82,7 @@ class TestWebhookLearningTimeIntegration:
         assert enriched_payload['completion']['learning_time'] == 3600
         assert enriched_payload['completion']['percent_grade'] == 0.90
 
-    @patch('channel_integrations.integrated_channel.snowflake_client.SnowflakeLearningTimeClient')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_graceful_degradation_when_snowflake_fails(self, mock_route, mock_snowflake_class):
@@ -127,7 +127,7 @@ class TestWebhookLearningTimeIntegration:
         assert 'learning_time' not in sent_payload['completion']
         assert sent_payload['completion']['percent_grade'] == 0.85
 
-    @patch('channel_integrations.integrated_channel.snowflake_client.SnowflakeLearningTimeClient')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_no_learning_time_when_snowflake_returns_none(self, mock_route, mock_snowflake_class):
@@ -173,7 +173,7 @@ class TestWebhookLearningTimeIntegration:
         # learning_time should NOT be added when value is None
         assert 'learning_time' not in sent_payload['completion']
 
-    @patch('channel_integrations.integrated_channel.snowflake_client.SnowflakeLearningTimeClient')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_zero_learning_time_is_added_to_payload(self, mock_route, mock_snowflake_class):

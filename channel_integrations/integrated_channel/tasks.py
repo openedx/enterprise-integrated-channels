@@ -25,6 +25,7 @@ from channel_integrations.integrated_channel.models import (
     OrphanedContentTransmissions,
     WebhookTransmissionQueue,
 )
+from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
 from channel_integrations.utils import generate_formatted_log
 
 LOGGER = get_task_logger(__name__)
@@ -499,10 +500,6 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
         course_id: Course key string
         payload_dict: The webhook payload dictionary
     """
-    from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
-    from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
-    from enterprise.models import EnterpriseCustomer
-    
     # Check feature flag
     feature_enabled = getattr(settings, 'FEATURES', {}).get(
         'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT', 
@@ -545,6 +542,10 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
     
     # Route webhook (with or without learning time enrichment)
     try:
+        # Import here to avoid circular dependencies
+        from enterprise.models import EnterpriseCustomer
+        from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
+        
         user = User.objects.get(id=user_id)
         enterprise_customer = EnterpriseCustomer.objects.get(uuid=enterprise_customer_uuid)
         
