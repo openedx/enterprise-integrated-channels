@@ -1,22 +1,23 @@
 """
 Tests for Snowflake Learning Time Client.
 """
-import pytest
 from unittest.mock import MagicMock, patch
-from django.test import TestCase, override_settings
+
+import pytest
 from django.core.cache import cache
+from django.test import TestCase, override_settings
 
 from channel_integrations.integrated_channel.snowflake_client import (
-    SnowflakeLearningTimeClient,
     LEARNING_TIME_CACHE_KEY_TEMPLATE,
-    LEARNING_TIME_CACHE_TTL
+    LEARNING_TIME_CACHE_TTL,
+    SnowflakeLearningTimeClient,
 )
 
 
 @pytest.mark.django_db
 class TestSnowflakeLearningTimeClient(TestCase):
     """Tests for SnowflakeLearningTimeClient."""
-    
+
     def setUp(self):
         """Set up test fixtures."""
         super().setUp()
@@ -26,12 +27,12 @@ class TestSnowflakeLearningTimeClient(TestCase):
         self.enterprise_uuid = 'test-enterprise-uuid'
         # Clear cache before each test
         cache.clear()
-    
+
     def tearDown(self):
         """Clean up after tests."""
         cache.clear()
         super().tearDown()
-    
+
     def test_cache_key_generation(self):
         """Test that cache key is generated correctly from template."""
         expected_key = 'learning_time:123:course-v1:edX+DemoX+Demo_Course:test-enterprise-uuid'
@@ -41,7 +42,7 @@ class TestSnowflakeLearningTimeClient(TestCase):
             enterprise_id=self.enterprise_uuid
         )
         assert actual_key == expected_key
-    
+
     def test_cache_hit_with_data(self):
         """Test that cached learning time is returned when available."""
         # Pre-populate cache
@@ -51,15 +52,15 @@ class TestSnowflakeLearningTimeClient(TestCase):
             enterprise_id=self.enterprise_uuid
         )
         cache.set(cache_key, 7200)  # 2 hours
-        
+
         result = self.client.get_learning_time(
             self.user_id,
             self.course_id,
             self.enterprise_uuid
         )
-        
+
         assert result == 7200
-    
+
     def test_cache_hit_with_zero(self):
         """Test that cached zero value (negative result) returns None."""
         # Pre-populate cache with 0 (meaning "no data")
@@ -69,34 +70,34 @@ class TestSnowflakeLearningTimeClient(TestCase):
             enterprise_id=self.enterprise_uuid
         )
         cache.set(cache_key, 0)
-        
+
         result = self.client.get_learning_time(
             self.user_id,
             self.course_id,
             self.enterprise_uuid
         )
-        
+
         # 0 is cached as "no data found", should return None
         assert result is None
-    
+
     def test_cache_miss_with_data(self):
         """Test fetching from Snowflake on cache miss."""
         # Mock Snowflake cursor
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (7200,)  # 2 hours
-        
+
         mock_conn = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
-        
+
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.return_value = mock_conn
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             assert result == 7200
             # Verify data was cached
             cache_key = LEARNING_TIME_CACHE_KEY_TEMPLATE.format(
@@ -106,25 +107,25 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == 7200
-    
+
     def test_cache_miss_no_data(self):
         """Test handling of NULL result from Snowflake (no data)."""
         # Mock Snowflake returning NULL
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (None,)
-        
+
         mock_conn = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
-        
+
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.return_value = mock_conn
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             assert result is None
             # Verify 0 was cached (to avoid repeated queries)
             cache_key = LEARNING_TIME_CACHE_KEY_TEMPLATE.format(
@@ -134,18 +135,18 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == 0
-    
+
     def test_connection_returns_none(self):
         """Test graceful handling when connection returns None."""
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.return_value = None
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             assert result is None
             # Should cache 0 on connection failure
             cache_key = LEARNING_TIME_CACHE_KEY_TEMPLATE.format(
@@ -155,18 +156,18 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == 0
-    
+
     def test_connection_failure(self):
         """Test handling of connection exceptions."""
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.side_effect = Exception("Connection failed")
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             assert result is None
             # Should cache 0 on error
             cache_key = LEARNING_TIME_CACHE_KEY_TEMPLATE.format(
@@ -176,24 +177,24 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == 0
-    
+
     def test_query_execution_error(self):
         """Test handling of query execution errors."""
         mock_cursor = MagicMock()
         mock_cursor.fetchone.side_effect = Exception("Query error")
-        
+
         mock_conn = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
-        
+
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.return_value = mock_conn
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             assert result is None
             # Should cache 0 on query error
             cache_key = LEARNING_TIME_CACHE_KEY_TEMPLATE.format(
@@ -203,7 +204,7 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == 0
-    
+
     @override_settings(
         SNOWFLAKE_ACCOUNT='test-account',
         SNOWFLAKE_WAREHOUSE='TEST_WH',
@@ -215,16 +216,14 @@ class TestSnowflakeLearningTimeClient(TestCase):
     )
     def test_connection_with_correct_parameters(self):
         """Test that Snowflake connection is called with correct parameters."""
-        import sys
-        
         # Create a complete mock module structure
         mock_conn = MagicMock()
         mock_connector_module = MagicMock()
         mock_connector_module.connect = MagicMock(return_value=mock_conn)
-        
+
         mock_snowflake_module = MagicMock()
         mock_snowflake_module.connector = mock_connector_module
-        
+
         # Inject both snowflake and snowflake.connector into sys.modules
         with patch.dict('sys.modules', {
             'snowflake': mock_snowflake_module,
@@ -232,10 +231,10 @@ class TestSnowflakeLearningTimeClient(TestCase):
         }):
             # Create new client to pick up test settings
             client = SnowflakeLearningTimeClient()
-            
-            with client._get_connection() as conn:
+
+            with client._get_connection() as conn:  # pylint: disable=protected-access
                 assert conn == mock_conn
-            
+
             # Verify connection was called with correct parameters
             mock_connector_module.connect.assert_called_once_with(
                 account='test-account',
@@ -248,57 +247,58 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             # Verify connection is closed
             mock_conn.close.assert_called_once()
-    
+
     def test_snowflake_import_failure(self):
         """Test graceful handling when snowflake module cannot be imported."""
-        import sys
+        import sys  # pylint: disable=import-outside-toplevel
+
         # Simulate ImportError by removing module from sys.modules
         saved_modules = {}
         modules_to_remove = ['snowflake', 'snowflake.connector']
-        
+
         for mod in modules_to_remove:
             if mod in sys.modules:
                 saved_modules[mod] = sys.modules[mod]
                 del sys.modules[mod]
-        
+
         try:
             # Now patch builtins.__import__ to raise ImportError for snowflake
             def mock_import(name, *args, **kwargs):
                 if name.startswith('snowflake'):
                     raise ImportError(f"No module named '{name}'")
                 return original_import(name, *args, **kwargs)
-            
-            import builtins
+
+            import builtins  # pylint: disable=import-outside-toplevel
             original_import = builtins.__import__
-            
+
             with patch('builtins.__import__', side_effect=mock_import):
                 client = SnowflakeLearningTimeClient()
-                with client._get_connection() as conn:
+                with client._get_connection() as conn:  # pylint: disable=protected-access
                     # Should yield None when import fails
                     assert conn is None
         finally:
             # Restore modules
             for mod, val in saved_modules.items():
                 sys.modules[mod] = val
-    
+
     def test_zero_learning_time(self):
         """Test handling of zero learning time (valid value but treated as no data)."""
         # Mock Snowflake returning 0
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (0,)
-        
+
         mock_conn = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
-        
+
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.return_value = mock_conn
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             # 0 is a valid result and should be returned
             assert result == 0
             # Should cache the 0 value
@@ -309,26 +309,26 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == 0
-    
+
     def test_large_learning_time_value(self):
         """Test handling of large learning time values."""
         # Mock Snowflake returning large value (e.g., 1000 hours)
         large_value = 3600000  # 1000 hours in seconds
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = (large_value,)
-        
+
         mock_conn = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
-        
+
         with patch.object(self.client, '_get_connection') as mock_get_connection:
             mock_get_connection.return_value.__enter__.return_value = mock_conn
-            
+
             result = self.client.get_learning_time(
                 self.user_id,
                 self.course_id,
                 self.enterprise_uuid
             )
-            
+
             assert result == large_value
             # Verify cached
             cache_key = LEARNING_TIME_CACHE_KEY_TEMPLATE.format(
@@ -338,11 +338,11 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             cached = cache.get(cache_key)
             assert cached == large_value
-    
+
     def test_cache_ttl(self):
         """Test that cache TTL is set correctly."""
         assert LEARNING_TIME_CACHE_TTL == 3600  # 1 hour
-    
+
     def test_client_initialization(self):
         """Test that client initializes with settings from Django config."""
         with override_settings(
@@ -362,7 +362,7 @@ class TestSnowflakeLearningTimeClient(TestCase):
             assert client.role == 'ROLE'
             assert client.user == 'user'
             assert client.password == 'pass'
-    
+
     def test_client_initialization_missing_settings(self):
         """Test that client handles missing settings gracefully."""
         # Create client without settings - should not crash

@@ -14,7 +14,6 @@ from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,
     route_webhook_by_region,
 )
-from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
 
 User = get_user_model()
 log = logging.getLogger(__name__)
@@ -55,15 +54,18 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
     for ecu in enterprise_customer_users:
         try:
             payload = _prepare_completion_payload(grade_data, user, ecu.enterprise_customer)
-            
+
             # Check if learning time enrichment feature is enabled
             feature_enabled = getattr(settings, 'FEATURES', {}).get(
                 'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT',
                 False
             )
-            
+
             if feature_enabled:
                 # Use enrichment task to add learning time data
+                # Import here to avoid circular dependency
+                from channel_integrations.integrated_channel.tasks import \
+                    enrich_and_send_completion_webhook  # pylint: disable=import-outside-toplevel
                 enrich_and_send_completion_webhook.delay(
                     user_id=user.id,
                     enterprise_customer_uuid=str(ecu.enterprise_customer.uuid),

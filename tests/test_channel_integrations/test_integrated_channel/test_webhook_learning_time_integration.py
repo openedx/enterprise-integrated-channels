@@ -3,6 +3,7 @@ Integration tests for webhook learning time enrichment.
 
 These tests verify the end-to-end flow of enriching webhook payloads with learning time data.
 """
+# pylint: disable=import-outside-toplevel
 import logging
 from unittest.mock import Mock, patch
 
@@ -26,7 +27,7 @@ class TestWebhookLearningTimeIntegration:
     def test_enrichment_task_adds_learning_time_to_payload(self, mock_route, mock_snowflake_class):
         """
         Test that the enrichment task correctly adds learning_time to the completion payload.
-        
+
         This is the core integration test - it verifies:
         1. Task can query Snowflake client
         2. Learning time is added to payload['completion']['learning_time']
@@ -40,7 +41,7 @@ class TestWebhookLearningTimeIntegration:
         EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
 
         course_id = 'course-v1:edX+DemoX+Demo_Course'
-        
+
         # Mock Snowflake to return learning time
         mock_client = Mock()
         mock_client.get_learning_time.return_value = 3600  # 1 hour
@@ -75,7 +76,7 @@ class TestWebhookLearningTimeIntegration:
         # Verify webhook was routed with enriched payload
         mock_route.assert_called_once()
         call_kwargs = mock_route.call_args[1]
-        
+
         enriched_payload = call_kwargs['payload']
         assert 'completion' in enriched_payload
         assert 'learning_time' in enriched_payload['completion']
@@ -88,7 +89,7 @@ class TestWebhookLearningTimeIntegration:
     def test_graceful_degradation_when_snowflake_fails(self, mock_route, mock_snowflake_class):
         """
         Test that webhook is still sent if Snowflake query fails.
-        
+
         This verifies graceful degradation - enrichment failure should not break the webhook.
         """
         from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
@@ -120,7 +121,7 @@ class TestWebhookLearningTimeIntegration:
         # Verify webhook was still sent (without learning_time)
         mock_route.assert_called_once()
         call_kwargs = mock_route.call_args[1]
-        
+
         sent_payload = call_kwargs['payload']
         assert 'completion' in sent_payload
         # learning_time should NOT be present due to error
@@ -133,7 +134,7 @@ class TestWebhookLearningTimeIntegration:
     def test_no_learning_time_when_snowflake_returns_none(self, mock_route, mock_snowflake_class):
         """
         Test that webhook is sent without learning_time if Snowflake returns None.
-        
+
         None means no data available for this user/course.
         """
         from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
@@ -167,7 +168,7 @@ class TestWebhookLearningTimeIntegration:
         # Verify webhook was sent without learning_time
         mock_route.assert_called_once()
         call_kwargs = mock_route.call_args[1]
-        
+
         sent_payload = call_kwargs['payload']
         assert 'completion' in sent_payload
         # learning_time should NOT be added when value is None
@@ -179,7 +180,7 @@ class TestWebhookLearningTimeIntegration:
     def test_zero_learning_time_is_added_to_payload(self, mock_route, mock_snowflake_class):
         """
         Test that learning_time=0 is correctly included in the payload.
-        
+
         Zero is a valid value and should not be treated as "no data".
         """
         from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
@@ -213,7 +214,7 @@ class TestWebhookLearningTimeIntegration:
         # Verify webhook was sent with learning_time=0
         mock_route.assert_called_once()
         call_kwargs = mock_route.call_args[1]
-        
+
         sent_payload = call_kwargs['payload']
         assert 'completion' in sent_payload
         assert 'learning_time' in sent_payload['completion']
@@ -224,7 +225,7 @@ class TestWebhookLearningTimeIntegration:
     def test_feature_flag_disabled_no_enrichment(self, mock_route):
         """
         Test that with feature flag OFF, no enrichment occurs.
-        
+
         This is the backward-compatible default behavior.
         """
         from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
@@ -253,7 +254,7 @@ class TestWebhookLearningTimeIntegration:
         # Verify webhook was routed without enrichment attempt
         mock_route.assert_called_once()
         call_kwargs = mock_route.call_args[1]
-        
+
         sent_payload = call_kwargs['payload']
         assert 'learning_time' not in sent_payload.get('completion', {})
         assert sent_payload['completion']['percent_grade'] == 0.92

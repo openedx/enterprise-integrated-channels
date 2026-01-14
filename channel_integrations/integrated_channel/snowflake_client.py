@@ -20,10 +20,10 @@ LEARNING_TIME_CACHE_TTL = 3600  # 1 hour
 class SnowflakeLearningTimeClient:
     """
     Client for querying learning time data from Snowflake.
-    
+
     This client provides methods to retrieve total learning time for a user/course/enterprise
     combination. Results are cached to minimize database load.
-    
+
     Example:
         >>> client = SnowflakeLearningTimeClient()
         >>> learning_time = client.get_learning_time(
@@ -34,7 +34,7 @@ class SnowflakeLearningTimeClient:
         >>> if learning_time:
         ...     print(f'Total learning time: {learning_time} seconds')
     """
-    
+
     def __init__(self):
         """Initialize Snowflake client with configuration from Django settings."""
         self.account = getattr(settings, 'SNOWFLAKE_ACCOUNT', None)
@@ -44,18 +44,18 @@ class SnowflakeLearningTimeClient:
         self.role = getattr(settings, 'SNOWFLAKE_ROLE', None)
         self.user = getattr(settings, 'SNOWFLAKE_SERVICE_USER', None)
         self.password = getattr(settings, 'SNOWFLAKE_SERVICE_USER_PASSWORD', None)
-    
+
     @contextmanager
     def _get_connection(self):
         """
         Context manager for Snowflake database connections.
-        
+
         Yields:
             snowflake.connector.connection: Active database connection
-            
+
         Raises:
             Exception: If connection fails
-            
+
         Example:
             >>> client = SnowflakeLearningTimeClient()
             >>> with client._get_connection() as conn:
@@ -64,12 +64,12 @@ class SnowflakeLearningTimeClient:
         """
         # Lazy import to avoid import errors when snowflake is not installed
         try:
-            import snowflake.connector
+            import snowflake.connector  # pylint: disable=import-outside-toplevel
         except ImportError:
             logger.warning('[LearningTime] snowflake-connector-python not installed, returning None')
             yield None
             return
-        
+
         conn = None
         try:
             conn = snowflake.connector.connect(
@@ -90,23 +90,23 @@ class SnowflakeLearningTimeClient:
             if conn:
                 conn.close()
                 logger.debug('[LearningTime] Closed Snowflake connection')
-    
+
     def get_learning_time(self, user_id, course_id, enterprise_customer_uuid):
         """
         Query total learning time for a user/course/enterprise combination.
-        
+
         This method first checks the cache for existing learning time data. If not found,
         it queries Snowflake and caches the result. If Snowflake is unavailable or returns
         no data, it returns None (enabling graceful degradation).
-        
+
         Args:
             user_id (int): LMS user ID
             course_id (str): Course key (e.g., 'course-v1:edX+DemoX+Demo_Course')
             enterprise_customer_uuid (str): Enterprise customer UUID
-        
+
         Returns:
             int: Total learning time in seconds, or None if not found
-            
+
         Example:
             >>> client = SnowflakeLearningTimeClient()
             >>> seconds = client.get_learning_time(12345, 'course-v1:edX+Demo+2024', 'abc-123')
@@ -124,7 +124,7 @@ class SnowflakeLearningTimeClient:
         if cached_value is not None:
             logger.info(f'[LearningTime] Cache hit: {cache_key}')
             return cached_value if cached_value > 0 else None
-        
+
         # Query Snowflake
         query = """
         SELECT SUM(LEARNING_TIME_SECONDS) as total_learning_time
@@ -133,20 +133,20 @@ class SnowflakeLearningTimeClient:
           AND COURSERUN_KEY = %s
           AND ENTERPRISE_CUSTOMER_UUID = %s
         """
-        
+
         try:
             with self._get_connection() as conn:
                 if conn is None:
                     # Connection failed or snowflake not installed - graceful degradation
-                    logger.warning(f'[LearningTime] No Snowflake connection available')
+                    logger.warning('[LearningTime] No Snowflake connection available')
                     cache.set(cache_key, 0, LEARNING_TIME_CACHE_TTL)
                     return None
-                
+
                 cursor = conn.cursor()
                 cursor.execute(query, (user_id, course_id, enterprise_customer_uuid))
                 result = cursor.fetchone()
                 cursor.close()
-                
+
                 if result and result[0] is not None:
                     learning_time = int(result[0])
                     # Cache the result
@@ -164,8 +164,8 @@ class SnowflakeLearningTimeClient:
                     # Cache negative result to avoid repeated queries
                     cache.set(cache_key, 0, LEARNING_TIME_CACHE_TTL)
                     return None
-        
-        except Exception as e:
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error(f'[LearningTime] Error querying Snowflake: {e}', exc_info=True)
             # Cache negative result on error to avoid hammering Snowflake
             cache.set(cache_key, 0, LEARNING_TIME_CACHE_TTL)

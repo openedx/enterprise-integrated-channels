@@ -7,7 +7,6 @@ from django.utils import timezone
 
 from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration, WebhookTransmissionQueue
 from channel_integrations.integrated_channel.services.region_service import get_user_region
-from channel_integrations.integrated_channel.tasks import process_webhook_queue
 
 log = logging.getLogger(__name__)
 
@@ -88,6 +87,9 @@ def route_webhook_by_region(user, enterprise_customer, course_id, event_type, pa
             f"to {config.webhook_url} (Region: {region})"
         )
         # 5. Trigger Celery Task
+        # Import here to avoid circular dependency
+        from channel_integrations.integrated_channel.tasks import \
+            process_webhook_queue  # pylint: disable=import-outside-toplevel
         process_webhook_queue.delay(queue_item.id)
     else:
         log.info(
