@@ -22,7 +22,7 @@ class TestWebhookLearningTimeIntegration:
     """Integration tests for the complete learning time enrichment flow."""
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_enrichment_task_adds_learning_time_to_payload(self, mock_route, mock_snowflake_class):
         """
@@ -58,6 +58,9 @@ class TestWebhookLearningTimeIntegration:
             }
         }
 
+        # Mock routing to return success
+        mock_route.return_value = (Mock(id=1), True)
+
         # Execute enrichment task
         enrich_and_send_completion_webhook(
             user_id=user.id,
@@ -84,7 +87,7 @@ class TestWebhookLearningTimeIntegration:
         assert enriched_payload['completion']['percent_grade'] == 0.90
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_graceful_degradation_when_snowflake_fails(self, mock_route, mock_snowflake_class):
         """
@@ -103,6 +106,9 @@ class TestWebhookLearningTimeIntegration:
 
         # Mock Snowflake to raise exception
         mock_snowflake_class.side_effect = Exception("Connection failed")
+
+        # Mock routing to return success
+        mock_route.return_value = (Mock(id=1), True)
 
         payload = {
             'completion': {
@@ -129,7 +135,7 @@ class TestWebhookLearningTimeIntegration:
         assert sent_payload['completion']['percent_grade'] == 0.85
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_no_learning_time_when_snowflake_returns_none(self, mock_route, mock_snowflake_class):
         """
@@ -150,6 +156,9 @@ class TestWebhookLearningTimeIntegration:
         mock_client = Mock()
         mock_client.get_learning_time.return_value = None
         mock_snowflake_class.return_value = mock_client
+
+        # Mock routing to return success
+        mock_route.return_value = (Mock(id=1), True)
 
         payload = {
             'completion': {
@@ -175,7 +184,7 @@ class TestWebhookLearningTimeIntegration:
         assert 'learning_time' not in sent_payload['completion']
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_zero_learning_time_is_added_to_payload(self, mock_route, mock_snowflake_class):
         """
@@ -196,6 +205,9 @@ class TestWebhookLearningTimeIntegration:
         mock_client = Mock()
         mock_client.get_learning_time.return_value = 0
         mock_snowflake_class.return_value = mock_client
+
+        # Mock routing to return success
+        mock_route.return_value = (Mock(id=1), True)
 
         payload = {
             'completion': {
@@ -220,7 +232,7 @@ class TestWebhookLearningTimeIntegration:
         assert 'learning_time' in sent_payload['completion']
         assert sent_payload['completion']['learning_time'] == 0
 
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': False})
     def test_feature_flag_disabled_no_enrichment(self, mock_route):
         """
@@ -236,6 +248,9 @@ class TestWebhookLearningTimeIntegration:
         EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
 
         course_id = 'course-v1:edX+DemoX+Demo_Course'
+
+        # Mock routing to return success
+        mock_route.return_value = (Mock(id=1), True)
 
         payload = {
             'completion': {
@@ -260,7 +275,7 @@ class TestWebhookLearningTimeIntegration:
         assert sent_payload['completion']['percent_grade'] == 0.92
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_enrichment_creates_completion_section_if_missing(self, mock_route, mock_snowflake_class):
         """
@@ -281,6 +296,9 @@ class TestWebhookLearningTimeIntegration:
         mock_client = Mock()
         mock_client.get_learning_time.return_value = 5400  # 1.5 hours
         mock_snowflake_class.return_value = mock_client
+
+        # Mock routing to return success
+        mock_route.return_value = (Mock(id=1), True)
 
         # Create payload WITHOUT completion section
         payload = {
@@ -306,7 +324,7 @@ class TestWebhookLearningTimeIntegration:
         assert enriched_payload['completion']['learning_time'] == 5400
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
     def test_routing_exception_is_raised(self, mock_route, mock_snowflake_class):
         """

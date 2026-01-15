@@ -13,6 +13,7 @@ from django.contrib import auth
 from django.core.cache import cache
 from django.utils import timezone
 from edx_django_utils.monitoring import set_code_owner_attribute
+from enterprise.models import EnterpriseCustomer
 from enterprise.utils import get_enterprise_uuids_for_user_and_course
 
 from channel_integrations.integrated_channel.constants import TASK_LOCK_EXPIRY_SECONDS
@@ -25,6 +26,7 @@ from channel_integrations.integrated_channel.models import (
     OrphanedContentTransmissions,
     WebhookTransmissionQueue,
 )
+from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
 from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
 from channel_integrations.utils import generate_formatted_log
 
@@ -542,22 +544,19 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
 
     # Route webhook (with or without learning time enrichment)
     try:
-        # Import here to avoid circular dependencies
-        from enterprise.models import EnterpriseCustomer  # pylint: disable=import-outside-toplevel
-
-        from channel_integrations.integrated_channel.services.webhook_routing import \
-            route_webhook_by_region  # pylint: disable=import-outside-toplevel
-
         user = User.objects.get(id=user_id)
         enterprise_customer = EnterpriseCustomer.objects.get(uuid=enterprise_customer_uuid)
 
-        route_webhook_by_region(
+        queue_item, created = route_webhook_by_region(
             user=user,
             enterprise_customer=enterprise_customer,
             course_id=course_id,
             event_type='course_completion',
             payload=payload_dict
         )
+        if created:
+            process_webhook_queue.delay(queue_item.id)
+
         LOGGER.info(
             f'[Webhook] Routed enriched completion webhook '
             f'(user={user_id}, enterprise={enterprise_customer_uuid}, course={course_id})'

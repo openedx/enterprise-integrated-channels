@@ -14,6 +14,7 @@ from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,
     route_webhook_by_region,
 )
+from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook, process_webhook_queue
 
 User = get_user_model()
 log = logging.getLogger(__name__)
@@ -63,9 +64,6 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
 
             if feature_enabled:
                 # Use enrichment task to add learning time data
-                # Import here to avoid circular dependency
-                from channel_integrations.integrated_channel.tasks import \
-                    enrich_and_send_completion_webhook  # pylint: disable=import-outside-toplevel
                 enrich_and_send_completion_webhook.delay(
                     user_id=user.id,
                     enterprise_customer_uuid=str(ecu.enterprise_customer.uuid),
@@ -79,13 +77,16 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
                 )
             else:
                 # Standard webhook routing (backward compatible)
-                route_webhook_by_region(
+                queue_item, created = route_webhook_by_region(
                     user=user,
                     enterprise_customer=ecu.enterprise_customer,
                     course_id=str(grade_data.course.course_key),
                     event_type='course_completion',
                     payload=payload
                 )
+                if created:
+                    process_webhook_queue.delay(queue_item.id)
+
                 log.info(
                     f'[Webhook] Queued completion webhook for user {user.id}, '
                     f'enterprise {ecu.enterprise_customer.uuid}, '
@@ -125,13 +126,16 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable
     for ecu in enterprise_customer_users:
         try:
             payload = _prepare_enrollment_payload(enrollment_data, user, ecu.enterprise_customer)
-            route_webhook_by_region(
+            queue_item, created = route_webhook_by_region(
                 user=user,
                 enterprise_customer=ecu.enterprise_customer,
                 course_id=str(enrollment_data.course.course_key),
                 event_type='course_enrollment',
                 payload=payload
             )
+            if created:
+                process_webhook_queue.delay(queue_item.id)
+
             log.info(
                 f'[Webhook] Queued enrollment webhook for user {user.id}, '
                 f'enterprise {ecu.enterprise_customer.uuid}, '

@@ -364,19 +364,17 @@ class TestWebhookIntegration:
             'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
             return_value='US'
         ):
-            with patch(
-                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
-            ):
-                queue_item = route_webhook_by_region(
-                    user=user,
-                    enterprise_customer=enterprise,
-                    course_id='course-v1:Test+Course+2026',
-                    event_type='course_completion',
-                    payload=payload
-                )
+            queue_item, created = route_webhook_by_region(
+                user=user,
+                enterprise_customer=enterprise,
+                course_id='course-v1:Test+Course+2026',
+                event_type='course_completion',
+                payload=payload
+            )
 
         # Verify
         assert queue_item is not None
+        assert created is True
         assert queue_item.enterprise_customer == enterprise
         assert queue_item.user == user
         assert queue_item.webhook_url == config.webhook_url

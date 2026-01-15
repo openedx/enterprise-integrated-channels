@@ -2,7 +2,7 @@
 Integration tests for Webhook event handlers.
 """
 import logging
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -81,7 +81,9 @@ class TestWebhookHandlers:
         )
 
         # Patch the task at the module level before it gets imported dynamically
-        with patch('channel_integrations.integrated_channel.tasks.enrich_and_send_completion_webhook') as mock_enrich:
+        with patch(
+            'channel_integrations.integrated_channel.handlers.enrich_and_send_completion_webhook'
+        ) as mock_enrich:
             handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
 
             # Verify enrichment task was called instead of route_webhook_by_region
@@ -425,3 +427,29 @@ class TestWebhookHandlers:
 
         # Check for error log
         assert any('Failed to queue enrollment webhook' in record.message for record in caplog.records)
+
+    def test_handle_enrollment_triggers_webhook_task_when_created(self):
+        """Verify that enrollment handler triggers webhook task when queue item is created."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            mode='verified',
+            is_active=True,
+            creation_date=timezone.now()
+        )
+
+        mock_queue_item = Mock(id=123)
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
+             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue') as mock_task:
+            # Return tuple with created=True to trigger the task
+            mock_route.return_value = (mock_queue_item, True)
+
+            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
+
+            # Verify the task was triggered with the queue item ID
+            mock_task.delay.assert_called_once_with(123)

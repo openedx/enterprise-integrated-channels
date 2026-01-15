@@ -1,7 +1,6 @@
 """
 Service for routing events to appropriate webhook configurations.
 """
-# pylint: disable=cyclic-import
 import logging
 
 from django.utils import timezone
@@ -87,15 +86,10 @@ def route_webhook_by_region(user, enterprise_customer, course_id, event_type, pa
             f"[Webhook] Queued {event_type} for user {user.id} "
             f"to {config.webhook_url} (Region: {region})"
         )
-        # 5. Trigger Celery Task
-        # Import here to avoid circular dependency
-        from channel_integrations.integrated_channel.tasks import \
-            process_webhook_queue  # pylint: disable=import-outside-toplevel
-        process_webhook_queue.delay(queue_item.id)
     else:
         log.info(
             f"[Webhook] Duplicate event detected for key {deduplication_key}. "
             f"Existing status: {queue_item.status}"
         )
 
-    return queue_item
+    return queue_item, created

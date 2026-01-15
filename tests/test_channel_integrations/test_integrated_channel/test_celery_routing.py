@@ -2,7 +2,7 @@
 Tests for Celery task routing configuration.
 """
 # pylint: disable=import-outside-toplevel
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from django.conf import settings
@@ -48,7 +48,7 @@ class TestCeleryTaskRouting:
             "Task missing 'apply_async' method - not a Celery task?"
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
-    @patch('channel_integrations.integrated_channel.services.webhook_routing.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     def test_enrichment_task_execution_with_settings(self, mock_route, mock_snowflake):
         """
         Verify the enrichment task executes correctly with proper settings.
@@ -71,6 +71,9 @@ class TestCeleryTaskRouting:
         # Mock Snowflake
         mock_client = mock_snowflake.return_value
         mock_client.get_learning_time.return_value = 1800  # 30 minutes
+
+        # Mock routing to return the queue item tuple expected downstream
+        mock_route.return_value = (Mock(id=1), True)
 
         payload = {
             'completion': {
