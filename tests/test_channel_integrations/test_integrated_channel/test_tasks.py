@@ -152,3 +152,130 @@ class TestEnrichAndSendCompletionWebhookTask:
 
             # Verify the webhook task was triggered with the queue item ID
             mock_delay.assert_called_once_with(456)
+
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
+    def test_enrich_and_send_does_not_trigger_webhook_task_when_not_created(
+        self, mock_snowflake, mock_route
+    ):
+        """Test that enrich_and_send_completion_webhook does not trigger webhook task when created=False."""
+        User = get_user_model()
+
+        # Setup test data
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_not_created', email='test_not_created@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_id = 'course-v1:edX+DemoX+DemoNotCreated'
+
+        # Mock Snowflake client
+        mock_client = mock_snowflake.return_value
+        mock_client.get_learning_time.return_value = 1800
+
+        # Mock routing to return tuple with created=False (already exists)
+        mock_queue_item = Mock(id=789)
+        mock_route.return_value = (mock_queue_item, False)
+
+        payload = {
+            'completion': {
+                'percent_grade': 0.88,
+            }
+        }
+
+        with patch('channel_integrations.integrated_channel.tasks.settings') as mock_settings, \
+             patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay') as mock_delay:
+            mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
+
+            # Execute the task
+            enrich_and_send_completion_webhook(
+                user_id=user.id,
+                course_id=course_id,
+                enterprise_customer_uuid=str(enterprise.uuid),
+                payload_dict=payload
+            )
+
+            # Verify the webhook task was NOT triggered since created=False
+            mock_delay.assert_not_called()
+
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
+    def test_enrich_and_send_handles_exception(
+        self, mock_snowflake, mock_route
+    ):
+        """Test that enrich_and_send_completion_webhook handles exceptions properly."""
+        User = get_user_model()
+
+        # Setup test data
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser2', email='test2@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_id = 'course-v1:edX+DemoX+Demo2'
+
+        # Mock Snowflake client
+        mock_client = mock_snowflake.return_value
+        mock_client.get_learning_time.return_value = 1800
+
+        # Mock routing to raise an exception
+        mock_route.side_effect = Exception('Routing failed')
+
+        payload = {
+            'completion': {
+                'percent_grade': 0.88,
+            }
+        }
+
+        with patch('channel_integrations.integrated_channel.tasks.settings') as mock_settings:
+            mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
+
+            # Execute the task and expect exception to be raised
+            with pytest.raises(Exception, match='Routing failed'):
+                enrich_and_send_completion_webhook(
+                    user_id=user.id,
+                    course_id=course_id,
+                    enterprise_customer_uuid=str(enterprise.uuid),
+                    payload_dict=payload
+                )
+
+    @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
+    @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
+    def test_enrich_and_send_handles_snowflake_exception(
+        self, mock_snowflake, mock_route
+    ):
+        """Test that enrich_and_send_completion_webhook handles Snowflake exceptions gracefully."""
+        User = get_user_model()
+
+        # Setup test data
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser3', email='test3@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_id = 'course-v1:edX+DemoX+Demo3'
+
+        # Mock Snowflake client to raise exception
+        mock_client = mock_snowflake.return_value
+        mock_client.get_learning_time.side_effect = Exception('Snowflake query failed')
+
+        # Mock routing to return tuple with created=False
+        mock_queue_item = Mock(id=789)
+        mock_route.return_value = (mock_queue_item, False)
+
+        payload = {
+            'completion': {
+                'percent_grade': 0.88,
+            }
+        }
+
+        with patch('channel_integrations.integrated_channel.tasks.settings') as mock_settings:
+            mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
+
+            # Execute the task - should not raise exception despite Snowflake failure
+            enrich_and_send_completion_webhook(
+                user_id=user.id,
+                course_id=course_id,
+                enterprise_customer_uuid=str(enterprise.uuid),
+                payload_dict=payload
+            )
+
+            # Verify routing was still called despite Snowflake error
+            mock_route.assert_called_once()

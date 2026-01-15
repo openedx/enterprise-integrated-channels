@@ -453,3 +453,29 @@ class TestWebhookHandlers:
 
             # Verify the task was triggered with the queue item ID
             mock_delay.assert_called_once_with(123)
+
+    def test_handle_enrollment_does_not_trigger_webhook_task_when_not_created(self):
+        """Verify that enrollment handler does not trigger webhook task when queue item already exists."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_existing', email='test_existing@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Existing')
+        enrollment_data = CourseEnrollmentData(
+            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
+            course=CourseData(course_key=course_key, display_name='Demo Course Existing'),
+            mode='verified',
+            is_active=True,
+            creation_date=timezone.now()
+        )
+
+        mock_queue_item = Mock(id=999)
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
+             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue.delay') as mock_delay:
+            # Return tuple with created=False (already exists)
+            mock_route.return_value = (mock_queue_item, False)
+
+            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
+
+            # Verify the task was NOT triggered since created=False
+            mock_delay.assert_not_called()
