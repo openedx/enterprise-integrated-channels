@@ -445,11 +445,11 @@ class TestWebhookHandlers:
 
         mock_queue_item = Mock(id=123)
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
-             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue') as mock_task:
+             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue.delay') as mock_delay:
             # Return tuple with created=True to trigger the task
             mock_route.return_value = (mock_queue_item, True)
 
             handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
 
             # Verify the task was triggered with the queue item ID
-            mock_task.delay.assert_called_once_with(123)
+            mock_delay.assert_called_once_with(123)

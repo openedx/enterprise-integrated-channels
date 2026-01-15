@@ -109,11 +109,10 @@ class TestUnlinkInactiveLearnersTask:
 class TestEnrichAndSendCompletionWebhookTask:
     """Tests for enrich_and_send_completion_webhook task."""
 
-    @patch('channel_integrations.integrated_channel.tasks.process_webhook_queue')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     def test_enrich_and_send_triggers_webhook_task_when_created(
-        self, mock_snowflake, mock_route, mock_webhook_task
+        self, mock_snowflake, mock_route
     ):
         """Test that enrich_and_send_completion_webhook triggers webhook task when created=True."""
         User = get_user_model()
@@ -139,7 +138,8 @@ class TestEnrichAndSendCompletionWebhookTask:
             }
         }
 
-        with patch('channel_integrations.integrated_channel.tasks.settings') as mock_settings:
+        with patch('channel_integrations.integrated_channel.tasks.settings') as mock_settings, \
+             patch('channel_integrations.integrated_channel.tasks.process_webhook_queue.delay') as mock_delay:
             mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
 
             # Execute the task
@@ -150,5 +150,5 @@ class TestEnrichAndSendCompletionWebhookTask:
                 payload_dict=payload
             )
 
-        # Verify the webhook task was triggered with the queue item ID
-        mock_webhook_task.delay.assert_called_once_with(456)
+            # Verify the webhook task was triggered with the queue item ID
+            mock_delay.assert_called_once_with(456)
