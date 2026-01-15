@@ -216,19 +216,11 @@ class TestSnowflakeLearningTimeClient(TestCase):
     )
     def test_connection_with_correct_parameters(self):
         """Test that Snowflake connection is called with correct parameters."""
-        # Create a complete mock module structure
+        # Create a mock connection
         mock_conn = MagicMock()
-        mock_connector_module = MagicMock()
-        mock_connector_module.connect = MagicMock(return_value=mock_conn)
 
-        mock_snowflake_module = MagicMock()
-        mock_snowflake_module.connector = mock_connector_module
-
-        # Inject both snowflake and snowflake.connector into sys.modules
-        with patch.dict('sys.modules', {
-            'snowflake': mock_snowflake_module,
-            'snowflake.connector': mock_connector_module
-        }):
+        # Patch snowflake.connector.connect directly
+        with patch('snowflake.connector.connect', return_value=mock_conn) as mock_connect:
             # Create new client to pick up test settings
             client = SnowflakeLearningTimeClient()
 
@@ -236,7 +228,7 @@ class TestSnowflakeLearningTimeClient(TestCase):
                 assert conn == mock_conn
 
             # Verify connection was called with correct parameters
-            mock_connector_module.connect.assert_called_once_with(
+            mock_connect.assert_called_once_with(
                 account='test-account',
                 user='test_user',
                 password='test_password',
@@ -247,39 +239,6 @@ class TestSnowflakeLearningTimeClient(TestCase):
             )
             # Verify connection is closed
             mock_conn.close.assert_called_once()
-
-    def test_snowflake_import_failure(self):
-        """Test graceful handling when snowflake module cannot be imported."""
-        import sys  # pylint: disable=import-outside-toplevel
-
-        # Simulate ImportError by removing module from sys.modules
-        saved_modules = {}
-        modules_to_remove = ['snowflake', 'snowflake.connector']
-
-        for mod in modules_to_remove:
-            if mod in sys.modules:
-                saved_modules[mod] = sys.modules[mod]
-                del sys.modules[mod]
-
-        try:
-            # Now patch builtins.__import__ to raise ImportError for snowflake
-            def mock_import(name, *args, **kwargs):
-                if name.startswith('snowflake'):
-                    raise ImportError(f"No module named '{name}'")
-                return original_import(name, *args, **kwargs)
-
-            import builtins  # pylint: disable=import-outside-toplevel
-            original_import = builtins.__import__
-
-            with patch('builtins.__import__', side_effect=mock_import):
-                client = SnowflakeLearningTimeClient()
-                with client._get_connection() as conn:  # pylint: disable=protected-access
-                    # Should yield None when import fails
-                    assert conn is None
-        finally:
-            # Restore modules
-            for mod, val in saved_modules.items():
-                sys.modules[mod] = val
 
     def test_zero_learning_time(self):
         """Test handling of zero learning time (valid value but treated as no data)."""
@@ -381,13 +340,9 @@ class TestSnowflakeLearningTimeClient(TestCase):
     )
     def test_connection_exception_raised(self):
         """Test that connection exceptions are properly raised (not swallowed)."""
-        # Mock the snowflake module import
-        import sys  # pylint: disable=import-outside-toplevel
-        mock_snowflake = MagicMock()
-        mock_snowflake.connector.connect.side_effect = Exception("Snowflake connection error")
-
-        with patch.dict(sys.modules, {'snowflake': mock_snowflake, 'snowflake.connector': mock_snowflake.connector}):
-            # The exception should be raised (lines 86-88 coverage)
+        # Mock snowflake.connector.connect to raise an exception
+        with patch('snowflake.connector.connect', side_effect=Exception("Snowflake connection error")):
+            # The exception should be raised (lines 82-84 coverage)
             with pytest.raises(Exception, match="Snowflake connection error"):
                 with self.client._get_connection():  # pylint: disable=protected-access
                     # Should never reach here

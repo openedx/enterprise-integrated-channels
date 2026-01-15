@@ -7,6 +7,7 @@ Snowflake data warehouse. Learning time is cached to minimize database load.
 import logging
 from contextlib import contextmanager
 
+import snowflake.connector
 from django.conf import settings
 from django.core.cache import cache
 
@@ -62,14 +63,6 @@ class SnowflakeLearningTimeClient:
             ...     cursor = conn.cursor()
             ...     cursor.execute("SELECT 1")
         """
-        # Lazy import to avoid import errors when snowflake is not installed
-        try:
-            import snowflake.connector  # pylint: disable=import-outside-toplevel
-        except ImportError:
-            logger.warning('[LearningTime] snowflake-connector-python not installed, returning None')
-            yield None
-            return
-
         conn = None
         try:
             conn = snowflake.connector.connect(
