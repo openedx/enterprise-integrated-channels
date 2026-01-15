@@ -1,6 +1,7 @@
 """
 Service for routing events to appropriate webhook configurations.
 """
+# pylint: disable=cyclic-import
 import logging
 
 from django.utils import timezone
