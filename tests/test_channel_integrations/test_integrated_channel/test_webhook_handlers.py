@@ -58,6 +58,41 @@ class TestWebhookHandlers:
             assert kwargs['event_type'] == 'course_completion'
             assert kwargs['payload']['completion']['percent_grade'] == 0.85
 
+    @patch(
+        'channel_integrations.integrated_channel.handlers.settings.FEATURES',
+        {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
+    )
+    def test_handle_grade_change_with_learning_time_enrichment(self):
+        """Verify that grade change uses enrichment task when feature flag is enabled."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            course_edited_timestamp=timezone.now(),
+            course_version='1',
+            grading_policy_hash='hash',
+            percent_grade=0.85,
+            letter_grade='B',
+            passed_timestamp=timezone.now()
+        )
+
+        # Patch the task at the module level before it gets imported dynamically
+        with patch('channel_integrations.integrated_channel.tasks.enrich_and_send_completion_webhook') as mock_enrich:
+            handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
+
+            # Verify enrichment task was called instead of route_webhook_by_region
+            mock_enrich.delay.assert_called_once()
+            call_kwargs = mock_enrich.delay.call_args[1]
+            assert call_kwargs['user_id'] == user.id
+            assert call_kwargs['enterprise_customer_uuid'] == str(enterprise.uuid)
+            assert call_kwargs['course_id'] == str(course_key)
+            assert 'payload_dict' in call_kwargs
+            assert call_kwargs['payload_dict']['completion']['percent_grade'] == 0.85
+
     def test_handle_grade_change_non_passing(self):
         """Verify that a non-passing grade event is ignored."""
         user = User.objects.create(username='testuser')

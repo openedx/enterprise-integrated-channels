@@ -369,3 +369,26 @@ class TestSnowflakeLearningTimeClient(TestCase):
         client = SnowflakeLearningTimeClient()
         # Settings should be None if not configured
         assert client.account is None or isinstance(client.account, str)
+
+    @override_settings(
+        SNOWFLAKE_ACCOUNT='test-account',
+        SNOWFLAKE_WAREHOUSE='WH',
+        SNOWFLAKE_DATABASE='DB',
+        SNOWFLAKE_SCHEMA='SCHEMA',
+        SNOWFLAKE_ROLE='ROLE',
+        SNOWFLAKE_SERVICE_USER='user',
+        SNOWFLAKE_SERVICE_USER_PASSWORD='pass'
+    )
+    def test_connection_exception_raised(self):
+        """Test that connection exceptions are properly raised (not swallowed)."""
+        # Mock the snowflake module import
+        import sys  # pylint: disable=import-outside-toplevel
+        mock_snowflake = MagicMock()
+        mock_snowflake.connector.connect.side_effect = Exception("Snowflake connection error")
+
+        with patch.dict(sys.modules, {'snowflake': mock_snowflake, 'snowflake.connector': mock_snowflake.connector}):
+            # The exception should be raised (lines 86-88 coverage)
+            with pytest.raises(Exception, match="Snowflake connection error"):
+                with self.client._get_connection():  # pylint: disable=protected-access
+                    # Should never reach here
+                    pass
