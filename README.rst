@@ -17,6 +17,21 @@ Please see the Open edX documentation for `guidance on Python development`_ in t
 
 .. _guidance on Python development: https://docs.openedx.org/en/latest/developers/how-tos/get-ready-for-python-dev.html
 
+Running tests locally
+*********************
+
+Once inside an LMS Devstack container, you'll want to run unit tests via tox::
+
+  tox
+
+tox will run tests via the ``pytest`` inside a virtual environment. If you want to pass
+arguments to ``pytest``, you can pass them after a ``--`` in the command::
+
+  tox -- tests/test_channel_integrations/test_api/test_base_views.py -v
+
+It's necessary to use ``tox`` both because of its use of a python virtual environment (which helps
+stay isolated from the edxapp python virtual environment), and because it adds the ``mock_apps/``
+directory to the ``PYTHONPATH``.
 
 Getting Help
 ************
