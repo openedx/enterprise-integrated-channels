@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.29 – 2026-01-17
+*******************
+
+Added
+=====
+
+* chore: add logging to track sending course completion xAPI statements
+
 0.1.28 – 2026-01-13
 *******************
 
