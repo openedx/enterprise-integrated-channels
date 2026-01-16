@@ -119,6 +119,19 @@ def send_course_completion_statement(lrs_configuration,
     username = user.username if user else 'Unavailable'
     user_social_auth = get_user_social_auth(user, lrs_configuration.enterprise_customer)
 
+    LOGGER.info(
+        '[Integrated Channel][xAPI] Sending '
+        'event_type: {event_type}, '
+        'course_id: {course_id}, '
+        'username: {username}, '
+        'user_social_auth: {user_social_auth}'.format(
+            event_type='completion',
+            course_id=course_overview.course_key if object_type == 'course' else str(course_overview.id),
+            username=user.username if user else 'Unavailable',
+            user_social_auth=get_user_social_auth(user, lrs_configuration.enterprise_customer),
+        )
+    )
+
     statement = LearnerCourseCompletionStatement(
         lrs_configuration.enterprise_customer.site,
         user,
@@ -126,6 +139,11 @@ def send_course_completion_statement(lrs_configuration,
         course_overview,
         course_grade,
         object_type,
+    )
+    LOGGER.info(
+        '[Integrated Channel][xAPI] Created LearnerCourseCompletionStatement: {statement}'.format(
+            statement=statement,
+        )
     )
 
     start_time = time.perf_counter()

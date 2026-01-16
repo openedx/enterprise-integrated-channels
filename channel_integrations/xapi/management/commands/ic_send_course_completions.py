@@ -125,6 +125,8 @@ class Command(BaseCommand):
             days (Numeric):  Deprecated.  Original implementation utilized a "days" parameter to limit
                 the number of enrollments transmitted, but this proved to be more problematic than helpful.
         """
+        LOGGER.info(f"Send xAPI analytics data using lrs_configuration")
+
         enterprise_course_enrollments = self.get_enterprise_course_enrollments(lrs_configuration.enterprise_customer)
         enterprise_enrollment_ids = self.get_enterprise_enrollment_ids(enterprise_course_enrollments)
         xapi_transmission_queryset = self.get_xapi_transmission_queryset(enterprise_enrollment_ids)
@@ -135,9 +137,33 @@ class Command(BaseCommand):
         course_overviews = self.prefetch_courses(enrollment_grades)
         course_catalog_client = get_course_catalog_api_service_client(site=lrs_configuration.enterprise_customer.site)
 
+        LOGGER.info(
+            '[Integrated Channel][xAPI] Sending '
+            'enterprise_course_enrollments: {enterprise_course_enrollments}, '
+            'enterprise_enrollment_ids: {enterprise_enrollment_ids}, '
+            'xapi_transmission_queryset: {xapi_transmission_queryset}, '
+            'pertinent_enrollment_ids: {pertinent_enrollment_ids}, '
+            'pertinent_enrollments: {pertinent_enrollments}, '
+            'enrollment_grades: {enrollment_grades}, '
+            'users: {users}, '
+            'course_overviews: {course_overviews}, '
+            'course_catalog_client: {course_catalog_client}'.format(
+                enterprise_course_enrollments=enterprise_course_enrollments,
+                enterprise_enrollment_ids=enterprise_enrollment_ids,
+                xapi_transmission_queryset=xapi_transmission_queryset,
+                pertinent_enrollment_ids=pertinent_enrollment_ids,
+                pertinent_enrollments=pertinent_enrollments,
+                enrollment_grades=enrollment_grades,
+                users=users,
+                course_overviews=course_overviews,
+                course_catalog_client=course_catalog_client,
+            )
+        )
+
         for xapi_transmission in xapi_transmission_queryset:
 
             object_type = self.get_object_type(xapi_transmission)
+            LOGGER.info('[xapi_transmission] object type : {object_type}'.format(object_type=self.get_object_type(xapi_transmission), ))
 
             try:
                 course_grade = enrollment_grades[xapi_transmission.enterprise_course_enrollment_id]
@@ -150,6 +176,23 @@ class Command(BaseCommand):
             course_run_identifiers = course_catalog_client.get_course_run_identifiers(courserun_id)
             course_overview.course_key = course_run_identifiers['course_key']
             course_overview.course_uuid = course_run_identifiers['course_uuid']
+
+            LOGGER.info(
+                '[Integrated Channel][xAPI] Sending '
+                'user: {user}, '
+                'courserun_id: {courserun_id}, '
+                'course_overview: {course_overview}, '
+                'course_run_identifiers: {course_run_identifiers}, '
+                'course_key: {course_key}, '
+                'course_uuid: {course_uuid}'.format(
+                    user=users.get(course_grade.user_id),
+                    courserun_id=str(course_grade.course_id),
+                    course_overview=course_overviews.get(course_grade.course_id),
+                    course_run_identifiers=course_catalog_client.get_course_run_identifiers(str(course_grade.course_id)),
+                    course_key=course_catalog_client.get_course_run_identifiers(str(course_grade.course_id))['course_key'],
+                    course_uuid=course_catalog_client.get_course_run_identifiers(str(course_grade.course_id))['course_uuid'],
+                )
+            )
 
             default_error_message = 'Days argument has been deprecated.  Value: {days}'.format(days=days)
             response_fields = {'status': 500, 'error_message': default_error_message}
@@ -165,8 +208,16 @@ class Command(BaseCommand):
             end_time = time.perf_counter()
             elapsed_time = end_time - start_time
             LOGGER.info(f"send_course_completion_statement took {elapsed_time:.4f} seconds")
+            LOGGER.info(
+                '[Integrated Channel][xAPI] Sending response_fields '
+                'status: {status}, error_message: {error_message}'.format(
+                    status=response_fields.get('status'),
+                    error_message=response_fields.get('error_message'),
+                )
+            )
 
             if is_success_response(response_fields):
+                LOGGER.info('[Integrated Channel][xAPI] Successfully sent course completion statement')
                 self.save_xapi_learner_data_transmission_audit(
                     xapi_transmission,
                     course_grade.percent_grade,
@@ -175,6 +226,7 @@ class Command(BaseCommand):
                     response_fields.get('status'),
                     response_fields.get('error_message')
                 )
+        LOGGER.info('[Integrated Channel][xAPI] Successfully returned')
 
     @staticmethod
     def get_object_type(xapi_transmission):
