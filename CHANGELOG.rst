@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.31 – 2026-01-19
+*******************
+
+Changed
+=======
+
+* chore: Update snowflake-connector-python from 3.7.0 to >=3.18.0,<4.0.0 for compatibility with edx-platform
+
 0.1.30 – 2026-01-19
 *******************
 

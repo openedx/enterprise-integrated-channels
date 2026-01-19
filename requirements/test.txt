@@ -12,35 +12,52 @@ aniso8601==10.0.1
     # via
     #   -r requirements/base.txt
     #   edx-tincan-py35
-asgiref==3.10.0
+asgiref==3.11.0
     # via
     #   -r requirements/base.txt
     #   django
     #   django-countries
+asn1crypto==1.5.1
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
 attrs==25.4.0
     # via openedx-events
-billiard==4.2.2
+billiard==4.2.4
     # via
     #   -r requirements/base.txt
     #   celery
-celery==5.5.3
+boto3==1.42.30
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
+botocore==1.42.30
+    # via
+    #   -r requirements/base.txt
+    #   boto3
+    #   s3transfer
+    #   snowflake-connector-python
+celery==5.6.2
     # via -r requirements/base.txt
-certifi==2025.10.5
+certifi==2026.1.4
     # via
     #   -r requirements/base.txt
     #   requests
-cffi==2.0.0
+    #   snowflake-connector-python
+cffi==1.17.1
     # via
     #   -r requirements/base.txt
     #   cryptography
     #   pynacl
+    #   snowflake-connector-python
 chardet==5.2.0
     # via diff-cover
 charset-normalizer==3.4.4
     # via
     #   -r requirements/base.txt
     #   requests
-click==8.3.0
+    #   snowflake-connector-python
+click==8.3.1
     # via
     #   -r requirements/base.txt
     #   celery
@@ -63,20 +80,27 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.0
     # via -r requirements/test.in
-coverage[toml]==7.11.0
+coverage[toml]==7.13.1
     # via pytest-cov
-cryptography==46.0.3
+cryptography==46.0.0
     # via
     #   -r requirements/base.txt
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
+    #   pyopenssl
+    #   snowflake-connector-python
 ddt==1.3.1
     # via -r requirements/test.in
-diff-cover==9.7.1
+defusedxml==0.7.1
+    # via
+    #   python3-openid
+    #   social-auth-core
+diff-cover==10.2.0
     # via -r requirements/test.in
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
+    #   -c requirements/constraints.txt
     #   -r requirements/base.txt
     #   django-config-models
     #   django-crum
@@ -91,9 +115,11 @@ diff-cover==9.7.1
     #   edx-drf-extensions
     #   edx-rbac
     #   jsonfield
+    #   openedx-events
+    #   social-auth-app-django
 django-config-models==2.9.0
     # via -r requirements/base.txt
-django-countries==7.6.1
+django-countries==8.2.0
     # via -r requirements/test.in
 django-crum==0.7.9
     # via
@@ -107,11 +133,11 @@ django-model-utils==5.0.0
     #   -r requirements/base.txt
     #   -r requirements/test.in
     #   edx-rbac
-django-oauth-toolkit==3.1.0
+django-oauth-toolkit==3.2.0
     # via -r requirements/base.txt
 django-object-actions==5.0.0
     # via -r requirements/base.txt
-django-simple-history==3.10.1
+django-simple-history==3.11.0
     # via -r requirements/base.txt
 django-waffle==5.0.0
     # via
@@ -140,6 +166,7 @@ edx-django-utils==8.0.1
     #   django-config-models
     #   edx-drf-extensions
     #   edx-rest-api-client
+    #   openedx-events
 edx-drf-extensions==10.6.0
     # via
     #   -r requirements/base.txt
@@ -147,7 +174,9 @@ edx-drf-extensions==10.6.0
 edx-opaque-keys[django]==3.0.0
     # via
     #   -r requirements/base.txt
+    #   edx-ccx-keys
     #   edx-drf-extensions
+    #   openedx-events
 edx-rbac==2.1.0
     # via -r requirements/base.txt
 edx-rest-api-client==6.2.0
@@ -156,29 +185,39 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.txt
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==37.12.0
+faker==40.1.2
     # via factory-boy
 fastavro==1.12.1
     # via openedx-events
+filelock==3.20.3
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
 freezegun==1.5.5
     # via -r requirements/test.in
 idna==3.11
     # via
     #   -r requirements/base.txt
     #   requests
+    #   snowflake-connector-python
 iniconfig==2.3.0
     # via pytest
 jinja2==3.1.6
     # via
     #   code-annotations
     #   diff-cover
+jmespath==1.0.1
+    # via
+    #   -r requirements/base.txt
+    #   boto3
+    #   botocore
 jsonfield==3.2.0
     # via -r requirements/base.txt
 jwcrypto==1.5.6
     # via
     #   -r requirements/base.txt
     #   django-oauth-toolkit
-kombu==5.5.4
+kombu==5.6.2
     # via
     #   -r requirements/base.txt
     #   celery
@@ -190,15 +229,22 @@ oauthlib==3.3.1
     # via
     #   -r requirements/base.txt
     #   django-oauth-toolkit
+    #   requests-oauthlib
+    #   social-auth-core
 openedx-atlas==0.7.0
     # via -r requirements/base.txt
-openedx-events==9.14.1
+openedx-events==10.5.0
     # via -r requirements/test.in
 packaging==25.0
     # via
     #   -r requirements/base.txt
     #   kombu
     #   pytest
+    #   snowflake-connector-python
+platformdirs==4.5.1
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
 pluggy==1.6.0
     # via
     #   diff-cover
@@ -208,7 +254,7 @@ prompt-toolkit==3.0.52
     # via
     #   -r requirements/base.txt
     #   click-repl
-psutil==7.1.2
+psutil==7.2.1
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
@@ -226,7 +272,9 @@ pyjwt[crypto]==2.10.1
     #   drf-jwt
     #   edx-drf-extensions
     #   edx-rest-api-client
-pymongo==4.15.3
+    #   snowflake-connector-python
+    #   social-auth-core
+pymongo==4.16.0
     # via
     #   -r requirements/base.txt
     #   edx-opaque-keys
@@ -234,7 +282,11 @@ pynacl==1.6.0
     # via
     #   -r requirements/base.txt
     #   edx-django-utils
-pytest==8.4.2
+pyopenssl==25.3.0
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
+pytest==9.0.2
     # via
     #   pytest-cov
     #   pytest-django
@@ -245,14 +297,18 @@ pytest-django==4.11.1
 python-dateutil==2.9.0.post0
     # via
     #   -r requirements/base.txt
+    #   botocore
     #   celery
     #   freezegun
 python-slugify==8.0.4
     # via code-annotations
+python3-openid==3.2.0
+    # via social-auth-core
 pytz==2025.2
     # via
     #   -r requirements/base.txt
     #   edx-tincan-py35
+    #   snowflake-connector-python
 pyyaml==6.0.3
     # via
     #   code-annotations
@@ -263,10 +319,19 @@ requests==2.32.5
     #   django-oauth-toolkit
     #   edx-drf-extensions
     #   edx-rest-api-client
+    #   requests-oauthlib
     #   responses
     #   slumber
+    #   snowflake-connector-python
+    #   social-auth-core
+requests-oauthlib==2.0.0
+    # via social-auth-core
 responses==0.25.8
     # via -r requirements/test.in
+s3transfer==0.16.0
+    # via
+    #   -r requirements/base.txt
+    #   boto3
 semantic-version==2.10.0
     # via
     #   -r requirements/base.txt
@@ -274,19 +339,28 @@ semantic-version==2.10.0
 six==1.17.0
     # via
     #   -r requirements/base.txt
+    #   edx-ccx-keys
     #   edx-rbac
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/base.txt
+snowflake-connector-python==3.18.0
+    # via -r requirements/base.txt
 social-auth-app-django==5.4.3
-    # via -r requirements/test.in
-social-auth-core==4.8.1
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/test.in
+social-auth-core==4.8.3
     # via social-auth-app-django
-sqlparse==0.5.3
+sortedcontainers==2.4.0
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
+sqlparse==0.5.5
     # via
     #   -r requirements/base.txt
     #   django
-stevedore==5.5.0
+stevedore==5.6.0
     # via
     #   -r requirements/base.txt
     #   code-annotations
@@ -296,22 +370,32 @@ testfixtures==10.0.0
     # via -r requirements/test.in
 text-unidecode==1.3
     # via python-slugify
+tomlkit==0.14.0
+    # via
+    #   -r requirements/base.txt
+    #   snowflake-connector-python
 typing-extensions==4.15.0
     # via
     #   -r requirements/base.txt
     #   django-countries
     #   edx-opaque-keys
     #   jwcrypto
-tzdata==2025.2
+    #   pyopenssl
+    #   snowflake-connector-python
+tzdata==2025.3
     # via
     #   -r requirements/base.txt
-    #   faker
     #   kombu
+tzlocal==5.3.1
+    # via
+    #   -r requirements/base.txt
+    #   celery
 unicodecsv==0.14.1
     # via -r requirements/base.txt
-urllib3==2.5.0
+urllib3==2.6.3
     # via
     #   -r requirements/base.txt
+    #   botocore
     #   requests
     #   responses
 vine==5.1.0
