@@ -345,8 +345,10 @@ slumber==0.7.1
     # via -r requirements/base.txt
 snowflake-connector-python==3.18.0
     # via -r requirements/base.txt
-social-auth-app-django==5.7.0
-    # via -r requirements/test.in
+social-auth-app-django==5.4.3
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/test.in
 social-auth-core==4.8.3
     # via social-auth-app-django
 sortedcontainers==2.4.0

@@ -10,3 +10,7 @@
 
 # Common constraints for edx repos
 -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
+
+# social-auth-app-django 5.7.0+ requires Django>=5.1, incompatible with Django 4.2 tests
+# Keep at 5.4.x for Django 4.2 compatibility
+social-auth-app-django<5.5
