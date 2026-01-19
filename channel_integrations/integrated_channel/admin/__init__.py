@@ -7,7 +7,9 @@ from django.contrib import admin
 from channel_integrations.integrated_channel.models import (
     ApiResponseRecord,
     ContentMetadataItemTransmission,
+    EnterpriseWebhookConfiguration,
     IntegratedChannelAPIRequestLogs,
+    WebhookTransmissionQueue,
 )
 from channel_integrations.utils import get_enterprise_customer_from_enterprise_enrollment
 
@@ -140,3 +142,90 @@ class IntegratedChannelAPIRequestLogAdmin(admin.ModelAdmin):
 
     class Meta:
         model = IntegratedChannelAPIRequestLogs
+
+
+@admin.register(EnterpriseWebhookConfiguration)
+class EnterpriseWebhookConfigurationAdmin(admin.ModelAdmin):
+    """
+    Django admin for EnterpriseWebhookConfiguration.
+    """
+    list_display = (
+        'enterprise_customer',
+        'region',
+        'webhook_url',
+        'active',
+        'created',
+        'modified',
+    )
+
+    search_fields = (
+        'enterprise_customer__name',
+        'enterprise_customer__uuid',
+        'region',
+        'webhook_url',
+    )
+
+    list_filter = (
+        'active',
+        'region',
+    )
+
+    raw_id_fields = (
+        'enterprise_customer',
+    )
+
+    readonly_fields = (
+        'created',
+        'modified',
+    )
+
+    list_per_page = 50
+
+
+@admin.register(WebhookTransmissionQueue)
+class WebhookTransmissionQueueAdmin(admin.ModelAdmin):
+    """
+    Django admin for WebhookTransmissionQueue.
+    """
+    list_display = (
+        'id',
+        'enterprise_customer',
+        'user_id',
+        'user_region',
+        'status',
+        'attempt_count',
+        'created',
+        'last_attempt_at',
+    )
+
+    search_fields = (
+        'enterprise_customer__name',
+        'enterprise_customer__uuid',
+        'user_id',
+        'user_region',
+    )
+
+    list_filter = (
+        'status',
+        'user_region',
+        'created',
+    )
+
+    raw_id_fields = (
+        'enterprise_customer',
+    )
+
+    readonly_fields = (
+        'created',
+        'modified',
+        'last_attempt_at',
+    )
+
+    list_per_page = 100
+
+    def has_add_permission(self, request):
+        """
+        Disable manual creation of queue items via admin.
+        Queue items should be created automatically by signal handlers.
+        """
+        return False

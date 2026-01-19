@@ -6,6 +6,8 @@ TRANSMISSION_MARK_CREATE = 'create'
 TRANSMISSION_MARK_UPDATE = 'update'
 TRANSMISSION_MARK_DELETE = 'delete'
 
+USER_POST_SAVE_DISPATCH_UID = "user_post_save_upgrade_pending_enterprise_customer_user"
+
 HTTP_STATUS_STRINGS = {
     400: 'The request was invalid, check the fields you entered are correct.',
     401: 'The request was unauthorized, check your credentials.',
