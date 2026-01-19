@@ -158,8 +158,6 @@ six==1.17.0
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/base.in
-snowflake-connector-python==3.7.0
-    # via -r requirements/base.in
 sqlparse==0.5.3
     # via django
 stevedore==5.5.0

@@ -15,13 +15,6 @@ from django.http import Http404
 from enterprise.constants import MAX_ALLOWED_TEXT_LENGTH
 
 
-
-class ValidationMessages:
-    """Minimal subset of validation messages used in tests."""
-
-    BOTH_FIELDS_SPECIFIED = (
-        "Either \"Email or Username\" or \"CSV bulk upload\" must be specified, but both were."
-    )
 User = get_user_model()
 LOGGER = getLogger(__name__)
 
@@ -90,11 +83,6 @@ def parse_datetime_handle_invalid(datetime_value):
         return datetime_value.replace(tzinfo=pytz.UTC)
     except TypeError:
         return None
-
-
-def validate_email_to_link(email, enterprise_customer, raw_email=None, message_template=None, raise_exception=True):
-    """Placeholder implementation used for tests that import this helper."""
-    return True
 
 def get_configuration_value_for_site(site, key, default=None):
     """

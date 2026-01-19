@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration, WebhookTransmissionQueue
 from channel_integrations.integrated_channel.services.region_service import get_user_region
+from channel_integrations.integrated_channel.tasks import process_webhook_queue
 
 log = logging.getLogger(__name__)
 
@@ -86,10 +87,12 @@ def route_webhook_by_region(user, enterprise_customer, course_id, event_type, pa
             f"[Webhook] Queued {event_type} for user {user.id} "
             f"to {config.webhook_url} (Region: {region})"
         )
+        # 5. Trigger Celery Task
+        process_webhook_queue.delay(queue_item.id)
     else:
         log.info(
             f"[Webhook] Duplicate event detected for key {deduplication_key}. "
             f"Existing status: {queue_item.status}"
         )
 
-    return queue_item, created
+    return queue_item

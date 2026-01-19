@@ -83,17 +83,20 @@ class TestWebhookRouting:
             'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
             return_value='US'
         ):
-            queue_item, created = route_webhook_by_region(
-                user=user,
-                enterprise_customer=enterprise,
-                course_id='course-id',
-                event_type='course_completion',
-                payload=payload
-            )
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ) as mock_delay:
+                queue_item = route_webhook_by_region(
+                    user=user,
+                    enterprise_customer=enterprise,
+                    course_id='course-id',
+                    event_type='course_completion',
+                    payload=payload
+                )
 
-            assert queue_item.webhook_url == 'https://us.example.com/webhook'
-            assert created is True
-            assert queue_item.status == 'pending'
+                assert queue_item.webhook_url == 'https://us.example.com/webhook'
+                assert queue_item.status == 'pending'
+                mock_delay.assert_called_once_with(queue_item.id)
 
     def test_route_webhook_fallback_other(self):
         """Verify fallback to OTHER region if specific region not found."""
@@ -112,16 +115,18 @@ class TestWebhookRouting:
             'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
             return_value='EU'
         ):
-            queue_item, created = route_webhook_by_region(
-                user=user,
-                enterprise_customer=enterprise,
-                course_id='course-id',
-                event_type='course_completion',
-                payload=payload
-            )
-            assert queue_item.webhook_url == 'https://other.example.com/webhook'
-            assert queue_item.user_region == 'EU'
-            assert created is True
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
+                queue_item = route_webhook_by_region(
+                    user=user,
+                    enterprise_customer=enterprise,
+                    course_id='course-id',
+                    event_type='course_completion',
+                    payload=payload
+                )
+                assert queue_item.webhook_url == 'https://other.example.com/webhook'
+                assert queue_item.user_region == 'EU'
 
     def test_route_webhook_no_config(self):
         """Verify exception when no matching config exists."""
@@ -157,14 +162,17 @@ class TestWebhookRouting:
             'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
             return_value='US'
         ):
-            # First call
-            item1, created1 = route_webhook_by_region(user, enterprise, 'course-id', 'course_completion', payload)
-            assert created1 is True
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ) as mock_delay:
+                # First call
+                item1 = route_webhook_by_region(user, enterprise, 'course-id', 'course_completion', payload)
+                assert mock_delay.call_count == 1
 
-            # Second call (same day)
-            item2, created2 = route_webhook_by_region(user, enterprise, 'course-id', 'course_completion', payload)
-            assert item1.id == item2.id
-            assert created2 is False
+                # Second call (same day)
+                item2 = route_webhook_by_region(user, enterprise, 'course-id', 'course_completion', payload)
+                assert item1.id == item2.id
+                assert mock_delay.call_count == 1  # Should not be called again
 
     @freeze_time("2026-01-08 12:00:00")
     def test_route_webhook_with_frozen_time(self):
@@ -182,19 +190,20 @@ class TestWebhookRouting:
             'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
             return_value='US'
         ):
-            # Create first item
-            item1, created1 = route_webhook_by_region(
-                user, enterprise, 'frozen-course', 'course_completion', payload
-            )
-            assert created1 is True
+            with patch(
+                'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
+            ):
+                # Create first item
+                item1 = route_webhook_by_region(
+                    user, enterprise, 'frozen-course', 'course_completion', payload
+                )
 
-            # Create duplicate - should return same item
-            item2, created2 = route_webhook_by_region(user, enterprise, 'frozen-course', 'course_completion', payload)
-            assert created2 is False
+                # Create duplicate - should return same item
+                item2 = route_webhook_by_region(user, enterprise, 'frozen-course', 'course_completion', payload)
 
-            assert item1.id == item2.id
-            expected_key = f"{enterprise.uuid}:{user.id}:frozen-course:course_completion:2026-01-08"
-            assert item1.deduplication_key == expected_key
+                assert item1.id == item2.id
+                expected_key = f"{enterprise.uuid}:{user.id}:frozen-course:course_completion:2026-01-08"
+                assert item1.deduplication_key == expected_key
 
     def test_get_user_region_with_empty_extra_data(self):
         """Verify handling of empty extra_data fields."""
@@ -306,12 +315,11 @@ class TestWebhookRouting:
             with patch(
                 'channel_integrations.integrated_channel.tasks.process_webhook_queue.delay'
             ):
-                new_item, created = route_webhook_by_region(
+                new_item = route_webhook_by_region(
                     user, enterprise, 'retry-course', 'course_completion', payload
                 )
 
                 # Should be a different item
-                assert created is True
                 assert new_item.id != old_item.id
                 assert new_item.status == 'pending'
                 assert new_item.deduplication_key != old_key

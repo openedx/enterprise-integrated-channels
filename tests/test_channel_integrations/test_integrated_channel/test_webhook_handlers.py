@@ -2,7 +2,7 @@
 Integration tests for Webhook event handlers.
 """
 import logging
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -57,43 +57,6 @@ class TestWebhookHandlers:
             assert kwargs['enterprise_customer'] == enterprise
             assert kwargs['event_type'] == 'course_completion'
             assert kwargs['payload']['completion']['percent_grade'] == 0.85
-
-    @patch(
-        'channel_integrations.integrated_channel.handlers.settings.FEATURES',
-        {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
-    )
-    def test_handle_grade_change_with_learning_time_enrichment(self):
-        """Verify that grade change uses enrichment task when feature flag is enabled."""
-        enterprise = EnterpriseCustomerFactory()
-        user = User.objects.create(username='testuser', email='test@example.com')
-        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
-
-        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
-        grade_data = PersistentCourseGradeData(
-            user_id=user.id,
-            course=CourseData(course_key=course_key, display_name='Demo Course'),
-            course_edited_timestamp=timezone.now(),
-            course_version='1',
-            grading_policy_hash='hash',
-            percent_grade=0.85,
-            letter_grade='B',
-            passed_timestamp=timezone.now()
-        )
-
-        # Patch the task at the module level before it gets imported dynamically
-        with patch(
-            'channel_integrations.integrated_channel.handlers.enrich_and_send_completion_webhook'
-        ) as mock_enrich:
-            handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
-
-            # Verify enrichment task was called instead of route_webhook_by_region
-            mock_enrich.delay.assert_called_once()
-            call_kwargs = mock_enrich.delay.call_args[1]
-            assert call_kwargs['user_id'] == user.id
-            assert call_kwargs['enterprise_customer_uuid'] == str(enterprise.uuid)
-            assert call_kwargs['course_id'] == str(course_key)
-            assert 'payload_dict' in call_kwargs
-            assert call_kwargs['payload_dict']['completion']['percent_grade'] == 0.85
 
     def test_handle_grade_change_non_passing(self):
         """Verify that a non-passing grade event is ignored."""
@@ -427,122 +390,3 @@ class TestWebhookHandlers:
 
         # Check for error log
         assert any('Failed to queue enrollment webhook' in record.message for record in caplog.records)
-
-    def test_handle_enrollment_triggers_webhook_task_when_created(self):
-        """Verify that enrollment handler triggers webhook task when queue item is created."""
-        enterprise = EnterpriseCustomerFactory()
-        user = User.objects.create(username='testuser', email='test@example.com')
-        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
-
-        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
-        enrollment_data = CourseEnrollmentData(
-            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
-            course=CourseData(course_key=course_key, display_name='Demo Course'),
-            mode='verified',
-            is_active=True,
-            creation_date=timezone.now()
-        )
-
-        mock_queue_item = Mock(id=123)
-        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
-             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue.delay') as mock_delay:
-            # Return tuple with created=True to trigger the task
-            mock_route.return_value = (mock_queue_item, True)
-
-            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
-
-            # Verify the task was triggered with the queue item ID
-            mock_delay.assert_called_once_with(123)
-
-    def test_handle_enrollment_does_not_trigger_webhook_task_when_not_created(self):
-        """Verify that enrollment handler does not trigger webhook task when queue item already exists."""
-        enterprise = EnterpriseCustomerFactory()
-        user = User.objects.create(username='testuser_existing', email='test_existing@example.com')
-        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
-
-        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Existing')
-        enrollment_data = CourseEnrollmentData(
-            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
-            course=CourseData(course_key=course_key, display_name='Demo Course Existing'),
-            mode='verified',
-            is_active=True,
-            creation_date=timezone.now()
-        )
-
-        mock_queue_item = Mock(id=999)
-        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
-             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue.delay') as mock_delay:
-            # Return tuple with created=False (already exists)
-            mock_route.return_value = (mock_queue_item, False)
-
-            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
-
-            # Verify the task was NOT triggered since created=False
-            mock_delay.assert_not_called()
-
-    def test_handle_grade_change_non_enterprise_learner(self, caplog):
-        """Verify handling when user is not an enterprise learner."""
-        caplog.set_level(logging.INFO)
-
-        # Create a regular user (not an enterprise user)
-        user = User.objects.create(username='regularuser', email='regular@example.com')
-
-        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
-        grade_data = PersistentCourseGradeData(
-            user_id=user.id,
-            course=CourseData(course_key=course_key, display_name='Demo Course'),
-            course_edited_timestamp=timezone.now(),
-            course_version='1',
-            grading_policy_hash='hash',
-            percent_grade=0.85,
-            letter_grade='B',
-            passed_timestamp=timezone.now()
-        )
-
-        handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
-
-        # Verify log message for non-enterprise learner
-        assert any(
-            'is not an enterprise learner' in record.message
-            for record in caplog.records
-        )
-
-    def test_handle_grade_change_with_standard_routing(self, caplog):
-        """Verify standard webhook routing when enrichment is disabled."""
-        caplog.set_level(logging.INFO)
-
-        enterprise = EnterpriseCustomerFactory()
-        user = User.objects.create(username='testuser', email='test@example.com')
-        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
-
-        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
-        grade_data = PersistentCourseGradeData(
-            user_id=user.id,
-            course=CourseData(course_key=course_key, display_name='Demo Course'),
-            course_edited_timestamp=timezone.now(),
-            course_version='1',
-            grading_policy_hash='hash',
-            percent_grade=0.85,
-            letter_grade='B',
-            passed_timestamp=timezone.now()
-        )
-
-        mock_queue_item = Mock(id=123)
-        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
-             patch('channel_integrations.integrated_channel.handlers.process_webhook_queue.delay') as mock_delay, \
-             patch('channel_integrations.integrated_channel.handlers.settings') as mock_settings:
-            # Disable enrichment feature
-            mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': False}
-            mock_route.return_value = (mock_queue_item, True)
-
-            handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
-
-            # Verify routing was called and task was queued
-            mock_route.assert_called_once()
-            mock_delay.assert_called_once_with(123)
-
-            # Verify log message for queued completion webhook
-            assert any(
-                'Queued completion webhook' in record.message
-                for record in caplog.records
-            )

@@ -8,12 +8,7 @@ from collections import OrderedDict
 from functools import reduce
 from unittest import mock
 
-try:
-    from enterprise.constants import AUDIT_COURSE_MODE, VERIFIED_COURSE_MODE
-except ImportError:
-    AUDIT_COURSE_MODE = 'audit'
-    VERIFIED_COURSE_MODE = 'verified'
-
+from enterprise.constants import AUDIT_COURSE_MODE, VERIFIED_COURSE_MODE
 from test_utils import FAKE_UUIDS
 
 FAKE_URL = 'https://fake.url'

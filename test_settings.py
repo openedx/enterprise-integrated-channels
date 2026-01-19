@@ -95,9 +95,7 @@ ENTERPRISE_ENROLLMENT_API_URL = LMS_INTERNAL_ROOT_URL + LMS_ENROLLMENT_API_PATH
 
 ENTERPRISE_COURSE_ENROLLMENT_AUDIT_MODES = ['audit', 'honor']
 
-# Keep AutoField to match edx-platform (not BigAutoField)
-# edx-platform uses: DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 OAUTH_ID_TOKEN_EXPIRATION = 60 * 60  # in seconds
 
 SITE_ID = 1
@@ -171,42 +169,3 @@ INTEGRATED_CHANNELS_API_CHUNK_TRANSMISSION_LIMIT = {
 TEST_SERVER = "http://testserver"
 ALLOWED_HOSTS = ["testserver.enterprise"]
 MEDIA_URL = "/"
-
-#################################### CACHES ####################################
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'test-cache',
-        'TIMEOUT': 3600,
-    }
-}
-
-#################################### SNOWFLAKE ####################################
-
-# Snowflake Configuration for Learning Time (Test Environment)
-# These values are mocked in tests - real values should come from environment
-SNOWFLAKE_ACCOUNT = 'test-account.us-east-1'
-SNOWFLAKE_WAREHOUSE = 'TEST_WH'
-SNOWFLAKE_DATABASE = 'TEST'
-SNOWFLAKE_SCHEMA = 'TEST_SCHEMA'
-SNOWFLAKE_ROLE = 'TEST_ROLE'
-SNOWFLAKE_SERVICE_USER = 'test_service_user'
-SNOWFLAKE_SERVICE_USER_PASSWORD = 'test_password'  # In production, from secrets manager
-
-#################################### FEATURES ####################################
-
-FEATURES = {
-    # Feature flag for webhook learning time enrichment
-    # Default: False (opt-in feature)
-    'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': False,
-}
-
-#################################### CELERY QUEUES ####################################
-
-# Celery task routing configuration
-CELERY_TASK_ROUTES = {
-    'channel_integrations.integrated_channel.tasks.enrich_and_send_completion_webhook': {
-        'queue': 'edx.lms.core.webhook_enrichment'
-    },
-}

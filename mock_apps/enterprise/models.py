@@ -881,10 +881,3 @@ class EnterpriseEnrollmentSource(TimeStampedModel):
         Create string representation of the source.
         """
         return "Enrollment Source: {name}, Slug: {slug}".format(name=self.name, slug=self.slug)
-
-
-class BulkCatalogQueryUpdateCommandConfiguration(models.Model):
-    """Minimal stub configuration model required for admin imports in tests."""
-
-    class Meta:
-        app_label = 'enterprise'
