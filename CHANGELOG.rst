@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.30 – 2026-01-19
+*******************
+
+Added
+=====
+
+* feat: Add webhook learning time enrichment from Snowflake with dedicated Celery queue
+* test: Add comprehensive test coverage for webhook task routing and branch conditions
+
 0.1.29 – 2026-01-17
 *******************
 
