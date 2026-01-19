@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.32 – 2026-01-19
+*******************
+
+Changed
+=======
+
+* chore: Add Django>=4.2 constraint to support both Django 4.2 and 5.x
+* fix: Constrain social-auth-app-django<5.5 for Django 4.2 compatibility
+
 0.1.31 – 2026-01-19
 *******************
 

@@ -56,10 +56,9 @@ cryptography==46.0.0
     #   pyjwt
     #   pyopenssl
     #   snowflake-connector-python
-django==4.2.27
+django==5.2.10
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
-    #   -c requirements/constraints.txt
     #   -r requirements/base.in
     #   django-config-models
     #   django-crum
