@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.33 – 2026-01-20
+*******************
+
+Changed
+=======
+
+* chore: upgrade python requirements
+
 0.1.32 – 2026-01-19
 *******************
 
