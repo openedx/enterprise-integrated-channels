@@ -134,6 +134,7 @@ setup(
     description="""An integrated channel is an abstraction meant to represent a third-party system \
                 which provides an API that can be used to transmit EdX data to the third-party system.""",
     long_description=README + '\n\n' + CHANGELOG,
+    long_description_content_type='text/x-rst',
     author='Open edX Project',
     author_email='oscm@openedx.org',
     url='https://github.com/openedx/enterprise-integrated-channels',
