@@ -14,15 +14,15 @@ Change Log
 Unreleased
 **********
 
-0.1.34 - 2026-01-26
-*********************
+0.1.34 – 2026-01-27
+*******************
 
 Changed
 =======
 
-* Switched from consuming events via the event bus to listening to in-process Django signals directly.
+* Switched from consuming events via the event bus to listening to in process Django signals directly.
 
-0.1.33 - 2026-01-20
+0.1.33 – 2026-01-20
 *******************
 
 Changed
