@@ -460,6 +460,8 @@ class GenericEnterpriseCustomerPluginConfiguration(EnterpriseCustomerPluginConfi
     """
     A generic implementation of EnterpriseCustomerPluginConfiguration which can be instantiated
     """
+    class Meta:
+        app_label = 'channel_integration'
 
     def __str__(self):
         """
@@ -483,6 +485,9 @@ class ApiResponseRecord(TimeStampedModel):
 
     .. no_pii;
     """
+    class Meta:
+        app_label = 'channel_integration'
+
     status_code = models.PositiveIntegerField(
         help_text='The most recent remote API call response HTTP status code',
         blank=True,
@@ -648,6 +653,7 @@ class ContentMetadataItemTransmission(TimeStampedModel):
     .. no_pii:
     """
     class Meta:
+        app_label = 'channel_integration'
         indexes = [
             models.Index(
                 fields=['enterprise_customer', 'integrated_channel_code', 'plugin_configuration_id', 'content_id']
@@ -903,6 +909,7 @@ class OrphanedContentTransmissions(TimeStampedModel):
     subsequently were orphaned by a removal of their associated catalog from the customer.
     """
     class Meta:
+        app_label = 'channel_integration'
         indexes = [
             models.Index(fields=['integrated_channel_code', 'plugin_configuration_id', 'resolved']),
         ]
@@ -1069,6 +1076,7 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
     )
 
     class Meta:
+        app_label = 'channel_integration'
         verbose_name = 'Enterprise Webhook Configuration'
         verbose_name_plural = 'Enterprise Webhook Configurations'
         constraints = [
@@ -1217,6 +1225,7 @@ class WebhookTransmissionQueue(TimeStampedModel):
     )
 
     class Meta:
+        app_label = 'channel_integration'
         constraints = [
             models.UniqueConstraint(
                 fields=['deduplication_key'],
