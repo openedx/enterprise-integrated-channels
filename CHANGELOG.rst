@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.35 – 2026-01-28
+*******************
+
+Changed
+=======
+
+* Add missing app_label to models
+
+
 0.1.34 – 2026-01-27
 *******************
 
