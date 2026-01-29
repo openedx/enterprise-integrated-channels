@@ -15,6 +15,7 @@ from django.utils import timezone
 from edx_django_utils.monitoring import set_code_owner_attribute
 from enterprise.models import EnterpriseCustomer
 from enterprise.utils import get_enterprise_uuids_for_user_and_course
+from waffle import switch_is_active
 
 from channel_integrations.integrated_channel.constants import TASK_LOCK_EXPIRY_SECONDS
 from channel_integrations.integrated_channel.management.commands import (
@@ -29,6 +30,7 @@ from channel_integrations.integrated_channel.models import (
 from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
 from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
 from channel_integrations.utils import generate_formatted_log
+from waffle import switch_is_active
 
 LOGGER = get_task_logger(__name__)
 User = auth.get_user_model()
@@ -501,12 +503,10 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
         enterprise_customer_uuid: Enterprise customer UUID string
         course_id: Course key string
         payload_dict: The webhook payload dictionary
+
     """
-    # Check feature flag
-    feature_enabled = getattr(settings, 'FEATURES', {}).get(
-        'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT',
-        False
-    )
+    # Check feature flag via Waffle switch
+    feature_enabled = switch_is_active('enable_webhook_learning_time_enrichment')
 
     if feature_enabled:
         try:

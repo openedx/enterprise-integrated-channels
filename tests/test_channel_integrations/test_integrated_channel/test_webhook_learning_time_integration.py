@@ -23,7 +23,7 @@ class TestWebhookLearningTimeIntegration:
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
+    @patch('waffle.switch_is_active', return_value=True)
     def test_enrichment_task_adds_learning_time_to_payload(self, mock_route, mock_snowflake_class):
         """
         Test that the enrichment task correctly adds learning_time to the completion payload.
@@ -88,7 +88,7 @@ class TestWebhookLearningTimeIntegration:
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
+    @patch('waffle.switch_is_active', return_value=True)
     def test_graceful_degradation_when_snowflake_fails(self, mock_route, mock_snowflake_class):
         """
         Test that webhook is still sent if Snowflake query fails.
@@ -136,7 +136,7 @@ class TestWebhookLearningTimeIntegration:
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
+    @patch('waffle.switch_is_active', return_value=True)
     def test_no_learning_time_when_snowflake_returns_none(self, mock_route, mock_snowflake_class):
         """
         Test that webhook is sent without learning_time if Snowflake returns None.
@@ -185,7 +185,7 @@ class TestWebhookLearningTimeIntegration:
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
+    @patch('waffle.switch_is_active', return_value=True)
     def test_zero_learning_time_is_added_to_payload(self, mock_route, mock_snowflake_class):
         """
         Test that learning_time=0 is correctly included in the payload.
@@ -233,7 +233,7 @@ class TestWebhookLearningTimeIntegration:
         assert sent_payload['completion']['learning_time'] == 0
 
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': False})
+    @patch('waffle.switch_is_active', return_value=False)
     def test_feature_flag_disabled_no_enrichment(self, mock_route):
         """
         Test that with feature flag OFF, no enrichment occurs.
@@ -276,7 +276,7 @@ class TestWebhookLearningTimeIntegration:
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
+    @patch('waffle.switch_is_active', return_value=True)
     def test_enrichment_creates_completion_section_if_missing(self, mock_route, mock_snowflake_class):
         """
         Test that enrichment creates the completion section if it doesn't exist.
@@ -325,7 +325,7 @@ class TestWebhookLearningTimeIntegration:
 
     @patch('channel_integrations.integrated_channel.tasks.SnowflakeLearningTimeClient')
     @patch('channel_integrations.integrated_channel.tasks.route_webhook_by_region')
-    @override_settings(FEATURES={'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True})
+    @patch('waffle.switch_is_active', return_value=True)
     def test_routing_exception_is_raised(self, mock_route, mock_snowflake_class):
         """
         Test that routing exceptions are properly raised.

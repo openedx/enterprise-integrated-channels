@@ -2,13 +2,14 @@
 Event handlers for OpenEdX Events consumed from event bus.
 These handlers are called directly by the consume_events management command.
 """
-import logging
 
+import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from enterprise.models import EnterpriseCustomerUser
 from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
+from waffle import switch_is_active
 
 from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,
@@ -69,12 +70,8 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
     for ecu in enterprise_customer_users:
         try:
             payload = _prepare_completion_payload(grade_data, user, ecu.enterprise_customer)
-
-            # Check if learning time enrichment feature is enabled
-            feature_enabled = getattr(settings, 'FEATURES', {}).get(
-                'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT',
-                False
-            )
+            # Check if learning time enrichment feature is enabled via Waffle switch
+            feature_enabled = switch_is_active('enable_webhook_learning_time_enrichment')
 
             log.info(
                 f'[Webhook] Learning time enrichment feature enabled: {feature_enabled} '

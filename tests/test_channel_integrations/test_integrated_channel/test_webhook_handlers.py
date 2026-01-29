@@ -58,10 +58,7 @@ class TestWebhookHandlers:
             assert kwargs['event_type'] == 'course_completion'
             assert kwargs['payload']['completion']['percent_grade'] == 0.85
 
-    @patch(
-        'channel_integrations.integrated_channel.handlers.settings.FEATURES',
-        {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
-    )
+    @patch('waffle.switch_is_active', return_value=True)
     def test_handle_grade_change_with_learning_time_enrichment(self):
         """Verify that grade change uses enrichment task when feature flag is enabled."""
         enterprise = EnterpriseCustomerFactory()
