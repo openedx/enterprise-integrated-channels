@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'edx_rbac',
     'social_django',
+    'waffle',
 )
 
 LOCALE_PATHS = [

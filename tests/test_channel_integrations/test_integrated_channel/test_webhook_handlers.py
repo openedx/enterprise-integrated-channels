@@ -58,8 +58,8 @@ class TestWebhookHandlers:
             assert kwargs['event_type'] == 'course_completion'
             assert kwargs['payload']['completion']['percent_grade'] == 0.85
 
-    @patch('waffle.switch_is_active', return_value=True)
-    def test_handle_grade_change_with_learning_time_enrichment(self):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_grade_change_with_learning_time_enrichment(self, mock_switch):
         """Verify that grade change uses enrichment task when feature flag is enabled."""
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser', email='test@example.com')
@@ -110,7 +110,8 @@ class TestWebhookHandlers:
             handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
             mock_route.assert_not_called()
 
-    def test_handle_enrollment_success(self):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_success(self, mock_switch):
         """Verify that an enrollment event queues an enrollment webhook."""
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser', email='test@example.com')
@@ -135,7 +136,8 @@ class TestWebhookHandlers:
             assert kwargs['event_type'] == 'course_enrollment'
             assert kwargs['payload']['enrollment']['mode'] == 'verified'
 
-    def test_handle_enrollment_non_enterprise(self):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_non_enterprise(self, mock_switch):
         """Verify that events for non-enterprise users are ignored."""
         user = User.objects.create(username='testuser', email='test@example.com')
         # No EnterpriseCustomerUser record
@@ -195,7 +197,8 @@ class TestWebhookHandlers:
             assert kwargs['user'] == user
             assert kwargs['course_id'] == str(course_key)
 
-    def test_handle_enrollment_complete_payload_structure(self):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_complete_payload_structure(self, mock_switch):
         """Verify the complete payload structure for enrollment events."""
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser', email='test@example.com')
@@ -268,7 +271,8 @@ class TestWebhookHandlers:
         # Check for warning log
         assert any('without grade data' in record.message for record in caplog.records)
 
-    def test_handle_enrollment_missing_data(self, caplog):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_missing_data(self, mock_switch, caplog):
         """Verify handling of enrollment events without enrollment data."""
         caplog.set_level(logging.WARNING)
 
@@ -302,7 +306,8 @@ class TestWebhookHandlers:
         # Check for error log
         assert any('not found' in record.message for record in caplog.records)
 
-    def test_handle_enrollment_user_not_found(self, caplog):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_user_not_found(self, mock_switch, caplog):
         """Verify handling when user does not exist for enrollment."""
         caplog.set_level(logging.ERROR)
 
@@ -377,7 +382,8 @@ class TestWebhookHandlers:
         # Check for error log
         assert any('Failed to queue completion webhook' in record.message for record in caplog.records)
 
-    def test_handle_enrollment_no_webhook_configured(self, caplog):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_no_webhook_configured(self, mock_switch, caplog):
         """Verify handling when no webhook is configured for enrollment."""
         caplog.set_level(logging.DEBUG)
 
@@ -401,7 +407,8 @@ class TestWebhookHandlers:
         # Check for debug log
         assert any('No webhook configured' in record.message for record in caplog.records)
 
-    def test_handle_enrollment_generic_exception(self, caplog):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_generic_exception(self, mock_switch, caplog):
         """Verify handling of generic exceptions during enrollment processing."""
         caplog.set_level(logging.ERROR)
 
@@ -425,7 +432,8 @@ class TestWebhookHandlers:
         # Check for error log
         assert any('Failed to queue enrollment webhook' in record.message for record in caplog.records)
 
-    def test_handle_enrollment_triggers_webhook_task_when_created(self):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_triggers_webhook_task_when_created(self, mock_switch):
         """Verify that enrollment handler triggers webhook task when queue item is created."""
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser', email='test@example.com')
@@ -451,7 +459,8 @@ class TestWebhookHandlers:
             # Verify the task was triggered with the queue item ID
             mock_delay.assert_called_once_with(123)
 
-    def test_handle_enrollment_does_not_trigger_webhook_task_when_not_created(self):
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=True)
+    def test_handle_enrollment_does_not_trigger_webhook_task_when_not_created(self, mock_switch):
         """Verify that enrollment handler does not trigger webhook task when queue item already exists."""
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser_existing', email='test_existing@example.com')
@@ -476,6 +485,28 @@ class TestWebhookHandlers:
 
             # Verify the task was NOT triggered since created=False
             mock_delay.assert_not_called()
+
+    @patch('channel_integrations.integrated_channel.handlers.switch_is_active', return_value=False)
+    def test_handle_enrollment_switch_disabled(self, mock_switch):
+        """Verify that enrollment webhooks are not triggered when the feature switch is disabled."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser', email='test@example.com')
+        EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
+
+        course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        enrollment_data = CourseEnrollmentData(
+            user=UserData(id=user.id, is_active=True, pii=UserPersonalData(username=user.username, email=user.email)),
+            course=CourseData(course_key=course_key, display_name='Demo Course'),
+            mode='verified',
+            is_active=True,
+            creation_date=timezone.now()
+        )
+
+        with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
+
+            # Verify that route_webhook_by_region was not called when switch is disabled
+            mock_route.assert_not_called()
 
     def test_handle_grade_change_non_enterprise_learner(self, caplog):
         """Verify handling when user is not an enterprise learner."""

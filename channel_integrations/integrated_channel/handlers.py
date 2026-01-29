@@ -127,6 +127,11 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable
         log.warning('[Webhook] COURSE_ENROLLMENT_CREATED event without enrollment data')
         return
 
+    # Check if enrollment webhook feature is enabled via Waffle switch
+    if not switch_is_active('enable_webhook_enrollment_events'):
+        log.info('[Webhook] Enrollment webhook feature is disabled')
+        return
+
     log.info(
         f'[Webhook] Processing enrollment for user {enrollment_data.user.id}, '
         f'course {enrollment_data.course.course_key}, mode: {enrollment_data.mode}'
