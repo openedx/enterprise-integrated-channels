@@ -1,17 +1,19 @@
 """
 Test xAPI management command to send course enrollments data.
 """
-
 import unittest
 import uuid
 from unittest import mock
 
+import pytest
 from faker import Factory as FakerFactory
 from pytest import mark, raises
 
 from django.core.management import CommandError, call_command
-
 from enterprise.utils import NotConnectedToOpenEdX
+
+from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
+from channel_integrations.xapi.models import XAPILearnerDataTransmissionAudit
 from test_utils import factories
 
 MODULE_PATH = 'channel_integrations.xapi.management.commands.ic_send_course_enrollments.'
@@ -182,9 +184,6 @@ class TestSendCourseEnrollments(unittest.TestCase):
         call_command('ic_send_course_enrollments')
 
     def test_save_xapi_learner_data_transmission_audit(self):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
-
         Command.save_xapi_learner_data_transmission_audit(
             factories.UserFactory(),
             'course-v1:edX+DemoX+Demo_Course',
@@ -193,11 +192,40 @@ class TestSendCourseEnrollments(unittest.TestCase):
             error_message=None
         )
 
+    @pytest.mark.django_db
+    def test_save_xapi_learner_data_transmission_audit_defaults(self):
+        """
+        Test that save_xapi_learner_data_transmission_audit sets course_completed=False
+        and completed_timestamp=None by default when creating a new audit record.
+        """
+        user = factories.UserFactory()
+        course_id = 'course-v1:edX+DemoX+Demo_Course'
+        enterprise_course_enrollment_id = 42
+        status = 200
+        error_message = None
+
+        # Call the save method
+        Command.save_xapi_learner_data_transmission_audit(
+            user,
+            course_id,
+            enterprise_course_enrollment_id,
+            status=status,
+            error_message=error_message
+        )
+
+        # Verify the audit record was created with the correct defaults
+        audit = XAPILearnerDataTransmissionAudit.objects.get(
+            user=user,
+            course_id=course_id
+        )
+        assert audit.course_completed is False
+        assert audit.completed_timestamp is None
+        assert str(audit.status) == '200'
+        assert audit.error_message is None
+        assert audit.enterprise_course_enrollment_id == enterprise_course_enrollment_id
+
     @mock.patch(MODULE_PATH + 'XAPILearnerDataTransmissionAudit')
     def test_save_xapi_learner_data_transmission_audit_preexisting(self, mock_transmission_audit):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
-
         mock_transmission_audit.objects.get_or_create.return_value = (mock.MagicMock(), False)
         Command.save_xapi_learner_data_transmission_audit(
             factories.UserFactory(),
@@ -212,9 +240,6 @@ class TestSendCourseEnrollments(unittest.TestCase):
         mock.MagicMock(return_value=False)
     )
     def test_get_pertinent_course_enrollments(self):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
-
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
 
@@ -236,9 +261,6 @@ class TestSendCourseEnrollments(unittest.TestCase):
         mock.MagicMock(return_value=True)
     )
     def test_get_pertinent_course_enrollments_already_transmitted(self):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
-
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
 
@@ -256,8 +278,6 @@ class TestSendCourseEnrollments(unittest.TestCase):
         assert len(response) == 0
 
     def test_get_pertinent_course_enrollments_no_enrollments(self):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
 
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
@@ -275,9 +295,6 @@ class TestSendCourseEnrollments(unittest.TestCase):
         assert len(response) == 0
 
     def test_is_already_transmitted(self):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
-
         user_id = 12
         course_id = 'course-v1:edX+DemoX+Demo_Course'
         xapi_transmissions = mock.MagicMock()
@@ -293,9 +310,6 @@ class TestSendCourseEnrollments(unittest.TestCase):
     )
     @mock.patch(MODULE_PATH + 'send_course_enrollment_statement')
     def test_transmit_course_enrollments_transmit_fail_skip(self, mock_send_statement):
-        # pylint: disable=import-outside-toplevel
-        from channel_integrations.xapi.management.commands.ic_send_course_enrollments import Command
-
         lrs_configuration = factories.XAPILRSConfigurationFactory()
         user = factories.UserFactory()
         course = self.course_overview

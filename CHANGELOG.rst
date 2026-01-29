@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.37 – 2026-02-03
+*******************
+
+Changed
+=======
+
+* Set course_completion=False and completed_timestamp=None for xAPI enrollment audit
+
 0.1.36 – 2026-01-30
 *******************
 
