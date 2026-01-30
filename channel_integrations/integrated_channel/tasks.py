@@ -6,10 +6,11 @@ import time
 from functools import wraps
 
 import requests
+import waffle  # pylint: disable=invalid-django-waffle-import
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.contrib import auth
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
 from edx_django_utils.monitoring import set_code_owner_attribute
@@ -31,7 +32,7 @@ from channel_integrations.integrated_channel.snowflake_client import SnowflakeLe
 from channel_integrations.utils import generate_formatted_log
 
 LOGGER = get_task_logger(__name__)
-User = auth.get_user_model()
+User = get_user_model()
 
 
 def locked(expiry_seconds, lock_name_kwargs):
@@ -503,10 +504,7 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
         payload_dict: The webhook payload dictionary
     """
     # Check feature flag
-    feature_enabled = getattr(settings, 'FEATURES', {}).get(
-        'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT',
-        False
-    )
+    feature_enabled = waffle.switch_is_active('enable_webhook_learning_time_enrichment')
 
     if feature_enabled:
         try:
@@ -575,6 +573,8 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
 def process_webhook_queue(queue_item_id):
     """
     Process a single webhook queue item.
+
+    This task is routed to 'edx.lms.enterprise.webhooks' queue.
 
     Args:
         queue_item_id: ID of WebhookTransmissionQueue item

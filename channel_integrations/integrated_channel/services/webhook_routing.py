@@ -57,6 +57,12 @@ def route_webhook_by_region(user, enterprise_customer, course_id, event_type, pa
             f"in region {region} (or OTHER)"
         )
 
+    if event_type == 'course_enrollment' and not config.enrollment_events_processing:
+        raise NoWebhookConfigured(
+            f"Enrollment events processing disabled for enterprise {enterprise_customer.uuid} "
+            f"in region {region} (or OTHER)"
+        )
+
     # 3. Generate Deduplication Key
     # Key: {enterprise_uuid}:{user_id}:{course_id}:{event_type}:{date}
     # This prevents duplicate events for the same thing on the same day

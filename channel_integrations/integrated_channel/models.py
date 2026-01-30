@@ -1074,6 +1074,10 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         default=True,
         help_text='Whether this webhook configuration is active'
     )
+    enrollment_events_processing = models.BooleanField(
+        default=True,
+        help_text='Enable processing of enrollment events'
+    )
 
     class Meta:
         app_label = 'channel_integration'
