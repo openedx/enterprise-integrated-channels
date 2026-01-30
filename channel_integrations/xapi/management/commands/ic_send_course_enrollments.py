@@ -294,7 +294,9 @@ class Command(BaseCommand):
             defaults={
                 'enterprise_course_enrollment_id': enterprise_course_enrollment_id,
                 'status': status,
-                'error_message': error_message
+                'error_message': error_message,                
+                'course_completed': False,  # If not provided by default it will take it as True
+                'completed_timestamp': None,
             }
         )
 
