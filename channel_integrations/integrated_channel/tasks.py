@@ -6,13 +6,13 @@ import time
 from functools import wraps
 
 import requests
-import waffle
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.contrib import auth
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
+from edx_django_utils import monitoring as waffle
 from edx_django_utils.monitoring import set_code_owner_attribute
 from enterprise.models import EnterpriseCustomer
 from enterprise.utils import get_enterprise_uuids_for_user_and_course
@@ -503,7 +503,6 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
         course_id: Course key string
         payload_dict: The webhook payload dictionary
     """
-    # Check feature flag
     # Check feature flag
     feature_enabled = waffle.switch_is_active('enable_webhook_learning_time_enrichment')
 

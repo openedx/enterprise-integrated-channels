@@ -9,7 +9,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.test import override_settings
 from waffle.testutils import override_switch
 
 from test_utils.factories import EnterpriseCustomerFactory, EnterpriseCustomerUserFactory

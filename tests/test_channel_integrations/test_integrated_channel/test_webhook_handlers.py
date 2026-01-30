@@ -16,13 +16,14 @@ from openedx_events.learning.data import (
     UserPersonalData,
 )
 
+from waffle.testutils import override_switch
+
 from channel_integrations.integrated_channel.handlers import (
     handle_enrollment_for_webhooks,
     handle_grade_change_for_webhooks,
 )
 from channel_integrations.integrated_channel.services.webhook_routing import NoWebhookConfigured
 from test_utils.factories import EnterpriseCustomerFactory, EnterpriseCustomerUserFactory
-from waffle.testutils import override_switch
 
 
 User = get_user_model()
