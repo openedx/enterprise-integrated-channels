@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.36 – 2026-01-30
+*******************
+
+Changed
+=======
+
+* Optional features for webhook integration
+
 0.1.35 – 2026-01-28
 *******************
 

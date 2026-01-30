@@ -3,9 +3,9 @@ Event handlers for OpenEdX Events consumed from event bus.
 These handlers are called directly by the consume_events management command.
 """
 import logging
-from django.core.exceptions import ObjectDoesNotExist
-from django.dispatch import receiver
-from edx_django_utils import monitoring as wafflezone
+import waffle  # pylint: disable=invalid-django-waffle-import
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 from enterprise.models import EnterpriseCustomerUser
 from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
 

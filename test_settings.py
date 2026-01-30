@@ -207,4 +207,7 @@ CELERY_TASK_ROUTES = {
     'channel_integrations.integrated_channel.tasks.enrich_and_send_completion_webhook': {
         'queue': 'edx.lms.core.webhook_enrichment'
     },
+    'channel_integrations.integrated_channel.tasks.process_webhook_queue': {
+        'queue': 'edx.lms.enterprise.webhooks'
+    },
 }

@@ -83,9 +83,11 @@ class TestCeleryTaskRouting:
 
         # Execute task directly (not via queue, since we're in test mode)
         # In production, this would be: enrich_and_send_completion_webhook.delay(...)
-        with patch('channel_integrations.integrated_channel.tasks.settings') as mock_settings:
-            mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
+        from waffle.testutils import override_switch
 
+        # Execute task directly (not via queue, since we're in test mode)
+        # In production, this would be: enrich_and_send_completion_webhook.delay(...)
+        with override_switch('enable_webhook_learning_time_enrichment', active=True):
             enrich_and_send_completion_webhook(
                 user_id=user.id,
                 course_id=course_id,
