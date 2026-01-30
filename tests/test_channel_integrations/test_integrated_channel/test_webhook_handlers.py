@@ -22,6 +22,8 @@ from channel_integrations.integrated_channel.handlers import (
 )
 from channel_integrations.integrated_channel.services.webhook_routing import NoWebhookConfigured
 from test_utils.factories import EnterpriseCustomerFactory, EnterpriseCustomerUserFactory
+from waffle.testutils import override_switch
+
 
 User = get_user_model()
 
@@ -58,10 +60,7 @@ class TestWebhookHandlers:
             assert kwargs['event_type'] == 'course_completion'
             assert kwargs['payload']['completion']['percent_grade'] == 0.85
 
-    @patch(
-        'channel_integrations.integrated_channel.handlers.settings.FEATURES',
-        {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': True}
-    )
+    @override_switch('enable_webhook_learning_time_enrichment', active=True)
     def test_handle_grade_change_with_learning_time_enrichment(self):
         """Verify that grade change uses enrichment task when feature flag is enabled."""
         enterprise = EnterpriseCustomerFactory()
@@ -530,9 +529,8 @@ class TestWebhookHandlers:
         mock_queue_item = Mock(id=123)
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route, \
              patch('channel_integrations.integrated_channel.handlers.process_webhook_queue.delay') as mock_delay, \
-             patch('channel_integrations.integrated_channel.handlers.settings') as mock_settings:
+             override_switch('enable_webhook_learning_time_enrichment', active=False):
             # Disable enrichment feature
-            mock_settings.FEATURES = {'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': False}
             mock_route.return_value = (mock_queue_item, True)
 
             handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)

@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'edx_rbac',
     'social_django',
+    'waffle',
 )
 
 LOCALE_PATHS = [
@@ -197,9 +198,6 @@ SNOWFLAKE_SERVICE_USER_PASSWORD = 'test_password'  # In production, from secrets
 #################################### FEATURES ####################################
 
 FEATURES = {
-    # Feature flag for webhook learning time enrichment
-    # Default: False (opt-in feature)
-    'ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT': False,
 }
 
 #################################### CELERY QUEUES ####################################

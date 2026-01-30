@@ -142,6 +142,32 @@ class TestWebhookRouting:
                     payload=payload
                 )
 
+    def test_route_webhook_enrollment_disabled(self):
+        """Verify exception when enrollment processing is disabled."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+        EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://us.example.com/webhook',
+            enrollment_events_processing=False
+        )
+
+        payload = {'event': 'test'}
+        with patch(
+            'channel_integrations.integrated_channel.services.webhook_routing.get_user_region',
+            return_value='US'
+        ):
+            with pytest.raises(NoWebhookConfigured) as exc_info:
+                route_webhook_by_region(
+                    user=user,
+                    enterprise_customer=enterprise,
+                    course_id='course-id',
+                    event_type='course_enrollment',
+                    payload=payload
+                )
+            assert "Enrollment events processing disabled" in str(exc_info.value)
+
     def test_route_webhook_deduplication(self):
         """Verify that duplicate events are not queued on the same day."""
         enterprise = EnterpriseCustomerFactory()
