@@ -19,6 +19,7 @@ process is complete.
 """
 
 import logging  # pragma: no cover
+
 from django.apps import apps  # pragma: no cover
 from django.core.management.base import BaseCommand, CommandError  # pragma: no cover
 from django.db import connections  # pragma: no cover

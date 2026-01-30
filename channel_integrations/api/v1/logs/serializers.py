@@ -1,9 +1,9 @@
 """
 Serializer for Degreed2 configuration.
 """
+from enterprise.constants import HTTP_STATUS_STRINGS
 from rest_framework import serializers
 
-from enterprise.constants import HTTP_STATUS_STRINGS
 from channel_integrations.blackboard.models import BlackboardLearnerDataTransmissionAudit
 from channel_integrations.canvas.models import CanvasLearnerDataTransmissionAudit
 from channel_integrations.cornerstone.models import CornerstoneLearnerDataTransmissionAudit

@@ -5,12 +5,11 @@ import logging
 from collections import OrderedDict
 from datetime import datetime
 
+from django.db.models import DateTimeField
+from django.db.models.functions import Cast, Coalesce, Greatest
 from rest_framework import exceptions, permissions, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-
-from django.db.models import DateTimeField
-from django.db.models.functions import Cast, Coalesce, Greatest
 
 from channel_integrations.api.v1.mixins import PermissionRequiredForIntegratedChannelMixin
 from channel_integrations.integrated_channel.models import (

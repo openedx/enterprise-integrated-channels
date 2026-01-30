@@ -2,9 +2,8 @@
     url mappings for channel_integrations/api/v1/cornerstone/
 """
 
-from rest_framework import routers
-
 from django.urls import path
+from rest_framework import routers
 
 from .views import CornerstoneConfigurationViewSet, CornerstoneLearnerInformationView
 

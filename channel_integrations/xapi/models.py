@@ -7,10 +7,9 @@ import base64
 from django.contrib import auth
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from enterprise.models import EnterpriseCustomer
 from model_utils.models import TimeStampedModel
 
-from enterprise.models import EnterpriseCustomer
 from channel_integrations.integrated_channel.models import LearnerDataTransmissionAudit
 
 User = auth.get_user_model()

@@ -6,6 +6,7 @@ import logging
 import time
 
 from enterprise.tpa_pipeline import get_user_social_auth
+
 from channel_integrations.exceptions import ClientError
 from channel_integrations.xapi.client import EnterpriseXAPIClient
 from channel_integrations.xapi.statements.learner_course_completion import LearnerCourseCompletionStatement

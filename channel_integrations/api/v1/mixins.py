@@ -4,10 +4,9 @@ Mixins for Integrated Channel API Viewsets
 from uuid import UUID
 
 from edx_rbac.mixins import PermissionRequiredForListingMixin
-from rest_framework.exceptions import ParseError
-
 from enterprise.constants import ENTERPRISE_ADMIN_ROLE
 from enterprise.models import SystemWideEnterpriseUserRoleAssignment
+from rest_framework.exceptions import ParseError
 
 
 class PermissionRequiredForIntegratedChannelMixin(PermissionRequiredForListingMixin):

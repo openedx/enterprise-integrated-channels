@@ -4,12 +4,12 @@ These handlers are called directly by the consume_events management command.
 """
 
 import logging
-from django.conf import settings
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from enterprise.models import EnterpriseCustomerUser
 from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
-from waffle import switch_is_active
+from waffle import switch_is_active  # pylint: disable=invalid-django-waffle-import
 
 from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,

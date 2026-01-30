@@ -6,7 +6,6 @@ from logging import getLogger
 
 from django.apps import apps
 from django.conf import settings
-
 from enterprise.models import EnterpriseCustomerUser, PendingEnterpriseCustomerUser
 from enterprise.tpa_pipeline import get_user_from_social_auth
 from requests import RequestException

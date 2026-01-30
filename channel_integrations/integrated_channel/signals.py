@@ -5,10 +5,7 @@ This module connects OpenEdX Events signals directly to handlers,
 bypassing the event bus to avoid serialization issues.
 """
 from django.dispatch import receiver
-from openedx_events.learning.signals import (
-    COURSE_ENROLLMENT_CREATED,
-    PERSISTENT_GRADE_SUMMARY_CHANGED,
-)
+from openedx_events.learning.signals import COURSE_ENROLLMENT_CREATED, PERSISTENT_GRADE_SUMMARY_CHANGED
 
 from channel_integrations.integrated_channel import handlers
 

@@ -1,14 +1,13 @@
+from django.utils.decorators import method_decorator
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
+from enterprise.api.v1.decorators import require_at_least_one_query_parameter
+from enterprise.utils import get_enterprise_customer_or_404
 from rest_framework import generics, permissions, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 
-from django.utils.decorators import method_decorator
-
-from enterprise.api.v1.decorators import require_at_least_one_query_parameter
-from enterprise.utils import get_enterprise_customer_or_404
 from channel_integrations.api.v1.blackboard.serializers import BlackboardConfigSerializer
 from channel_integrations.api.v1.canvas.serializers import CanvasEnterpriseCustomerConfigurationSerializer
 from channel_integrations.api.v1.cornerstone.serializers import CornerstoneConfigSerializer

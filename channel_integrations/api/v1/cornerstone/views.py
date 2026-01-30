@@ -3,18 +3,17 @@ Viewsets for channel_integrations/v1/cornerstone/
 """
 from logging import getLogger
 
+from django.contrib import auth
+from django.db import transaction
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
+from enterprise.api.throttles import ServiceUserThrottle
+from enterprise.utils import get_enterprise_customer_or_404, get_enterprise_customer_user, localized_utcnow
 from rest_framework import permissions, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from rest_framework.views import APIView
 
-from django.contrib import auth
-from django.db import transaction
-
-from enterprise.api.throttles import ServiceUserThrottle
-from enterprise.utils import get_enterprise_customer_or_404, get_enterprise_customer_user, localized_utcnow
 from channel_integrations.api.v1.mixins import PermissionRequiredForIntegratedChannelMixin
 from channel_integrations.cornerstone.models import CornerstoneEnterpriseCustomerConfiguration
 from channel_integrations.cornerstone.utils import create_cornerstone_learner_data

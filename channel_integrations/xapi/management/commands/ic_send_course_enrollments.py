@@ -6,10 +6,10 @@ import datetime
 from logging import getLogger
 
 from django.core.management.base import BaseCommand, CommandError
-
 from enterprise.api_client.discovery import get_course_catalog_api_service_client
 from enterprise.models import EnterpriseCourseEnrollment, EnterpriseCustomer
 from enterprise.utils import NotConnectedToOpenEdX
+
 from channel_integrations.xapi.models import XAPILearnerDataTransmissionAudit, XAPILRSConfiguration
 from channel_integrations.xapi.utils import is_success_response, send_course_enrollment_statement
 
