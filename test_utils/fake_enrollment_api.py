@@ -6,9 +6,8 @@ import datetime
 import json
 import re
 
-from slumber.exceptions import HttpClientError
-
 from django.conf import settings
+from slumber.exceptions import HttpClientError
 
 COURSE_ID_REGEX = r'course-v.:[^/+]+\+[^/+]+\+[^/?]+$'
 

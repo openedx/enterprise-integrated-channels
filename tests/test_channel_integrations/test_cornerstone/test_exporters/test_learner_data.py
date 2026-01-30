@@ -9,13 +9,12 @@ from unittest import mock
 
 import ddt
 import responses
+from django.core.management import call_command
+from enterprise.api_client import lms as lms_api
 from freezegun import freeze_time
 from pytest import mark
 from requests.compat import urljoin
 
-from django.core.management import call_command
-
-from enterprise.api_client import lms as lms_api
 from channel_integrations.cornerstone.exporters.learner_data import CornerstoneLearnerExporter
 from channel_integrations.cornerstone.models import CornerstoneLearnerDataTransmissionAudit
 from channel_integrations.integrated_channel.tasks import transmit_single_learner_data

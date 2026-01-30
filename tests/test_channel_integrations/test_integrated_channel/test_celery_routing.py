@@ -36,7 +36,8 @@ class TestCeleryTaskRouting:
 
         This ensures the task is properly registered with Celery.
         """
-        from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook  # pylint: disable=import-outside-toplevel
+        from channel_integrations.integrated_channel.tasks import \
+            enrich_and_send_completion_webhook  # pylint: disable=import-outside-toplevel
 
         assert enrich_and_send_completion_webhook is not None
         assert callable(enrich_and_send_completion_webhook)
@@ -55,9 +56,10 @@ class TestCeleryTaskRouting:
 
         This is an integration test ensuring the task works with the configured queue.
         """
+        from django.contrib.auth import get_user_model
+
         from channel_integrations.integrated_channel.tasks import enrich_and_send_completion_webhook
         from test_utils.factories import EnterpriseCustomerFactory, EnterpriseCustomerUserFactory
-        from django.contrib.auth import get_user_model
 
         User = get_user_model()
 

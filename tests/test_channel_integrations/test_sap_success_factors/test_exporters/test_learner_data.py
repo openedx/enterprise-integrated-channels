@@ -8,9 +8,8 @@ from unittest import mock
 from unittest.mock import MagicMock, Mock
 
 import ddt
-from pytest import mark
-
 from django.db.utils import IntegrityError
+from pytest import mark
 
 from channel_integrations.sap_success_factors.exporters.learner_data import SapSuccessFactorsLearnerExporter
 from channel_integrations.sap_success_factors.models import SapSuccessFactorsLearnerDataTransmissionAudit

@@ -6,9 +6,9 @@ from unittest import mock
 from uuid import uuid4
 
 from django.urls import reverse
-
 from enterprise.constants import ENTERPRISE_ADMIN_ROLE
 from enterprise.utils import localized_utcnow
+
 from channel_integrations.canvas.models import CanvasEnterpriseCustomerConfiguration
 from test_utils import APITest, factories
 

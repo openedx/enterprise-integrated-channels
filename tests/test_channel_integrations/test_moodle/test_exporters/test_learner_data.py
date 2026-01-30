@@ -6,9 +6,8 @@ import datetime
 import unittest
 from unittest import mock
 
-from pytest import mark
-
 from django.db.utils import IntegrityError
+from pytest import mark
 
 from channel_integrations.moodle.exporters.learner_data import MoodleLearnerExporter
 from channel_integrations.moodle.models import MoodleLearnerDataTransmissionAudit

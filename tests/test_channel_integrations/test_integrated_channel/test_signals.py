@@ -1,12 +1,10 @@
 """
 Tests for signal connections in Enterprise Integrated Channels.
 """
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from django.test import TestCase
-from openedx_events.learning.signals import (
-    COURSE_ENROLLMENT_CREATED,
-    PERSISTENT_GRADE_SUMMARY_CHANGED,
-)
+from openedx_events.learning.signals import COURSE_ENROLLMENT_CREATED, PERSISTENT_GRADE_SUMMARY_CHANGED
 
 # Explicitly import signals to ensure receivers are registered
 from channel_integrations.integrated_channel import signals

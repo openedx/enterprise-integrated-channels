@@ -15,19 +15,18 @@ import uuid
 from unittest import mock
 from urllib.parse import parse_qs, urljoin, urlparse, urlsplit
 
-from edx_rest_framework_extensions.auth.jwt.cookies import jwt_cookie_name
-from edx_rest_framework_extensions.auth.jwt.tests.utils import generate_jwt_token, generate_unversioned_payload
-from pytest import mark
-from rest_framework.test import APIClient, APITestCase
-
 from django.conf import settings
 from django.core.cache import caches
 from django.shortcuts import render
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.urls import reverse
-
+from edx_rest_framework_extensions.auth.jwt.cookies import jwt_cookie_name
+from edx_rest_framework_extensions.auth.jwt.tests.utils import generate_jwt_token, generate_unversioned_payload
 from enterprise import utils
+from pytest import mark
+from rest_framework.test import APIClient, APITestCase
+
 from test_utils import factories
 
 FAKE_UUIDS = [str(uuid.uuid4()) for i in range(5)]

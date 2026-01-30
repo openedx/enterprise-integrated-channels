@@ -6,9 +6,9 @@ import unittest
 from unittest import mock
 
 import pytz
+from enterprise.utils import get_content_metadata_item_id, localized_utcnow
 from pytest import mark
 
-from enterprise.utils import get_content_metadata_item_id, localized_utcnow
 from channel_integrations.integrated_channel.models import (
     ApiResponseRecord,
     ContentMetadataItemTransmission,

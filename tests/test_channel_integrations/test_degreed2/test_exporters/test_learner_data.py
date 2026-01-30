@@ -8,11 +8,10 @@ import unittest
 
 import ddt
 import mock
+from django.db.utils import IntegrityError
 from freezegun import freeze_time
 from mock.mock import MagicMock
 from pytest import mark
-
-from django.db.utils import IntegrityError
 
 from channel_integrations.degreed2.exporters.learner_data import Degreed2LearnerExporter
 from channel_integrations.degreed2.models import Degreed2LearnerDataTransmissionAudit

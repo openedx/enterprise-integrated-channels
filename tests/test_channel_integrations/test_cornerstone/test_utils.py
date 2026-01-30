@@ -5,9 +5,8 @@ Tests for the utilities used by Cornerstone integration channel.
 import unittest
 
 import ddt
-from pytest import mark
-
 from django.test import RequestFactory
+from pytest import mark
 
 from channel_integrations.cornerstone.models import (
     CornerstoneEnterpriseCustomerConfiguration,

@@ -8,9 +8,8 @@ from datetime import datetime
 from unittest import mock
 
 import responses
-from pytest import mark
-
 from django.test.utils import override_settings
+from pytest import mark
 
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.models import ContentMetadataItemTransmission

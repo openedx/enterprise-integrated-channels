@@ -11,12 +11,11 @@ from urllib.parse import urljoin
 
 import pytest
 import responses
+from django.apps import apps
+from enterprise.models import EnterpriseCustomerUser
 from freezegun import freeze_time
 from requests.models import Response
 
-from django.apps import apps
-
-from enterprise.models import EnterpriseCustomerUser
 from channel_integrations.canvas.client import MESSAGE_WHEN_COURSE_WAS_DELETED, CanvasAPIClient
 from channel_integrations.canvas.utils import CanvasUtil
 from channel_integrations.exceptions import ClientError

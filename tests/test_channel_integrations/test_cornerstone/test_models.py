@@ -5,11 +5,10 @@ Tests for the `channel_integrations.cornerstone.models` models module.
 import unittest
 from unittest import mock
 
-from freezegun import freeze_time
-from pytest import mark, raises
-
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from freezegun import freeze_time
+from pytest import mark, raises
 
 from channel_integrations.cornerstone.models import CornerstoneEnterpriseCustomerConfiguration
 from channel_integrations.integrated_channel.tasks import transmit_single_learner_data

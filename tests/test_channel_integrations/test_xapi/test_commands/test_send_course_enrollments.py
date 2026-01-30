@@ -6,12 +6,11 @@ import unittest
 import uuid
 from unittest import mock
 
+from django.core.management import CommandError, call_command
+from enterprise.utils import NotConnectedToOpenEdX
 from faker import Factory as FakerFactory
 from pytest import mark, raises
 
-from django.core.management import CommandError, call_command
-
-from enterprise.utils import NotConnectedToOpenEdX
 from test_utils import factories
 
 MODULE_PATH = 'channel_integrations.xapi.management.commands.ic_send_course_enrollments.'

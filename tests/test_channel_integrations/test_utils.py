@@ -10,9 +10,9 @@ from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
 
 import ddt
+from enterprise.utils import parse_lms_api_datetime
 from pytest import raises
 
-from enterprise.utils import parse_lms_api_datetime
 from channel_integrations import utils
 
 ent_enrollment = namedtuple('enterprise_enrollment', ['is_audit_enrollment'])

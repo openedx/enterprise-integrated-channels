@@ -6,9 +6,8 @@ import datetime
 import unittest
 from unittest import mock
 
-from pytest import mark
-
 from django.db.utils import IntegrityError
+from pytest import mark
 
 from channel_integrations.canvas.exporters.learner_data import CanvasLearnerExporter
 from channel_integrations.canvas.models import CanvasLearnerDataTransmissionAudit

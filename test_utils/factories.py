@@ -2,18 +2,14 @@
 Factoryboy factories.
 """
 
+from datetime import timezone
 from random import randint
 from uuid import UUID
 
-from datetime import timezone
+import factory
+from consent.models import DataSharingConsent
 from django.contrib import auth
 from django.contrib.sites.models import Site
-
-import factory
-from faker import Factory as FakerFactory
-from oauth2_provider.models import get_application_model
-
-from consent.models import DataSharingConsent
 from enterprise.constants import FulfillmentTypes
 from enterprise.models import (
     EnterpriseCatalogQuery,
@@ -25,6 +21,9 @@ from enterprise.models import (
     LearnerCreditEnterpriseCourseEnrollment,
 )
 from enterprise.utils import localized_utcnow
+from faker import Factory as FakerFactory
+from oauth2_provider.models import get_application_model
+
 from channel_integrations.blackboard.models import (
     BlackboardEnterpriseCustomerConfiguration,
     BlackboardGlobalConfiguration,
@@ -36,7 +35,6 @@ from channel_integrations.cornerstone.models import (
     CornerstoneLearnerDataTransmissionAudit,
 )
 from channel_integrations.degreed2.models import Degreed2EnterpriseCustomerConfiguration
-
 from channel_integrations.integrated_channel.models import (
     ContentMetadataItemTransmission,
     GenericEnterpriseCustomerPluginConfiguration,

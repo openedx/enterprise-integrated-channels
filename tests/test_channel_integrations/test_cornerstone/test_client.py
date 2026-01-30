@@ -7,7 +7,6 @@ import unittest
 
 import pytest
 import responses
-
 from django.apps import apps
 
 from channel_integrations.cornerstone.client import CornerstoneAPIClient

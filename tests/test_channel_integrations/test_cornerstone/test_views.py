@@ -7,15 +7,14 @@ from unittest import mock
 
 import responses
 from dateutil import parser
+from django.conf import settings
+from django.utils.http import http_date
+from enterprise.constants import IC_CREATE_ACTION
+from enterprise.utils import get_enterprise_worker_user
 from pytest import mark
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from django.conf import settings
-from django.utils.http import http_date
-
-from enterprise.constants import IC_CREATE_ACTION
-from enterprise.utils import get_enterprise_worker_user
 from channel_integrations.integrated_channel.models import ContentMetadataItemTransmission
 from test_utils import APITest, factories
 from test_utils.fake_catalog_api import get_fake_content_metadata, get_fake_content_metadata_for_create_w_program

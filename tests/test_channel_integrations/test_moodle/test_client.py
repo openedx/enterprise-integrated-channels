@@ -8,9 +8,8 @@ from urllib.parse import urljoin
 
 import pytest
 import responses
-from requests.models import Response
-
 from django.apps import apps
+from requests.models import Response
 
 from channel_integrations.exceptions import ClientError
 from channel_integrations.moodle.client import MoodleAPIClient, MoodleClientError

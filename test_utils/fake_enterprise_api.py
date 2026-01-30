@@ -6,15 +6,14 @@ from hashlib import md5
 from urllib.parse import urlencode, urljoin
 
 import responses
+from django.conf import settings
+from django.core.cache import cache
+from enterprise.constants import DefaultColors
+from enterprise.models import EnterpriseCustomerCatalog
 from faker import Factory as FakerFactory
 from rest_framework.reverse import reverse
 
-from django.conf import settings
-from django.core.cache import cache
-
-from enterprise.constants import DefaultColors
-from enterprise.models import EnterpriseCustomerCatalog
-from test_utils import FAKE_UUIDS, fake_catalog_api, update_search_with_enterprise_context, factories
+from test_utils import FAKE_UUIDS, factories, fake_catalog_api, update_search_with_enterprise_context
 
 
 class EnterpriseMockMixin:
@@ -139,7 +138,6 @@ class EnterpriseMockMixin:
 
             # Ensure ManyToMany relationship is correctly set
             enterprise_customer.enterprise_customer_catalogs.add(enterprise_customer_catalog)
-
 
     def mock_enterprise_catalogs_with_error(self, enterprise_uuid):
         """

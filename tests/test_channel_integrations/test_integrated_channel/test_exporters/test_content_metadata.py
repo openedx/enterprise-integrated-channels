@@ -8,14 +8,13 @@ import unittest
 from collections import OrderedDict
 from unittest import mock
 
+from django.test.utils import override_settings
+from django.utils import timezone
+from enterprise.constants import EXEC_ED_COURSE_TYPE
+from enterprise.utils import get_content_metadata_item_id
 from pytest import mark
 from testfixtures import LogCapture
 
-from django.test.utils import override_settings
-from django.utils import timezone
-
-from enterprise.constants import EXEC_ED_COURSE_TYPE
-from enterprise.utils import get_content_metadata_item_id
 from channel_integrations.integrated_channel.exporters.content_metadata import ContentMetadataExporter
 from channel_integrations.integrated_channel.models import ContentMetadataItemTransmission
 from channel_integrations.sap_success_factors.exporters.content_metadata import SapSuccessFactorsContentMetadataExporter

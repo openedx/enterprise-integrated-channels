@@ -7,11 +7,10 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 import ddt
+from django.utils import timezone
 from freezegun import freeze_time
 from pytest import mark
 from requests.exceptions import HTTPError
-
-from django.utils import timezone
 
 from channel_integrations.integrated_channel.exporters.learner_data import LearnerExporter
 from channel_integrations.integrated_channel.models import GenericLearnerDataTransmissionAudit

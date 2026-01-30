@@ -5,11 +5,10 @@ from unittest import mock
 from uuid import uuid4
 
 import ddt
+from django.urls import reverse
+from enterprise.constants import ENTERPRISE_ADMIN_ROLE
 from pytest import mark
 
-from django.urls import reverse
-
-from enterprise.constants import ENTERPRISE_ADMIN_ROLE
 from test_utils import APITest, factories
 
 ENTERPRISE_ID = str(uuid4())

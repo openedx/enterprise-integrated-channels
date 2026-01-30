@@ -6,11 +6,10 @@ import unittest
 import uuid
 from unittest import mock
 
+from django.core.management import CommandError, call_command
+from enterprise.utils import NotConnectedToOpenEdX
 from pytest import mark, raises
 
-from django.core.management import CommandError, call_command
-
-from enterprise.utils import NotConnectedToOpenEdX
 from channel_integrations.exceptions import ClientError
 from test_utils import factories
 

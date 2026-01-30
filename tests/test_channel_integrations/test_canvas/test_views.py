@@ -7,15 +7,14 @@ from uuid import uuid4
 
 import pytest
 import responses
-from rest_framework.test import APITestCase
-from testfixtures import LogCapture
-
 from django.apps import apps
 from django.contrib.sites.models import Site
 from django.urls import reverse
 from django.utils.http import urlencode
-
 from enterprise.models import EnterpriseCustomer
+from rest_framework.test import APITestCase
+from testfixtures import LogCapture
+
 from channel_integrations.canvas.models import CanvasEnterpriseCustomerConfiguration
 
 ENTERPRISE_ID = str(uuid4())

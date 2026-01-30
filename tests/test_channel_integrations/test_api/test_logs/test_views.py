@@ -8,11 +8,10 @@ from unittest import mock
 from uuid import uuid4
 
 import ddt
-
 from django.urls import reverse
-
 from enterprise.constants import HTTP_STATUS_STRINGS
 from enterprise_learner_portal.utils import CourseRunProgressStatuses
+
 from channel_integrations.api.v1.logs.views import ReportingSyncStatusPagination
 from test_utils import TEST_PASSWORD, APITest, factories
 

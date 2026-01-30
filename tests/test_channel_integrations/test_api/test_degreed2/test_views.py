@@ -5,11 +5,10 @@ import json
 from uuid import uuid4
 
 import mock
-
 from django.urls import reverse
-
 from enterprise.constants import ENTERPRISE_ADMIN_ROLE
 from enterprise.utils import localized_utcnow
+
 from channel_integrations.degreed2.models import Degreed2EnterpriseCustomerConfiguration
 from test_utils import APITest, factories
 

@@ -5,9 +5,8 @@ Tests for Blackboard learner data exporters.
 import unittest
 from unittest import mock
 
-from pytest import mark
-
 from django.db.utils import IntegrityError
+from pytest import mark
 
 from channel_integrations.blackboard.exporters.learner_data import BlackboardLearnerExporter
 from channel_integrations.blackboard.models import BlackboardLearnerDataTransmissionAudit

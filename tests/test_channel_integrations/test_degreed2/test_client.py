@@ -11,13 +11,12 @@ import mock
 import pytest
 import requests
 import responses
+from django.apps.registry import apps
+from enterprise.api_client.enterprise_catalog import EnterpriseCatalogApiClient
+from enterprise.models import EnterpriseCustomerUser
 from freezegun import freeze_time
 from six.moves.urllib.parse import urljoin
 
-from django.apps.registry import apps
-
-from enterprise.api_client.enterprise_catalog import EnterpriseCatalogApiClient
-from enterprise.models import EnterpriseCustomerUser
 from channel_integrations.degreed2.client import Degreed2APIClient
 from channel_integrations.exceptions import ClientError
 from test_utils import factories

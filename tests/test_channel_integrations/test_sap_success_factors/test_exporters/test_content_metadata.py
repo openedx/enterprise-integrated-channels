@@ -6,10 +6,10 @@ import unittest
 
 import ddt
 import responses
-from pytest import mark
-
 from enterprise.constants import IC_DELETE_ACTION
 from enterprise.utils import parse_lms_api_datetime
+from pytest import mark
+
 from channel_integrations.sap_success_factors.exporters.content_metadata import SapSuccessFactorsContentMetadataExporter
 from channel_integrations.utils import parse_datetime_to_epoch_millis
 from test_utils import factories
