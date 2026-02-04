@@ -11,8 +11,13 @@ Change Log
 
 .. There should always be an "Unreleased" section for changes pending release.
 
-Unreleased
+* To consume the latest fixes in XAPI course completion events.
+
+0.1.37 - 2026-02-04
 **********
+
+Changed
+=======
 
 0.1.34 - 2026-01-26
 *********************
