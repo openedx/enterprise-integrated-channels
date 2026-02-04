@@ -23,4 +23,7 @@ unicodecsv
 slumber
 edx-rbac
 edx-tincan-py35
-snowflake-connector-python>=3.18.0,<4.0.0  # Snowflake database connector for learning time queries
+# Normally we don't pin anything here, but this flexible constraint helps ensure the version of
+# enterprise-integrated-channels deployed has actually been tested with this major version of
+# snowflake-connector-python.
+snowflake-connector-python>=4.0.0,<5.0.0  # Snowflake database connector for learning time queries
