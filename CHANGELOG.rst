@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.38 – 2026-02-03
+*******************
+
+* chore: relax snowflake connector constraint
+
 0.1.37 – 2026-02-03
 *******************
 
