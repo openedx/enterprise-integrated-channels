@@ -11,55 +11,8 @@ Change Log
 
 .. There should always be an "Unreleased" section for changes pending release.
 
-* To consume the latest fixes in XAPI course completion events.
-
-0.1.37 - 2026-02-04
+Unreleased
 **********
-
-Changed
-=======
-
-0.1.34 - 2026-01-26
-*********************
-
-Changed
-=======
-
-* Switched from consuming events via the event bus to listening to in-process Django signals directly.
-
-0.1.33 - 2026-01-20
-*******************
-
-Changed
-=======
-
-* chore: upgrade python requirements
-
-0.1.32 – 2026-01-19
-*******************
-
-Changed
-=======
-
-* chore: Add Django>=4.2 constraint to support both Django 4.2 and 5.x
-* fix: Constrain social-auth-app-django<5.5 for Django 4.2 compatibility
-
-0.1.31 – 2026-01-19
-*******************
-
-Changed
-=======
-
-* chore: Update snowflake-connector-python from 3.7.0 to >=3.18.0,<4.0.0 for compatibility with edx-platform
-
-0.1.30 – 2026-01-19
-*******************
-
-Added
-=====
-
-* feat: Add webhook learning time enrichment from Snowflake with dedicated Celery queue
-* test: Add comprehensive test coverage for webhook task routing and branch conditions
 
 0.1.29 – 2026-01-17
 *******************
