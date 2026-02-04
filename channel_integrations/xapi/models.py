@@ -85,6 +85,11 @@ class XAPILearnerDataTransmissionAudit(LearnerDataTransmissionAudit):
         on_delete=models.CASCADE,
     )
 
+    # [TEMP] Override this field inherited from LearnerDataTransmissionAudit to change the default
+    # value to False.  Limit this change to just one subclass (XAPI) so that we can test this
+    # approach before migrating all ~6 other integrations.
+    course_completed = models.BooleanField(default=False)
+
     class Meta:
         app_label = 'xapi_channel'
         unique_together = ("user", "course_id")
