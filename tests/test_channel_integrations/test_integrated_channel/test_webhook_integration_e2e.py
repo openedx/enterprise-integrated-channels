@@ -122,7 +122,6 @@ class TestWebhookEndToEndFlow:
         # Verify body
         body = json.loads(request.body)
         assert body['completion']['percent_grade'] == 0.85
-        assert body['course']['course_key'] == str(course_key)
 
         # 8. Verify queue item marked as success
         queue_item.refresh_from_db()

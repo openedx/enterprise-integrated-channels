@@ -66,15 +66,23 @@ class TestWebhookPayloadValidation:
 
         # Validate top-level structure
         assert isinstance(payload, dict)
-        required_top_keys = ['event_type', 'event_version', 'event_source', 'timestamp',
-                             'enterprise_customer', 'learner', 'course', 'completion']
-        for key in required_top_keys:
+
+        # Ensure existence of required Percipio fields for Skillsoft
+        percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
+                                  'completion_percentage']
+
+        for key in percipio_required_keys:
             assert key in payload, f"Missing required top-level key: {key}"
 
         # Validate event metadata
         assert payload['event_type'] == 'course_completion'
-        assert payload['event_version'] == '2.0'
         assert payload['event_source'] == 'openedx_events'
+
+        # Validate top-level required keys
+        assert payload['content_id'] == str(course_key)
+        assert payload['user'] == user.username
+        assert payload['status'] == 'completed'
+        assert payload['completion_percentage'] == 100
 
         # Validate enterprise_customer section
         assert 'uuid' in payload['enterprise_customer']
@@ -89,10 +97,6 @@ class TestWebhookPayloadValidation:
         assert payload['learner']['user_id'] == user.id
         assert payload['learner']['username'] == user.username
         assert payload['learner']['email'] == user.email
-
-        # Validate course section
-        assert 'course_key' in payload['course']
-        assert payload['course']['course_key'] == str(course_key)
 
         # Validate completion section
         completion_keys = ['completed', 'completion_date', 'percent_grade', 'letter_grade', 'is_passing']
@@ -120,8 +124,13 @@ class TestWebhookPayloadValidation:
 
         # Validate data types
         assert isinstance(payload['event_type'], str)
-        assert isinstance(payload['event_version'], str)
+        assert isinstance(payload['event_source'], str)
         assert isinstance(payload['timestamp'], str)
+        assert isinstance(payload['content_id'], str)
+        assert isinstance(payload['user'], str)
+        assert isinstance(payload['status'], str)
+        assert isinstance(payload['event_date'], str)
+        assert isinstance(payload['completion_percentage'], int)
 
         assert isinstance(payload['enterprise_customer']['uuid'], str)
         assert isinstance(payload['enterprise_customer']['name'], str)
@@ -129,8 +138,6 @@ class TestWebhookPayloadValidation:
         assert isinstance(payload['learner']['user_id'], int)
         assert isinstance(payload['learner']['username'], str)
         assert isinstance(payload['learner']['email'], str)
-
-        assert isinstance(payload['course']['course_key'], str)
 
         assert isinstance(payload['completion']['completed'], bool)
         assert isinstance(payload['completion']['completion_date'], str)
@@ -244,16 +251,36 @@ class TestWebhookPayloadValidation:
         # Generate payload
         payload = _prepare_enrollment_payload(enrollment_data, user, enterprise)
 
-        # Validate top-level structure
-        required_keys = ['event_type', 'event_version', 'event_source', 'timestamp',
-                         'enterprise_customer', 'learner', 'course', 'enrollment']
-        for key in required_keys:
-            assert key in payload, f"Missing required key: {key}"
+        # Ensure existence of required Percipio fields for Skillsoft
+        percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
+                                  'completion_percentage']
+
+        for key in percipio_required_keys:
+            assert key in payload, f"Missing required top-level key: {key}"
 
         # Validate event metadata
         assert payload['event_type'] == 'course_enrollment'
-        assert payload['event_version'] == '2.0'
         assert payload['event_source'] == 'openedx_events'
+
+        # Validate top-level required keys
+        assert payload['content_id'] == str(course_key)
+        assert payload['user'] == user.username
+        assert payload['status'] == 'started'
+        assert payload['completion_percentage'] == 0
+
+        # Validate enterprise_customer section
+        assert 'uuid' in payload['enterprise_customer']
+        assert 'name' in payload['enterprise_customer']
+        assert payload['enterprise_customer']['uuid'] == str(enterprise.uuid)
+        assert payload['enterprise_customer']['name'] == enterprise.name
+
+        # Validate learner section
+        assert 'user_id' in payload['learner']
+        assert 'username' in payload['learner']
+        assert 'email' in payload['learner']
+        assert payload['learner']['user_id'] == user.id
+        assert payload['learner']['username'] == user.username
+        assert payload['learner']['email'] == user.email
 
         # Validate enrollment section
         assert 'mode' in payload['enrollment']
@@ -348,8 +375,8 @@ class TestWebhookPayloadValidation:
             payload = _prepare_completion_payload(grade_data, user, enterprise)
 
             # Verify course key is a string and matches original
-            assert isinstance(payload['course']['course_key'], str)
-            assert payload['course']['course_key'] == course_key_str
+            assert isinstance(payload['content_id'], str)
+            assert payload['content_id'] == course_key_str
 
     def test_payload_no_pii_leakage_in_unexpected_fields(self):
         """Verify payload doesn't leak PII in unexpected places."""

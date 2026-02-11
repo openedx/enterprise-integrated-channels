@@ -190,10 +190,6 @@ class TestWebhookHandlers:
             assert 'letter_grade' in completion
             assert completion['letter_grade'] == 'B'
 
-            # Verify course information exists (structure may vary)
-            assert 'course' in payload and 'course_key' in payload['course']
-            assert payload['course']['course_key'] == str(course_key)
-
             # Verify user information
             assert kwargs['user'] == user
             assert kwargs['course_id'] == str(course_key)
