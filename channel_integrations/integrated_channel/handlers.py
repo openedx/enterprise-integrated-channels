@@ -183,9 +183,14 @@ def _prepare_completion_payload(grade_data, user, enterprise_customer):
     """Prepare webhook payload for course completion event."""
     return {
         'event_type': 'course_completion',
-        'event_version': '2.0',
         'event_source': 'openedx_events',
         'timestamp': timezone.now().isoformat(),
+        'content_id': str(grade_data.course.course_key),
+        'user': user.username,
+        'status': 'completed',
+        'event_date': grade_data.passed_timestamp.isoformat(),
+        'completion_percentage': 100,
+        # TODO: add duration_spent (ENT-11477)
         'enterprise_customer': {
             'uuid': str(enterprise_customer.uuid),
             'name': enterprise_customer.name,
@@ -194,9 +199,6 @@ def _prepare_completion_payload(grade_data, user, enterprise_customer):
             'user_id': user.id,
             'username': user.username,
             'email': user.email,
-        },
-        'course': {
-            'course_key': str(grade_data.course.course_key),
         },
         'completion': {
             'completed': True,
@@ -212,9 +214,14 @@ def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
     """Prepare webhook payload for course enrollment event."""
     return {
         'event_type': 'course_enrollment',
-        'event_version': '2.0',
         'event_source': 'openedx_events',
         'timestamp': timezone.now().isoformat(),
+        'content_id': str(enrollment_data.course.course_key),
+        'user': user.username,
+        'status': 'started',
+        'event_date': enrollment_data.creation_date.isoformat(),
+        "completion_percentage": 0,
+        # TODO: add duration_spent (ENT-11477)
         'enterprise_customer': {
             'uuid': str(enterprise_customer.uuid),
             'name': enterprise_customer.name,
@@ -223,9 +230,6 @@ def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
             'user_id': user.id,
             'username': user.username,
             'email': user.email,
-        },
-        'course': {
-            'course_key': str(enrollment_data.course.course_key),
         },
         'enrollment': {
             'mode': enrollment_data.mode,
