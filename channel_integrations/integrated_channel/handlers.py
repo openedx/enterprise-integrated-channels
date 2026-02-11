@@ -1,6 +1,8 @@
 """
 Event handlers for OpenEdX Events consumed from event bus.
-These handlers are called directly by the consume_events management command.
+These handlers are called directly by the consume_events management command and are customized
+towards the requirements of the Percipio LMS Content Submission Guidelines.
+https://documentation.skillsoft.com/en_us/pes/Integration/iX-Studio/iX_Studio_onboarding_content_guidelines.htm
 """
 import logging
 import waffle  # pylint: disable=invalid-django-waffle-import
