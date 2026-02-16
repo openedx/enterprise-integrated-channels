@@ -7,7 +7,6 @@ https://documentation.skillsoft.com/en_us/pes/Integration/iX-Studio/iX_Studio_on
 import logging
 import waffle  # pylint: disable=invalid-django-waffle-import
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from enterprise.models import EnterpriseCustomerUser
 from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
 
@@ -69,7 +68,7 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
 
     for ecu in enterprise_customer_users:
         try:
-            payload = _prepare_completion_payload(grade_data, user, ecu.enterprise_customer)
+            payload = _prepare_completion_payload(grade_data, user)
 
             # Check if learning time enrichment feature is enabled
             feature_enabled = waffle.switch_is_active('enable_webhook_learning_time_enrichment')
@@ -156,7 +155,7 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable
 
     for ecu in enterprise_customer_users:
         try:
-            payload = _prepare_enrollment_payload(enrollment_data, user, ecu.enterprise_customer)
+            payload = _prepare_enrollment_payload(enrollment_data, user)
             queue_item, created = route_webhook_by_region(
                 user=user,
                 enterprise_customer=ecu.enterprise_customer,
@@ -181,61 +180,26 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable
             )
 
 
-def _prepare_completion_payload(grade_data, user, enterprise_customer):
-    """Prepare webhook payload for course completion event."""
+def _prepare_completion_payload(grade_data, user):
+    """Prepare webhook payload for Percipio course completion event."""
     return {
-        'event_type': 'course_completion',
-        'event_source': 'openedx_events',
-        'timestamp': timezone.now().isoformat(),
         'content_id': str(grade_data.course.course_key),
         'user': user.username,
         'status': 'completed',
         'event_date': grade_data.passed_timestamp.isoformat(),
         'completion_percentage': 100,
-        # TODO: add duration_spent (ENT-11477)
-        'enterprise_customer': {
-            'uuid': str(enterprise_customer.uuid),
-            'name': enterprise_customer.name,
-        },
-        'learner': {
-            'user_id': user.id,
-            'username': user.username,
-            'email': user.email,
-        },
-        'completion': {
-            'completed': True,
-            'completion_date': grade_data.passed_timestamp.isoformat(),
-            'percent_grade': float(grade_data.percent_grade),
-            'letter_grade': grade_data.letter_grade,
-            'is_passing': True,
-        },
+        'duration_spent': None,  # TODO: populate duration_spent (ENT-11477)
     }
 
 
-def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
+def _prepare_enrollment_payload(enrollment_data, user):
     """Prepare webhook payload for course enrollment event."""
     return {
-        'event_type': 'course_enrollment',
-        'event_source': 'openedx_events',
-        'timestamp': timezone.now().isoformat(),
         'content_id': str(enrollment_data.course.course_key),
         'user': user.username,
         'status': 'started',
         'event_date': enrollment_data.creation_date.isoformat(),
-        "completion_percentage": 0,
-        # TODO: add duration_spent (ENT-11477)
-        'enterprise_customer': {
-            'uuid': str(enterprise_customer.uuid),
-            'name': enterprise_customer.name,
-        },
-        'learner': {
-            'user_id': user.id,
-            'username': user.username,
-            'email': user.email,
-        },
-        'enrollment': {
-            'mode': enrollment_data.mode,
-            'is_active': enrollment_data.is_active,
-            'enrollment_date': enrollment_data.creation_date.isoformat(),
-        },
+        'completion_percentage': 0,
+        'duration_spent': None,  # TODO: populate duration_spent (ENT-11477)
+
     }
