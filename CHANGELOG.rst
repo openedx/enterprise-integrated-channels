@@ -17,6 +17,11 @@ Unreleased
 0.1.39 – 2026-02-11
 *******************
 
+* fix: alerting payload structure to match Skillsoft customer request
+
+0.1.39 – 2026-02-11
+*******************
+
 * fix: changing payload structure to match Percipio documentation
 
 0.1.38 – 2026-02-03
