@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.40 – 2026-02-17
+*******************
+
+* fix: alerting payload structure to match Skillsoft customer request
+
 0.1.39 – 2026-02-11
 *******************
 
