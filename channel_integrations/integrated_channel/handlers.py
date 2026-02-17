@@ -201,5 +201,4 @@ def _prepare_enrollment_payload(enrollment_data, user):
         'event_date': enrollment_data.creation_date.isoformat(),
         'completion_percentage': 0,
         'duration_spent': None,  # TODO: populate duration_spent (ENT-11477)
-
     }
