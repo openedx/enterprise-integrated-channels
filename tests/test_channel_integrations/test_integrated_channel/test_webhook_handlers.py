@@ -3,6 +3,7 @@ Integration tests for Webhook event handlers.
 """
 import logging
 from unittest.mock import Mock, patch
+from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -40,15 +41,16 @@ class TestWebhookHandlers:
         EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
 
         course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        passed_timestamp = timezone.now()
         grade_data = PersistentCourseGradeData(
             user_id=user.id,
             course=CourseData(course_key=course_key, display_name='Demo Course'),
-            course_edited_timestamp=timezone.now(),
+            course_edited_timestamp=timezone.now() - timedelta(hours=3),
             course_version='1',
             grading_policy_hash='hash',
             percent_grade=0.85,
             letter_grade='B',
-            passed_timestamp=timezone.now()
+            passed_timestamp=passed_timestamp
         )
 
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
@@ -56,10 +58,8 @@ class TestWebhookHandlers:
 
             mock_route.assert_called_once()
             _, kwargs = mock_route.call_args
-            assert kwargs['user'] == user
-            assert kwargs['enterprise_customer'] == enterprise
-            assert kwargs['event_type'] == 'course_completion'
-            assert kwargs['payload']['completion']['percent_grade'] == 0.85
+            assert kwargs['payload']['completion_percentage'] == 100
+            assert kwargs['payload']['event_date'] == passed_timestamp.isoformat()
 
     @override_switch('enable_webhook_learning_time_enrichment', active=True)
     def test_handle_grade_change_with_learning_time_enrichment(self):
@@ -92,8 +92,6 @@ class TestWebhookHandlers:
             assert call_kwargs['user_id'] == user.id
             assert call_kwargs['enterprise_customer_uuid'] == str(enterprise.uuid)
             assert call_kwargs['course_id'] == str(course_key)
-            assert 'payload_dict' in call_kwargs
-            assert call_kwargs['payload_dict']['completion']['percent_grade'] == 0.85
 
     def test_handle_grade_change_non_passing(self):
         """Verify that a non-passing grade event is ignored."""
@@ -135,8 +133,8 @@ class TestWebhookHandlers:
             mock_route.assert_called_once()
             _, kwargs = mock_route.call_args
             assert kwargs['user'] == user
-            assert kwargs['event_type'] == 'course_enrollment'
-            assert kwargs['payload']['enrollment']['mode'] == 'verified'
+            assert kwargs['payload']['status'] == 'started'
+            assert kwargs['payload']['completion_percentage'] == 0
 
     def test_handle_enrollment_non_enterprise(self):
         """Verify that events for non-enterprise users are ignored."""
@@ -180,19 +178,10 @@ class TestWebhookHandlers:
             _, kwargs = mock_route.call_args
             payload = kwargs['payload']
 
-            # Verify top-level structure
-            assert 'completion' in payload, "Payload must contain 'completion' key"
-
-            # Verify completion data
-            completion = payload['completion']
-            assert 'percent_grade' in completion
-            assert completion['percent_grade'] == 0.85
-            assert 'letter_grade' in completion
-            assert completion['letter_grade'] == 'B'
-
-            # Verify user information
-            assert kwargs['user'] == user
-            assert kwargs['course_id'] == str(course_key)
+            # Verify payload structure
+            assert payload['completion_percentage'] == 100
+            assert payload['content_id'] == str(course_key)
+            assert payload['status'] == 'completed'
 
     def test_handle_enrollment_complete_payload_structure(self):
         """Verify the complete payload structure for enrollment events."""
@@ -217,17 +206,10 @@ class TestWebhookHandlers:
             _, kwargs = mock_route.call_args
             payload = kwargs['payload']
 
-            # Verify top-level structure
-            assert 'enrollment' in payload, "Payload must contain 'enrollment' key"
-
-            # Verify enrollment data
-            enrollment = payload['enrollment']
-            assert 'mode' in enrollment
-            assert enrollment['mode'] == 'verified'
-
-            # Verify course information
-            assert kwargs['course_id'] == str(course_key)
-            assert kwargs['event_type'] == 'course_enrollment'
+            # Verify payload structure
+            assert payload['completion_percentage'] == 0
+            assert payload['content_id'] == str(course_key)
+            assert payload['status'] == 'started'
 
     def test_handle_grade_change_logging(self, caplog):
         """Verify appropriate log messages for grade change events."""

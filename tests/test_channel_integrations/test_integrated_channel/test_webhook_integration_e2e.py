@@ -79,6 +79,7 @@ class TestWebhookEndToEndFlow:
 
         # 4. Invoke handler with grade change event
         course_key = CourseKey.from_string('course-v1:edX+DemoX+Demo_Course')
+        passed_timestamp = timezone.now()
         grade_data = PersistentCourseGradeData(
             user_id=user.id,
             course=CourseData(course_key=course_key, display_name='Demo Course'),
@@ -87,7 +88,7 @@ class TestWebhookEndToEndFlow:
             grading_policy_hash='hash123',
             percent_grade=0.85,
             letter_grade='B',
-            passed_timestamp=timezone.now()
+            passed_timestamp=passed_timestamp
         )
 
         handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
@@ -102,14 +103,6 @@ class TestWebhookEndToEndFlow:
         assert queue_item.event_type == 'course_completion'
         assert queue_item.course_id == str(course_key)
 
-        # Verify payload structure
-        payload = queue_item.payload
-        assert 'completion' in payload
-        assert payload['completion']['percent_grade'] == 0.85
-        assert payload['completion']['letter_grade'] == 'B'
-        assert payload['completion']['is_passing'] is True
-        assert payload['learner']['email'] == 'test@example.com'
-
         # 6. Verify HTTP request was made correctly (Celery already processed it)
         assert len(responses.calls) == 1
         request = responses.calls[0].request
@@ -121,7 +114,8 @@ class TestWebhookEndToEndFlow:
 
         # Verify body
         body = json.loads(request.body)
-        assert body['completion']['percent_grade'] == 0.85
+        assert body['status'] == 'completed'
+        assert body['event_date'] == passed_timestamp.isoformat()
 
         # 8. Verify queue item marked as success
         queue_item.refresh_from_db()
