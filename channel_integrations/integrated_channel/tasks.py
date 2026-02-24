@@ -568,9 +568,66 @@ def enrich_and_send_completion_webhook(user_id, enterprise_customer_uuid, course
         raise
 
 
+def _get_oauth_bearer_token(config):
+    """
+    Fetch OAuth2 bearer token from the configured token API.
+
+    This function calls the token API with client credentials to obtain
+    a bearer token for authenticating webhook requests to the provider
+    (e.g., Skillsoft).
+
+    Args:
+        config: EnterpriseWebhookConfiguration instance
+
+    Returns:
+        str: Bearer token for authorization
+
+    Raises:
+        requests.RequestException: If token API request fails
+        ValueError: If response is invalid or missing token
+    """
+    if not all([config.token_api_url, config.decrypted_client_id, config.decrypted_client_secret]):
+        raise ValueError(
+            "Token API URL, client ID, and client secret must be configured to fetch bearer token"
+        )
+
+    payload = {
+        'grant_type': 'client_credentials',
+        'client_id': config.decrypted_client_id,
+        'client_secret': config.decrypted_client_secret,
+    }
+
+    # Include provider_name if configured (required by some APIs like Skillsoft)
+    if config.provider_name:
+        payload['provider_name'] = config.provider_name
+
+    try:
+        response = requests.post(
+            config.token_api_url,
+            json=payload,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        token = data.get('access_token')
+
+        if not token:
+            raise ValueError(f"Token API response missing 'access_token': {data}")
+
+        return token
+
+    except requests.RequestException as e:
+        LOGGER.error(
+            f"[Webhook] Failed to fetch bearer token from {config.token_api_url}: {e}"
+        )
+        raise
+
+
 @shared_task
 @set_code_owner_attribute
-def process_webhook_queue(queue_item_id):
+def process_webhook_queue(queue_item_id):  # pylint: disable=too-many-statements
     """
     Process a single webhook queue item.
 
@@ -616,8 +673,28 @@ def process_webhook_queue(queue_item_id):
             'User-Agent': 'OpenEdX-Enterprise-Webhook/1.0',
         }
 
-        if config.webhook_auth_token:
+        # Fetch bearer token from OAuth2 token API if configured
+        if config.token_api_url and config.decrypted_client_id and config.decrypted_client_secret:
+            try:
+                bearer_token = _get_oauth_bearer_token(config)
+                headers['Authorization'] = f"Bearer {bearer_token}"
+                LOGGER.info(
+                    f"[Webhook] Successfully fetched OAuth bearer token for item {queue_item.id} "
+                    f"from {config.token_api_url}"
+                )
+            except Exception as token_error:  # pylint: disable=broad-exception-caught
+                LOGGER.error(
+                    f"[Webhook] Failed to fetch bearer token for item {queue_item.id}: {token_error}",
+                    exc_info=True
+                )
+                queue_item.status = 'failed'
+                queue_item.error_message = f"Token API error: {str(token_error)}"
+                queue_item.save()
+                return
+        elif config.webhook_auth_token:
+            # Fallback to static token if configured (deprecated)
             headers['Authorization'] = f"Bearer {config.webhook_auth_token}"
+            LOGGER.info(f"[Webhook] Using static auth token for item {queue_item.id}")
 
         response = requests.post(
             queue_item.webhook_url,

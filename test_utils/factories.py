@@ -39,10 +39,12 @@ from channel_integrations.degreed2.models import Degreed2EnterpriseCustomerConfi
 
 from channel_integrations.integrated_channel.models import (
     ContentMetadataItemTransmission,
+    EnterpriseWebhookConfiguration,
     GenericEnterpriseCustomerPluginConfiguration,
     GenericLearnerDataTransmissionAudit,
     LearnerDataTransmissionAudit,
     OrphanedContentTransmissions,
+    WebhookTransmissionQueue,
 )
 from channel_integrations.moodle.models import MoodleEnterpriseCustomerConfiguration
 from channel_integrations.sap_success_factors.models import (
@@ -658,3 +660,63 @@ class OrphanedContentTransmissionsFactory(factory.django.DjangoModelFactory):
     plugin_configuration_id = factory.LazyAttribute(lambda x: FAKER.random_int(min=1))
     resolved = False
     transmission = factory.Iterator(ContentMetadataItemTransmission.objects.all())
+
+
+class EnterpriseWebhookConfigurationFactory(factory.django.DjangoModelFactory):
+    """
+    ``EnterpriseWebhookConfiguration`` factory.
+
+    Creates an instance of ``EnterpriseWebhookConfiguration`` with minimal boilerplate.
+    """
+
+    class Meta:
+        """
+        Meta for ``EnterpriseWebhookConfigurationFactory``.
+        """
+        model = EnterpriseWebhookConfiguration
+
+    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
+    region = 'US'
+    webhook_url = factory.LazyAttribute(lambda x: FAKER.url().replace('http://', 'https://'))
+    token_api_url = factory.LazyAttribute(lambda x: FAKER.url().replace('http://', 'https://'))
+    decrypted_client_id = factory.LazyAttribute(lambda x: FAKER.uuid4())
+    decrypted_client_secret = factory.LazyAttribute(lambda x: FAKER.uuid4())
+    provider_name = factory.LazyAttribute(lambda x: FAKER.company())
+    webhook_timeout_seconds = 30
+    webhook_retry_attempts = 3
+    max_requests_per_minute = 100
+    active = True
+    enrollment_events_processing = True
+
+
+class WebhookTransmissionQueueFactory(factory.django.DjangoModelFactory):
+    """
+    ``WebhookTransmissionQueue`` factory.
+
+    Creates an instance of ``WebhookTransmissionQueue`` with minimal boilerplate.
+    """
+
+    class Meta:
+        """
+        Meta for ``WebhookTransmissionQueueFactory``.
+        """
+        model = WebhookTransmissionQueue
+
+    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
+    user = factory.SubFactory(UserFactory)
+    course_id = factory.LazyAttribute(lambda x: FAKER.slug())
+    event_type = 'course_completion'
+    user_region = 'US'
+    webhook_url = factory.LazyAttribute(lambda x: FAKER.url().replace('http://', 'https://'))
+    payload = {
+        'content_id': 'course-v1:edX+DemoX+Demo',
+        'user': 'test_user',
+        'status': 'completed',
+        'event_date': '2024-01-01T00:00:00Z',
+        'completion_percentage': 100,
+    }
+    status = 'pending'
+    deduplication_key = factory.LazyAttribute(
+        lambda x: f"{FAKER.uuid4()}:{FAKER.random_int()}:{FAKER.slug()}:course_completion:{FAKER.date()}"
+    )
+    attempt_count = 0

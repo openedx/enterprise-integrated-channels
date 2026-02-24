@@ -179,6 +179,36 @@ class EnterpriseWebhookConfigurationAdmin(admin.ModelAdmin):
         'modified',
     )
 
+    fieldsets = (
+        ('Enterprise Customer', {
+            'fields': ('enterprise_customer', 'region', 'active')
+        }),
+        ('Webhook Configuration', {
+            'fields': ('webhook_url', 'webhook_timeout_seconds', 'webhook_retry_attempts', 'max_requests_per_minute')
+        }),
+        ('OAuth2 Authentication (Recommended)', {
+            'fields': (
+                'token_api_url', 'decrypted_client_id', 'decrypted_client_secret', 'provider_name'
+            ),
+            'description': (
+                'Configure OAuth2 client credentials to dynamically fetch bearer tokens '
+                '(e.g., for Skillsoft).'
+            )
+        }),
+        ('Legacy Authentication', {
+            'fields': ('webhook_auth_token',),
+            'classes': ('collapse',),
+            'description': 'Deprecated: Use OAuth2 authentication instead of static tokens.'
+        }),
+        ('Event Processing', {
+            'fields': ('enrollment_events_processing',)
+        }),
+        ('Timestamps', {
+            'fields': ('created', 'modified'),
+            'classes': ('collapse',)
+        }),
+    )
+
     list_per_page = 50
 
 
