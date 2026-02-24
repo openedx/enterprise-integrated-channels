@@ -403,3 +403,123 @@ class TestWebhookIntegration:
 
         # Webhook config should be deleted
         assert not EnterpriseWebhookConfiguration.objects.filter(id=config_id).exists()
+
+    def test_oauth2_client_credentials_encryption(self):
+        """Verify that OAuth2 client credentials are encrypted at rest."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            decrypted_client_id='test_client_id_123',
+            decrypted_client_secret='test_secret_456'
+        )
+
+        # Retrieve from database
+        config.refresh_from_db()
+
+        # Decrypted values should match
+        assert config.decrypted_client_id == 'test_client_id_123'
+        assert config.decrypted_client_secret == 'test_secret_456'
+
+        # Encrypted properties should return encrypted strings
+        encrypted_id = config.encrypted_client_id
+        encrypted_secret = config.encrypted_client_secret
+
+        assert encrypted_id != 'test_client_id_123'
+        assert encrypted_secret != 'test_secret_456'
+        assert encrypted_id is not None
+        assert encrypted_secret is not None
+
+    def test_oauth2_client_credentials_setter(self):
+        """Verify that encryption setters work correctly."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook'
+        )
+
+        # Use setters
+        config.encrypted_client_id = 'new_client_id'
+        config.encrypted_client_secret = 'new_secret'
+        config.save()
+
+        config.refresh_from_db()
+        assert config.decrypted_client_id == 'new_client_id'
+        assert config.decrypted_client_secret == 'new_secret'
+
+    def test_oauth2_fields_optional(self):
+        """Verify that OAuth2 fields are optional."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            webhook_auth_token='static_token'  # Using static token instead
+        )
+
+        config.refresh_from_db()
+        assert config.token_api_url is None
+        assert config.decrypted_client_id is None
+        assert config.decrypted_client_secret is None
+        assert config.provider_name is None
+        assert config.webhook_auth_token == 'static_token'
+
+    def test_oauth2_complete_configuration(self):
+        """Verify complete OAuth2 configuration."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='EU',
+            webhook_url='https://api.skillsoft.com/webhook',
+            token_api_url='https://api.skillsoft.com/oauth/token',
+            decrypted_client_id='skillsoft_client_123',
+            decrypted_client_secret='skillsoft_secret_456',
+            provider_name='MyOrganization',
+            webhook_timeout_seconds=45,
+            webhook_retry_attempts=5
+        )
+
+        config.refresh_from_db()
+        assert config.token_api_url == 'https://api.skillsoft.com/oauth/token'
+        assert config.decrypted_client_id == 'skillsoft_client_123'
+        assert config.decrypted_client_secret == 'skillsoft_secret_456'
+        assert config.provider_name == 'MyOrganization'
+        assert config.webhook_timeout_seconds == 45
+        assert config.webhook_retry_attempts == 5
+
+    def test_encrypted_properties_with_none_values(self):
+        """Verify encrypted properties handle None values correctly."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            decrypted_client_id=None,
+            decrypted_client_secret=None
+        )
+
+        # Should return None without errors
+        assert config.encrypted_client_id is None
+        assert config.encrypted_client_secret is None
+
+    def test_oauth2_and_static_token_both_configured(self):
+        """Verify that both OAuth2 and static token can be configured (for migration)."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='client_id',
+            decrypted_client_secret='client_secret',
+            webhook_auth_token='deprecated_static_token'
+        )
+
+        config.refresh_from_db()
+        # Both should be retrievable
+        assert config.token_api_url == 'https://auth.example.com/token'
+        assert config.decrypted_client_id == 'client_id'
+        assert config.webhook_auth_token == 'deprecated_static_token'
+

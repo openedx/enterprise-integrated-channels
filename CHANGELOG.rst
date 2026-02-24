@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.41 – 2026-02-24
+*******************
+
+* feat: feat: add token auth webhook call
+
 0.1.40 – 2026-02-17
 *******************
 

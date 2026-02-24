@@ -14,10 +14,12 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from enterprise.constants import TRANSMISSION_MARK_CREATE, TRANSMISSION_MARK_DELETE, TRANSMISSION_MARK_UPDATE
 from enterprise.models import EnterpriseCustomer, EnterpriseCustomerCatalog
 from enterprise.utils import localized_utcnow
+from fernet_fields import EncryptedCharField
 from jsonfield.fields import JSONField
 from model_utils.models import TimeStampedModel
 
@@ -1053,7 +1055,33 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         max_length=255,
         blank=True,
         null=True,
-        help_text='Bearer token for webhook authentication'
+        help_text='(Deprecated) Static bearer token for webhook authentication. Use client credentials instead.'
+    )
+    token_api_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text='OAuth2 token endpoint URL to fetch bearer token (e.g., Skillsoft Provider API)'
+    )
+    decrypted_client_id = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Client ID",
+        help_text="OAuth2 Client ID for token API authentication. Encrypted at rest."
+    )
+    decrypted_client_secret = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Client Secret",
+        help_text="OAuth2 Client Secret for token API authentication. Encrypted at rest."
+    )
+    provider_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Provider name to be sent to the token API (e.g., for Skillsoft)'
     )
     webhook_timeout_seconds = models.IntegerField(
         default=30,
@@ -1130,6 +1158,46 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
             except ValueError:
                 # Hostname is not an IP address, which is fine
                 pass
+
+    @property
+    def encrypted_client_id(self):
+        """
+        Return encrypted client ID as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_client_id field. This method will encrypt the ID again before sending.
+        """
+        if self.decrypted_client_id:
+            return force_str(
+                self._meta.get_field('decrypted_client_id').fernet.encrypt(
+                    force_bytes(self.decrypted_client_id)
+                )
+            )
+        return self.decrypted_client_id
+
+    @encrypted_client_id.setter
+    def encrypted_client_id(self, value):
+        """Set the encrypted client ID."""
+        self.decrypted_client_id = value
+
+    @property
+    def encrypted_client_secret(self):
+        """
+        Return encrypted client secret as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_client_secret field. This method will encrypt the secret again before sending.
+        """
+        if self.decrypted_client_secret:
+            return force_str(
+                self._meta.get_field('decrypted_client_secret').fernet.encrypt(
+                    force_bytes(self.decrypted_client_secret)
+                )
+            )
+        return self.decrypted_client_secret
+
+    @encrypted_client_secret.setter
+    def encrypted_client_secret(self, value):
+        """Set the encrypted client secret."""
+        self.decrypted_client_secret = value
 
 
 class WebhookTransmissionQueue(TimeStampedModel):

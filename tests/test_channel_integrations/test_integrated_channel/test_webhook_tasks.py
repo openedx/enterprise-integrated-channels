@@ -530,3 +530,303 @@ class TestWebhookTasks:
         cancelled_queue_item.refresh_from_db()
         assert cancelled_queue_item.attempt_count == 2
         assert cancelled_queue_item.status == 'cancelled'
+
+
+@pytest.mark.django_db
+class TestOAuth2TokenFetching:
+    """Tests for OAuth2 token fetching functionality."""
+
+    @responses.activate
+    def test_get_oauth_bearer_token_success(self):
+        """Verify successful OAuth2 token fetching."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='test_client_id',
+            decrypted_client_secret='test_client_secret',
+            provider_name='TestProvider'
+        )
+
+        # Mock token API response
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            json={
+                'access_token': 'test_bearer_token_12345',
+                'token_type': 'Bearer',
+                'expires_in': 3600
+            },
+            status=200
+        )
+
+        token = _get_oauth_bearer_token(config)
+
+        assert token == 'test_bearer_token_12345'
+
+        # Verify the request payload
+        assert len(responses.calls) == 1
+        request_body = responses.calls[0].request.body
+        assert b'grant_type' in request_body
+        assert b'client_credentials' in request_body
+        assert b'test_client_id' in request_body
+        assert b'test_client_secret' in request_body
+        assert b'TestProvider' in request_body
+
+    @responses.activate
+    def test_get_oauth_bearer_token_without_provider_name(self):
+        """Verify OAuth2 token fetching works without provider_name."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='test_client_id',
+            decrypted_client_secret='test_client_secret',
+            provider_name=None  # No provider name
+        )
+
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            json={'access_token': 'token_without_provider', 'expires_in': 3600},
+            status=200
+        )
+
+        token = _get_oauth_bearer_token(config)
+
+        assert token == 'token_without_provider'
+        request_body = responses.calls[0].request.body
+        assert b'provider_name' not in request_body
+
+    @responses.activate
+    def test_get_oauth_bearer_token_api_error(self):
+        """Verify proper error handling when token API returns error."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='test_client_id',
+            decrypted_client_secret='test_client_secret'
+        )
+
+        # Mock 401 Unauthorized error
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            json={'error': 'invalid_client'},
+            status=401
+        )
+
+        with pytest.raises(requests.exceptions.HTTPError):
+            _get_oauth_bearer_token(config)
+
+    @responses.activate
+    def test_get_oauth_bearer_token_missing_access_token(self):
+        """Verify error handling when response is missing access_token."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='test_client_id',
+            decrypted_client_secret='test_client_secret'
+        )
+
+        # Mock response without access_token
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            json={'token_type': 'Bearer', 'expires_in': 3600},
+            status=200
+        )
+
+        with pytest.raises(ValueError, match="Token API response missing 'access_token'"):
+            _get_oauth_bearer_token(config)
+
+    def test_get_oauth_bearer_token_missing_credentials(self):
+        """Verify error when OAuth2 credentials are not configured."""
+        enterprise = EnterpriseCustomerFactory()
+
+        # Test missing token_api_url
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url=None,
+            decrypted_client_id='test_client_id',
+            decrypted_client_secret='test_client_secret'
+        )
+
+        with pytest.raises(ValueError, match="Token API URL, client ID, and client secret must be configured"):
+            _get_oauth_bearer_token(config)
+
+    @responses.activate
+    def test_get_oauth_bearer_token_timeout(self):
+        """Verify timeout handling for token API."""
+        enterprise = EnterpriseCustomerFactory()
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='test_client_id',
+            decrypted_client_secret='test_client_secret'
+        )
+
+        # Mock timeout
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            body=requests.exceptions.Timeout('Connection timeout')
+        )
+
+        with pytest.raises(requests.exceptions.Timeout):
+            _get_oauth_bearer_token(config)
+
+    @responses.activate
+    def test_webhook_delivery_with_oauth2(self):
+        """Integration test: webhook delivery using OAuth2 token."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='client_123',
+            decrypted_client_secret='secret_456',
+            provider_name='Skillsoft'
+        )
+
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-v1:edX+DemoX+Demo',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'content_id': 'course-v1:edX+DemoX+Demo', 'status': 'completed'},
+            deduplication_key='oauth-test-key'
+        )
+
+        # Mock token API
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            json={'access_token': 'oauth_token_xyz', 'expires_in': 3600},
+            status=200
+        )
+
+        # Mock webhook endpoint
+        responses.add(
+            responses.POST,
+            'https://example.com/webhook',
+            json={'status': 'received'},
+            status=200
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+        assert queue_item.attempt_count == 1
+
+        # Verify token API was called
+        assert len(responses.calls) == 2
+        token_request = responses.calls[0]
+        assert 'auth.example.com/token' in token_request.request.url
+
+        # Verify webhook was called with OAuth2 token
+        webhook_request = responses.calls[1]
+        assert webhook_request.request.headers['Authorization'] == 'Bearer oauth_token_xyz'
+
+    @responses.activate
+    def test_webhook_fallback_to_static_token(self):
+        """Verify fallback to static token when OAuth2 not configured."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+
+        # Config with only static token (no OAuth2)
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            webhook_auth_token='static_token_123',
+            token_api_url=None  # No OAuth2 configured
+        )
+
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='static-token-key'
+        )
+
+        # Mock webhook endpoint
+        responses.add(
+            responses.POST,
+            'https://example.com/webhook',
+            json={'status': 'ok'},
+            status=200
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+
+        # Verify static token was used
+        assert len(responses.calls) == 1
+        assert responses.calls[0].request.headers['Authorization'] == 'Bearer static_token_123'
+
+    @responses.activate
+    def test_webhook_oauth2_token_fetch_failure_marks_failed(self):
+        """Verify that token fetch failure marks webhook as failed."""
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            token_api_url='https://auth.example.com/token',
+            decrypted_client_id='test_client',
+            decrypted_client_secret='test_secret'
+        )
+
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-id',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='token-fail-key'
+        )
+
+        # Mock token API failure
+        responses.add(
+            responses.POST,
+            'https://auth.example.com/token',
+            json={'error': 'server_error'},
+            status=500
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'failed'
+        assert 'Token API error' in queue_item.error_message
+        assert queue_item.http_status_code is None  # Webhook was never called
+
