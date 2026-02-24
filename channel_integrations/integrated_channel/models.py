@@ -1077,6 +1077,18 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         default=True,
         help_text='Enable processing of enrollment events'
     )
+    client_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Percipio OAuth2 client ID'
+    )
+    client_secret = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Percipio OAuth2 client secret'
+    )
 
     class Meta:
         app_label = 'channel_integration'

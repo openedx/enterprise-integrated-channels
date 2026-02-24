@@ -578,7 +578,7 @@ def process_webhook_queue(queue_item_id):
     This task is routed to 'edx.lms.enterprise.webhooks' queue.
 
     Args:
-        queue_item_id: ID of e item
+        queue_item_id: ID of WebhookTransmissionQueue item
     """
     try:
         queue_item = WebhookTransmissionQueue.objects.get(id=queue_item_id)
@@ -621,13 +621,14 @@ def process_webhook_queue(queue_item_id):
         percipio_client_secret = getattr(settings, 'PERCIPIO_CLIENT_SECRET', None)
 
         if percipio_client_id and percipio_client_secret:
-            token = PercipioAuthClient().get_token(queue_item.user_region)
+            token = PercipioAuthClient().get_token(queue_item.user_region, percipio_client_id, percipio_client_secret)
             headers['Authorization'] = f"Bearer {token}"
         elif config.webhook_auth_token:
             # TODO: Remove this fallback once PERCIPIO_CLIENT_ID /
             # PERCIPIO_CLIENT_SECRET are configured in all environments and the
             # static webhook_auth_token field can be retired.
             headers['Authorization'] = f"Bearer {config.webhook_auth_token}"
+
 
         response = requests.post(
             queue_item.webhook_url,

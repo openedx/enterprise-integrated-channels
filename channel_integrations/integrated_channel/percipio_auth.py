@@ -4,9 +4,8 @@ Percipio OAuth2 authentication client.
 Fetches and caches short-lived bearer tokens from the Percipio token endpoint
 using the OAuth2 client credentials grant flow.
 
-Credentials (PERCIPIO_CLIENT_ID, PERCIPIO_CLIENT_SECRET) are global/shared
-across all enterprise customers and are read from Django settings and stored as
-environment variables in edx-internal.
+Credentials (client_id, client_secret) are stored per enterprise customer on
+the EnterpriseWebhookConfiguration model and passed directly to get_token().
 
 Token endpoint URLs differ by geographic region:
   - US / OTHER → https://oauth2-provider.percipio.com/
@@ -27,7 +26,7 @@ DEFAULT_PERCIPIO_TOKEN_URLS = {
     'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
 }
 
-_CACHE_KEY_TEMPLATE = 'percipio_auth_token_{region}'
+_CACHE_KEY_TEMPLATE = 'percipio_auth_token_{region}_{client_id}'
 
 # Fetch a fresh token this many seconds before the reported expiry to avoid
 # racing the clock and sending a request with an already-expired token.
@@ -38,17 +37,17 @@ class PercipioAuthClient:
     """
     Retrieves OAuth2 bearer tokens from the Percipio token endpoint.
 
-    Tokens are cached per region in the Django cache backend so that a new
-    HTTP round-trip to Percipio is only made when the cached token has
-    expired (or is about to expire).
+    Tokens are cached per region and client_id in the Django cache backend so
+    that a new HTTP round-trip to Percipio is only made when the cached token
+    has expired (or is about to expire).
 
     Usage::
 
-        token = PercipioAuthClient().get_token('US')
+        token = PercipioAuthClient().get_token('US', config.client_id, config.client_secret)
         headers['Authorization'] = f'Bearer {token}'
     """
 
-    def get_token(self, region: str) -> str:
+    def get_token(self, region: str, client_id: str, client_secret: str) -> str:
         """
         Return a valid bearer token for *region*.
 
@@ -59,6 +58,10 @@ class PercipioAuthClient:
         Args:
             region: One of 'US', 'EU', 'OTHER' — matches the
                 ``region`` field on ``EnterpriseWebhookConfiguration``.
+            client_id: The Percipio OAuth2 client ID from
+                ``EnterpriseWebhookConfiguration.client_id``.
+            client_secret: The Percipio OAuth2 client secret from
+                ``EnterpriseWebhookConfiguration.client_secret``.
 
         Returns:
             A bearer token string suitable for use in an Authorization header.
@@ -69,14 +72,14 @@ class PercipioAuthClient:
             KeyError: If the token response body is missing ``access_token``
                 or ``expires_in``.
         """
-        cache_key = _CACHE_KEY_TEMPLATE.format(region=region)
+        cache_key = _CACHE_KEY_TEMPLATE.format(region=region, client_id=client_id)
         cached_token = cache.get(cache_key)
         if cached_token:
             LOGGER.debug('[Percipio] Using cached auth token for region %s', region)
             return cached_token
 
         LOGGER.info('[Percipio] Fetching new auth token for region %s', region)
-        access_token, expires_in = self._fetch_token(region)
+        access_token, expires_in = self._fetch_token(region, client_id, client_secret)
 
         # Cache the token until just before it expires so we never hand out a
         # token that is about to become invalid.
@@ -85,13 +88,15 @@ class PercipioAuthClient:
 
         return access_token
 
-    def _fetch_token(self, region: str) -> tuple:
+    def _fetch_token(self, region: str, client_id: str, client_secret: str) -> tuple:
         """
         POST to the Percipio OAuth2 token endpoint and return the token.
 
         Args:
             region: Geographic region string used to select the correct
                 token endpoint URL.
+            client_id: The Percipio OAuth2 client ID.
+            client_secret: The Percipio OAuth2 client secret.
 
         Returns:
             A (access_token, expires_in) tuple where *expires_in* is an
@@ -102,9 +107,6 @@ class PercipioAuthClient:
             KeyError: If ``access_token`` or ``expires_in`` are absent from
                 the response JSON.
         """
-        client_id = getattr(settings, 'PERCIPIO_CLIENT_ID', '')
-        client_secret = getattr(settings, 'PERCIPIO_CLIENT_SECRET', '')
-
         # Allow the token URL mapping to be overridden in settings for
         # staging / test environments.
         token_urls = getattr(settings, 'PERCIPIO_TOKEN_URLS', DEFAULT_PERCIPIO_TOKEN_URLS)
