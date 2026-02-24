@@ -616,7 +616,17 @@ def process_webhook_queue(queue_item_id):
             'User-Agent': 'OpenEdX-Enterprise-Webhook/1.0',
         }
 
-        if config.webhook_auth_token:
+        percipio_client_id = getattr(settings, 'PERCIPIO_CLIENT_ID', None)
+        percipio_client_secret = getattr(settings, 'PERCIPIO_CLIENT_SECRET', None)
+
+        if percipio_client_id and percipio_client_secret:
+            from channel_integrations.integrated_channel.percipio_auth import PercipioAuthClient  # pylint: disable=import-outside-toplevel
+            token = PercipioAuthClient().get_token(queue_item.user_region)
+            headers['Authorization'] = f"Bearer {token}"
+        elif config.webhook_auth_token:
+            # TODO: Remove this fallback once PERCIPIO_CLIENT_ID /
+            # PERCIPIO_CLIENT_SECRET are configured in all environments and the
+            # static webhook_auth_token field can be retired.
             headers['Authorization'] = f"Bearer {config.webhook_auth_token}"
 
         response = requests.post(

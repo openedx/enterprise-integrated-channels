@@ -8,6 +8,7 @@ import pytest
 import requests
 import responses
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 
 from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration, WebhookTransmissionQueue
 from channel_integrations.integrated_channel.tasks import process_webhook_queue
@@ -530,3 +531,204 @@ class TestWebhookTasks:
         cancelled_queue_item.refresh_from_db()
         assert cancelled_queue_item.attempt_count == 2
         assert cancelled_queue_item.status == 'cancelled'
+
+
+@pytest.mark.django_db
+class TestWebhookTasksPercipioAuth:
+    """Tests for the Percipio OAuth2 token flow in process_webhook_queue."""
+
+    @responses.activate
+    @override_settings(
+        PERCIPIO_CLIENT_ID='test-client-id',
+        PERCIPIO_CLIENT_SECRET='test-client-secret',
+    )
+    def test_process_webhook_queue_uses_percipio_oauth(self):
+        """
+        When PERCIPIO_CLIENT_ID and PERCIPIO_CLIENT_SECRET are configured,
+        the Authorization header must use the token fetched from PercipioAuthClient,
+        NOT the static webhook_auth_token.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_oauth')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            # Static token present but should be ignored in favour of OAuth
+            webhook_auth_token='old-static-token',
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-oauth',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key-oauth-1',
+        )
+
+        # Mock the Percipio token endpoint
+        from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
+        responses.add(
+            responses.POST,
+            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            json={'access_token': 'percipio-oauth-token', 'expires_in': 3600},
+            status=200,
+        )
+        # Mock the actual webhook endpoint
+        responses.add(
+            responses.POST,
+            config.webhook_url,
+            json={'status': 'ok'},
+            status=200,
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+
+        # The webhook call is the second call (after the token fetch)
+        webhook_call = responses.calls[1]
+        assert webhook_call.request.headers['Authorization'] == 'Bearer percipio-oauth-token'
+        # Static token must NOT be used
+        assert webhook_call.request.headers['Authorization'] != 'Bearer old-static-token'
+
+    @responses.activate
+    @override_settings(
+        PERCIPIO_CLIENT_ID='',
+        PERCIPIO_CLIENT_SECRET='',
+    )
+    def test_process_webhook_queue_falls_back_to_static_token(self):
+        """
+        When PERCIPIO_CLIENT_ID / PERCIPIO_CLIENT_SECRET are empty (not configured),
+        the task falls back to the static webhook_auth_token on the config.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_fallback')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            webhook_auth_token='fallback-static-token',
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-fallback',
+            event_type='course_enrollment',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key-fallback-1',
+        )
+
+        responses.add(
+            responses.POST,
+            config.webhook_url,
+            json={'status': 'ok'},
+            status=200,
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+        assert responses.calls[0].request.headers['Authorization'] == 'Bearer fallback-static-token'
+
+    @responses.activate
+    @override_settings(
+        PERCIPIO_CLIENT_ID='test-client-id',
+        PERCIPIO_CLIENT_SECRET='test-client-secret',
+    )
+    def test_process_webhook_queue_fails_when_token_fetch_fails(self):
+        """
+        When the Percipio token endpoint returns an error, the queue item
+        should be marked as failed and scheduled for retry.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_tokenfail')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url='https://example.com/webhook',
+            webhook_retry_attempts=3,
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-tokenfail',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key-tokenfail-1',
+        )
+
+        from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
+        responses.add(
+            responses.POST,
+            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            json={'error': 'invalid_client'},
+            status=401,
+        )
+
+        with patch(
+            'channel_integrations.integrated_channel.tasks.process_webhook_queue.apply_async'
+        ) as mock_apply:
+            process_webhook_queue(queue_item.id)
+
+            queue_item.refresh_from_db()
+            assert queue_item.status == 'pending'  # Scheduled for retry
+            assert queue_item.attempt_count == 1
+            mock_apply.assert_called_once()
+
+    @responses.activate
+    @override_settings(
+        PERCIPIO_CLIENT_ID='test-client-id',
+        PERCIPIO_CLIENT_SECRET='test-client-secret',
+    )
+    def test_process_webhook_queue_eu_region_uses_eu_token_endpoint(self):
+        """
+        EU-region queue items must fetch a token from the EU token endpoint,
+        not the US endpoint.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_eu')
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='EU',
+            webhook_url='https://example.com/webhook',
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-eu',
+            event_type='course_completion',
+            user_region='EU',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key-eu-oauth',
+        )
+
+        from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
+        responses.add(
+            responses.POST,
+            DEFAULT_PERCIPIO_TOKEN_URLS['EU'],
+            json={'access_token': 'eu-token', 'expires_in': 3600},
+            status=200,
+        )
+        responses.add(
+            responses.POST,
+            config.webhook_url,
+            json={'status': 'ok'},
+            status=200,
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+        # First call must have gone to the EU token endpoint
+        assert DEFAULT_PERCIPIO_TOKEN_URLS['EU'] in responses.calls[0].request.url
