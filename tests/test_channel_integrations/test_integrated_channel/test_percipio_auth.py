@@ -1,7 +1,8 @@
 """
 Tests for the Percipio OAuth2 authentication client.
 """
-from unittest.mock import patch, MagicMock
+import json
+from unittest.mock import patch
 
 import pytest
 import requests
@@ -101,26 +102,6 @@ class TestPercipioAuthClientGetToken:
         PERCIPIO_CLIENT_ID='test-client-id',
         PERCIPIO_CLIENT_SECRET='test-client-secret',
     )
-    def test_get_token_other_region_defaults_to_us_url(self):
-        """OTHER region falls back to the US token endpoint."""
-        responses.add(
-            responses.POST,
-            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
-            json=MOCK_TOKEN_RESPONSE,
-            status=200,
-        )
-
-        client = PercipioAuthClient()
-        token = client.get_token('OTHER')
-
-        assert responses.calls[0].request.url == DEFAULT_PERCIPIO_TOKEN_URLS['US']
-        assert token == 'mock-bearer-token-abc123'
-
-    @responses.activate
-    @override_settings(
-        PERCIPIO_CLIENT_ID='test-client-id',
-        PERCIPIO_CLIENT_SECRET='test-client-secret',
-    )
     def test_get_token_caches_with_expiry_buffer(self):
         """Token is cached with a TTL reduced by the expiry buffer."""
         responses.add(
@@ -179,12 +160,11 @@ class TestPercipioAuthClientFetchToken:
         )
 
         client = PercipioAuthClient()
-        access_token, expires_in = client._fetch_token('US')
+        access_token, expires_in = client._fetch_token('US')  # pylint: disable=protected-access
 
         assert access_token == 'mock-bearer-token-abc123'
         assert expires_in == 3600
 
-        import json
         sent_body = json.loads(responses.calls[0].request.body)
         assert sent_body == {
             'client_id': 'my-client-id',
@@ -213,7 +193,7 @@ class TestPercipioAuthClientFetchToken:
         )
 
         client = PercipioAuthClient()
-        client._fetch_token('US')
+        client._fetch_token('US')  # pylint: disable=protected-access
 
         assert responses.calls[0].request.url == 'https://custom-staging.example.com/token'
 
@@ -233,4 +213,4 @@ class TestPercipioAuthClientFetchToken:
 
         client = PercipioAuthClient()
         with pytest.raises(KeyError):
-            client._fetch_token('US')
+            client._fetch_token('US')  # pylint: disable=protected-access

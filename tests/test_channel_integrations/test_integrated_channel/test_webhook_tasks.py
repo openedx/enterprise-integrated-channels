@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 
 from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration, WebhookTransmissionQueue
+from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
 from channel_integrations.integrated_channel.tasks import process_webhook_queue
 from test_utils.factories import EnterpriseCustomerFactory
 
@@ -569,7 +570,6 @@ class TestWebhookTasksPercipioAuth:
         )
 
         # Mock the Percipio token endpoint
-        from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
         responses.add(
             responses.POST,
             DEFAULT_PERCIPIO_TOKEN_URLS['US'],
@@ -666,7 +666,6 @@ class TestWebhookTasksPercipioAuth:
             deduplication_key='key-tokenfail-1',
         )
 
-        from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
         responses.add(
             responses.POST,
             DEFAULT_PERCIPIO_TOKEN_URLS['US'],
@@ -712,7 +711,6 @@ class TestWebhookTasksPercipioAuth:
             deduplication_key='key-eu-oauth',
         )
 
-        from channel_integrations.integrated_channel.percipio_auth import DEFAULT_PERCIPIO_TOKEN_URLS
         responses.add(
             responses.POST,
             DEFAULT_PERCIPIO_TOKEN_URLS['EU'],

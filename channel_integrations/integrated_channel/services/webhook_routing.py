@@ -57,7 +57,7 @@ def route_webhook_by_region(user, enterprise_customer, course_id, event_type, pa
             f"in region {region} (or OTHER)"
         )
 
-    if event_type == 'course_enrollment' and not config.enrollment_events_processing:
+    if event_type == 'course_enrollment' and not config.enable_enrollment_events_processing:
         raise NoWebhookConfigured(
             f"Enrollment events processing disabled for enterprise {enterprise_customer.uuid} "
             f"in region {region} (or OTHER)"

@@ -27,6 +27,7 @@ from channel_integrations.integrated_channel.models import (
     OrphanedContentTransmissions,
     WebhookTransmissionQueue,
 )
+from channel_integrations.integrated_channel.percipio_auth import PercipioAuthClient
 from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
 from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
 from channel_integrations.utils import generate_formatted_log
@@ -577,7 +578,7 @@ def process_webhook_queue(queue_item_id):
     This task is routed to 'edx.lms.enterprise.webhooks' queue.
 
     Args:
-        queue_item_id: ID of WebhookTransmissionQueue item
+        queue_item_id: ID of e item
     """
     try:
         queue_item = WebhookTransmissionQueue.objects.get(id=queue_item_id)
@@ -620,7 +621,6 @@ def process_webhook_queue(queue_item_id):
         percipio_client_secret = getattr(settings, 'PERCIPIO_CLIENT_SECRET', None)
 
         if percipio_client_id and percipio_client_secret:
-            from channel_integrations.integrated_channel.percipio_auth import PercipioAuthClient  # pylint: disable=import-outside-toplevel
             token = PercipioAuthClient().get_token(queue_item.user_region)
             headers['Authorization'] = f"Bearer {token}"
         elif config.webhook_auth_token:

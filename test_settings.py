@@ -206,7 +206,7 @@ PERCIPIO_CLIENT_SECRET = ''
 PERCIPIO_TOKEN_URLS = {
     'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
     'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
-    'OTHER': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
+    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
 }
 
 #################################### FEATURES ####################################

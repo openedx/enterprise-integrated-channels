@@ -24,8 +24,7 @@ LOGGER = logging.getLogger(__name__)
 DEFAULT_PERCIPIO_TOKEN_URLS = {
     'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
     'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
-    # OTHER default to the US endpoint
-    'OTHER': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
+    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
 }
 
 _CACHE_KEY_TEMPLATE = 'percipio_auth_token_{region}'
@@ -58,7 +57,7 @@ class PercipioAuthClient:
         and returns it.
 
         Args:
-            region: One of 'US', 'EU', 'UK', 'OTHER' — matches the
+            region: One of 'US', 'EU', 'OTHER' — matches the
                 ``region`` field on ``EnterpriseWebhookConfiguration``.
 
         Returns:

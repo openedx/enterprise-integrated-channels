@@ -300,16 +300,16 @@ class TestWebhookRegionRoutingEdgeCases:
             provider='tpa-saml',
             uid='explicit-uid',
             extra_data={
-                'region': 'UK',  # Explicit region (Priority #1)
+                'region': 'EU',  # Explicit region (Priority #1)
                 'country': 'US'  # Country that would map to US (Priority #2)
             }
         )
 
-        # UK config
-        uk_config = EnterpriseWebhookConfiguration.objects.create(
+        # EU config
+        eu_config = EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
-            region='UK',
-            webhook_url='https://uk.example.com/webhook',
+            region='EU',
+            webhook_url='https://eu.example.com/webhook',
             active=True
         )
 
@@ -321,11 +321,11 @@ class TestWebhookRegionRoutingEdgeCases:
             active=True
         )
 
-        # Mock UK endpoint
+        # Mock EU endpoint
         responses.add(
             responses.POST,
-            uk_config.webhook_url,
-            json={'region': 'UK'},
+            eu_config.webhook_url,
+            json={'region': 'EU'},
             status=200
         )
 
@@ -345,15 +345,15 @@ class TestWebhookRegionRoutingEdgeCases:
         # Invoke handler
         handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
 
-        # Verify routed to UK (explicit region) not US (country)
+        # Verify routed to EU (explicit region) not US (country)
         queue_item = WebhookTransmissionQueue.objects.get(user=user)
-        assert queue_item.user_region == 'UK'
-        assert queue_item.webhook_url == uk_config.webhook_url
+        assert queue_item.user_region == 'EU'
+        assert queue_item.webhook_url == eu_config.webhook_url
         assert queue_item.status == 'success'
 
-        # Verify HTTP call went to UK endpoint
+        # Verify HTTP call went to EU endpoint
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == uk_config.webhook_url
+        assert responses.calls[0].request.url == eu_config.webhook_url
 
     @responses.activate
     def test_no_webhook_config_for_region_no_other_fallback_skips_queue(self):

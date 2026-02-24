@@ -32,21 +32,6 @@ class TestRegionService:
             assert region == 'US'
             mock_social_auth.objects.filter.assert_called_once_with(user=user)
 
-    def test_get_user_region_with_country_in_sso(self):
-        """Test region detection using country code from SSO extra_data."""
-        user = User.objects.create(username='testuser', email='test@example.com')
-
-        with patch(
-            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
-        ) as mock_social_auth:
-            mock_social = MagicMock()
-            mock_social.extra_data = {'country': 'GB'}
-            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
-
-            region = get_user_region(user)
-
-            assert region == 'UK'
-
     def test_get_user_region_with_enterprise_country(self):
         """Test region detection using enterprise customer country."""
         user = User.objects.create(username='testuser', email='test@example.com')
@@ -119,27 +104,6 @@ class TestRegionService:
                 region = get_user_region(user)
                 assert region == 'US'
 
-    def test_map_country_to_region_uk(self):
-        """Test mapping GB country code to UK region."""
-        user = User.objects.create(username='testuser', email='test@example.com')
-
-        with patch(
-            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
-        ) as mock_social_auth:
-            with patch(
-                'channel_integrations.integrated_channel.services.region_service.EnterpriseCustomerUser'
-            ) as mock_ecu:
-                mock_social_auth.objects.filter.return_value.first.return_value = None
-
-                mock_enterprise = MagicMock()
-                mock_enterprise.country = 'GB'
-                mock_ecu_instance = MagicMock()
-                mock_ecu_instance.enterprise_customer = mock_enterprise
-                mock_ecu.objects.filter.return_value.first.return_value = mock_ecu_instance
-
-                region = get_user_region(user)
-                assert region == 'UK'
-
     def test_map_country_to_region_eu(self):
         """Test mapping EU country codes to EU region."""
         user = User.objects.create(username='testuser', email='test@example.com')
@@ -162,7 +126,7 @@ class TestRegionService:
                 assert region == 'EU'
 
     def test_map_country_to_region_other(self):
-        """Test mapping non-US/UK/EU country codes to OTHER region."""
+        """Test mapping non-US/EU country codes to OTHER region."""
         user = User.objects.create(username='testuser', email='test@example.com')
 
         with patch(

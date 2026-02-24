@@ -47,17 +47,6 @@ class TestRegionService:
         )
         assert get_user_region(user) == 'EU'
 
-    def test_get_user_region_uk_mapping(self):
-        """Verify UK country code mapping."""
-        user = User.objects.create(username='testuser')
-        UserSocialAuth.objects.create(
-            user=user,
-            provider='saml',
-            uid='test-uid',
-            extra_data={'country': 'GB'}
-        )
-        assert get_user_region(user) == 'UK'
-
     def test_get_user_region_fallback_other(self):
         """Verify fallback to OTHER when no metadata exists."""
         user = User.objects.create(username='testuser')
@@ -150,7 +139,7 @@ class TestWebhookRouting:
             enterprise_customer=enterprise,
             region='US',
             webhook_url='https://us.example.com/webhook',
-            enrollment_events_processing=False
+            enable_enrollment_events_processing=False
         )
 
         payload = {'event': 'test'}
@@ -233,7 +222,7 @@ class TestWebhookRouting:
         )
         # Should fall back to OTHER when fields are empty
         region = get_user_region(user)
-        assert region in ['OTHER', 'EU', 'US', 'UK']  # Depends on implementation
+        assert region in ['OTHER', 'EU', 'US']  # Depends on implementation
 
     def test_get_user_region_with_none_values(self):
         """Verify handling of None values in extra_data."""
@@ -246,7 +235,7 @@ class TestWebhookRouting:
         )
         # Should fall back to OTHER
         region = get_user_region(user)
-        assert region in ['OTHER', 'EU', 'US', 'UK']
+        assert region in ['OTHER', 'EU', 'US']
 
     def test_get_user_region_with_multiple_sso_providers(self):
         """Verify behavior when user has multiple SSO providers."""
@@ -266,7 +255,7 @@ class TestWebhookRouting:
         )
         # Should return one of them (implementation dependent)
         region = get_user_region(user)
-        assert region in ['US', 'EU', 'OTHER', 'UK']
+        assert region in ['US', 'EU', 'OTHER']
 
     def test_route_webhook_logging(self, caplog):
         """Verify appropriate log messages are generated during routing."""
