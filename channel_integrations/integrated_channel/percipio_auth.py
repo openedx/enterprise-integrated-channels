@@ -21,6 +21,7 @@ LOGGER = logging.getLogger(__name__)
 
 # Default production token endpoints keyed by EnterpriseWebhookConfiguration.region
 DEFAULT_PERCIPIO_TOKEN_URLS = {
+    
     'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
     'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
     'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
@@ -79,7 +80,9 @@ class PercipioAuthClient:
             return cached_token
 
         LOGGER.info('[Percipio] Fetching new auth token for region %s', region)
+
         access_token, expires_in = self._fetch_token(region, client_id, client_secret)
+        LOGGER.info('[Percipio] Successfully fetched token for region %s (first 15 chars: %s...)', region, access_token[:15])
 
         # Cache the token until just before it expires so we never hand out a
         # token that is about to become invalid.
@@ -128,4 +131,7 @@ class PercipioAuthClient:
         response.raise_for_status()
 
         data = response.json()
-        return data['access_token'], data['expires_in']
+        access_token = data['access_token']
+        expires_in = data['expires_in']
+        LOGGER.debug('[Percipio] Token endpoint returned token (expires in %s seconds)', expires_in)
+        return access_token, expires_in

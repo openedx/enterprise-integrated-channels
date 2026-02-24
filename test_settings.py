@@ -5,6 +5,7 @@ In a real-world use case, apps in this project are installed into other
 Django applications, so these settings will not be used.
 """
 
+import os
 import sys
 from os.path import abspath, dirname, join
 
@@ -16,8 +17,8 @@ def root(*args):
     """
     return join(abspath(dirname(__file__)), *args)
 
-# Add mock_apps to the Python path
-sys.path.append(root('mock_apps'))
+# Add mock_apps to the Python path at the beginning to ensure it's checked first
+sys.path.insert(0, root('mock_apps'))
 
 DATABASES = {
     'default': {
@@ -198,13 +199,13 @@ SNOWFLAKE_SERVICE_USER_PASSWORD = 'test_password'  # In production, from secrets
 #################################### PERCIPIO ####################################
 
 # Percipio OAuth2 credentials.
-PERCIPIO_CLIENT_ID = ''
-PERCIPIO_CLIENT_SECRET = ''
+PERCIPIO_CLIENT_ID = os.environ.get('PERCIPIO_CLIENT_ID', '')
+PERCIPIO_CLIENT_SECRET = os.environ.get('PERCIPIO_CLIENT_SECRET', '')
 
 # Token endpoint URLs by region. Override in environment-specific settings to
 # point at staging/sandbox endpoints when testing end-to-end.
 PERCIPIO_TOKEN_URLS = {
-    'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
+    'US': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
     'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
     'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
 }

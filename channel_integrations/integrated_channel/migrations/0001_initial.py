@@ -11,7 +11,9 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = []
+    dependencies = [
+        ('enterprise', '0001_initial'),
+    ]
 
     operations = [
         migrations.CreateModel(

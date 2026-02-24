@@ -629,6 +629,25 @@ def process_webhook_queue(queue_item_id):
             # static webhook_auth_token field can be retired.
             headers['Authorization'] = f"Bearer {config.webhook_auth_token}"
 
+        # Log the payload being sent
+        import json as json_module  # pylint: disable=import-outside-toplevel
+        payload_str = json_module.dumps(queue_item.payload)
+        LOGGER.info(
+            f"[Webhook] Sending item {queue_item.id} to {queue_item.webhook_url}. "
+            f"Payload: {payload_str[:500]}{'...' if len(payload_str) > 500 else ''}"
+        )
+        
+        # Log headers (with token masked for security)
+        headers_for_log = headers.copy()
+        if 'Authorization' in headers_for_log:
+            auth_value = headers_for_log['Authorization']
+            # Show first 20 chars of token for verification
+            if auth_value.startswith('Bearer '):
+                token_part = auth_value[7:]  # Remove "Bearer " prefix
+                headers_for_log['Authorization'] = f"Bearer {token_part[:20]}...{token_part[-4:]}"
+        LOGGER.info(
+            f"[Webhook] Headers for item {queue_item.id}: {headers_for_log}"
+        )
 
         response = requests.post(
             queue_item.webhook_url,
@@ -644,19 +663,29 @@ def process_webhook_queue(queue_item_id):
             queue_item.status = 'success'
             queue_item.completed_at = timezone.now()
             queue_item.error_message = None
-            LOGGER.info(f"[Webhook] Successfully transmitted item {queue_item.id}")
+            LOGGER.info(
+                f"[Webhook] Successfully transmitted item {queue_item.id} to {queue_item.webhook_url} "
+                f"(status: {response.status_code})"
+            )
         else:
             queue_item.status = 'failed'
-            queue_item.error_message = f"HTTP {response.status_code}"
-            LOGGER.warning(f"[Webhook] Failed to transmit item {queue_item.id}: HTTP {response.status_code}")
+            error_detail = f"HTTP {response.status_code}: {response.text[:500]}"  # Include first 500 chars of response
+            queue_item.error_message = error_detail
+            LOGGER.warning(
+                f"[Webhook] Failed to transmit item {queue_item.id} to {queue_item.webhook_url}: "
+                f"HTTP {response.status_code}. Response: {response.text[:500]}"
+            )
             _schedule_retry(queue_item, config)
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         queue_item.status = 'failed'
         # Get a meaningful error message
         error_msg = str(e) if str(e) else repr(e)
-        queue_item.error_message = error_msg
-        LOGGER.error(f"[Webhook] Error processing item {queue_item.id}: {e}", exc_info=True)
+        queue_item.error_message = f"Error posting to {queue_item.webhook_url}: {error_msg}"
+        LOGGER.error(
+            f"[Webhook] Error processing item {queue_item.id} for URL {queue_item.webhook_url}: {e}",
+            exc_info=True
+        )
 
         # Only retry on transient errors, not permanent failures like missing config
         is_permanent_error = "No active webhook configuration found" in error_msg
