@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.43 – 2026-02-24
+*******************
+
+* build: remove pinned pip now that pip-tools supports pip 26.0
+
 
 0.1.42 – 2026-02-24
 *******************
