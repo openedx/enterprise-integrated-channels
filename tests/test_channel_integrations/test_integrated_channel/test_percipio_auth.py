@@ -40,6 +40,7 @@ WEBHOOK_URLS = {
 }
 REGIONS = ['US', 'EU', 'OTHER']
 
+
 @pytest.fixture(autouse=True)
 def clear_cache():
     """Clear the Django cache before and after every test."""
