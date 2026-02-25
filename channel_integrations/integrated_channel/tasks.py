@@ -621,7 +621,7 @@ def process_webhook_queue(queue_item_id):
         percipio_client_secret = config.decrypted_client_secret
 
         if percipio_client_id and percipio_client_secret:
-            token = PercipioAuthHelper().get_token(queue_item.user_region, percipio_client_id, percipio_client_secret)
+            token = PercipioAuthHelper().get_token(queue_item.user_region, config)
             headers['Authorization'] = f"Bearer {token}"
         elif config.webhook_auth_token:
             # TODO: Remove this fallback once the deprecated webhook_auth_token

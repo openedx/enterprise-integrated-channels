@@ -88,7 +88,7 @@ class CanvasEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguratio
         verbose_name="Encrypted API Client Secret",
         help_text=(
             "The encrypted API Client Secret provided to edX by the enterprise customer to be used to make "
-            " API calls to Canvas on behalf of the customer. It will be encrypted when stored in the database."
+            "API calls to Canvas on behalf of the customer. It will be encrypted when stored in the database."
         ),
         null=True,
     )

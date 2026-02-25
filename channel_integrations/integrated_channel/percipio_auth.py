@@ -36,11 +36,11 @@ class PercipioAuthHelper:
 
     Usage::
 
-        token = PercipioAuthHelper().get_token('US', config.client_id, config.client_secret)
+        token = PercipioAuthHelper().get_token('US', config)
         headers['Authorization'] = f'Bearer {token}'
     """
 
-    def get_token(self, region: str, client_id: str, client_secret: str) -> str:
+    def get_token(self, region: str, config: EnterpriseWebhookConfiguration) -> str:
         """
         Return a valid bearer token for *region*.
 
@@ -49,12 +49,8 @@ class PercipioAuthHelper:
         and returns it.
 
         Args:
-            region: One of 'US', 'EU', 'OTHER' — matches the
-                ``region`` field on ``EnterpriseWebhookConfiguration``.
-            client_id: The Percipio OAuth2 client ID from
-                ``EnterpriseWebhookConfiguration.client_id``.
-            client_secret: The Percipio OAuth2 client secret from
-                ``EnterpriseWebhookConfiguration.client_secret``.
+            region: User's region, one of 'US', 'EU', 'OTHER'
+            config: EnterpriseWebhookConfiguration
 
         Returns:
             A bearer token string suitable for use in an Authorization header.
@@ -65,6 +61,7 @@ class PercipioAuthHelper:
             KeyError: If the token response body is missing ``access_token``
                 or ``expires_in``.
         """
+        client_id = config.client_id
         cache_key = _CACHE_KEY_TEMPLATE.format(region=region, client_id=client_id)
         cached_token = cache.get(cache_key)
         if cached_token:
@@ -72,7 +69,7 @@ class PercipioAuthHelper:
             return cached_token
 
         LOGGER.info('[Percipio] Fetching new auth token for region %s', region)
-        access_token, expires_in = self._fetch_token(region, client_id, client_secret)
+        access_token, expires_in = self._fetch_token(region, config)
 
         # Cache the token until just before it expires so we never hand out a
         # token that is about to become invalid.
@@ -81,15 +78,15 @@ class PercipioAuthHelper:
 
         return access_token
 
-    def _fetch_token(self, region: str, client_id: str, client_secret: str) -> tuple:
+    def _fetch_token(self, region: str, config: EnterpriseWebhookConfiguration) -> tuple:
         """
         POST to the Percipio OAuth2 token endpoint and return the token.
 
         Args:
             region: Geographic region string used to select the correct
                 token endpoint URL.
-            client_id: The Percipio OAuth2 client ID.
-            client_secret: The Percipio OAuth2 client secret.
+            config: EnterpriseWebhookConfiguration containing the token
+                endpoint URL and OAuth2 credentials.
 
         Returns:
             A (access_token, expires_in) tuple where *expires_in* is an
@@ -100,12 +97,6 @@ class PercipioAuthHelper:
             KeyError: If ``access_token`` or ``expires_in`` are absent from
                 the response JSON.
         """
-        config = EnterpriseWebhookConfiguration.objects.filter(
-            region=region,
-            active=True
-        ).first()
-        if not config:
-            raise ValueError(f"No active EnterpriseWebhookConfiguration found for region {region!r}")
         url = config.webhook_url
 
         LOGGER.debug('[Percipio] POSTing to token endpoint %s for region %s', url, region)
@@ -113,8 +104,8 @@ class PercipioAuthHelper:
         response = requests.post(
             url,
             json={
-                'client_id': client_id,
-                'client_secret': client_secret,
+                'client_id': config.client_id,
+                'client_secret': config.decrypted_client_secret,
                 'grant_type': 'client_credentials',
                 'scope': 'api',
             },

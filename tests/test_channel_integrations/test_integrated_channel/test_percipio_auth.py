@@ -50,6 +50,8 @@ def percipio_token_configs():
             enterprise_customer=enterprise,
             region=region,
             webhook_url=url,
+            client_id=TEST_CLIENT_ID,
+            decrypted_client_secret=TEST_CLIENT_SECRET,
         )
 
 
@@ -67,8 +69,11 @@ class TestPercipioAuthHelperGetToken:
             status=200,
         )
 
+        config = EnterpriseWebhookConfiguration.objects.filter(
+            region='US',
+        ).first()
         client = PercipioAuthHelper()
-        token = client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+        token = client.get_token('US', config)
 
         assert token == 'mock-bearer-token-abc123'
         assert len(responses.calls) == 1
@@ -83,9 +88,13 @@ class TestPercipioAuthHelperGetToken:
             status=200,
         )
 
+        config = EnterpriseWebhookConfiguration.objects.filter(
+            region='US',
+        ).first()
+
         client = PercipioAuthHelper()
-        first = client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
-        second = client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+        first = client.get_token('US', config)
+        second = client.get_token('US', config)
 
         assert first == second == 'mock-bearer-token-abc123'
         # Only one real HTTP call should have been made
@@ -101,8 +110,12 @@ class TestPercipioAuthHelperGetToken:
             status=200,
         )
 
+        config = EnterpriseWebhookConfiguration.objects.filter(
+            region='EU',
+        ).first()
+
         client = PercipioAuthHelper()
-        token = client.get_token('EU', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+        token = client.get_token('EU', config)
 
         assert token == 'mock-bearer-token-abc123'
         assert responses.calls[0].request.url == DEFAULT_PERCIPIO_TOKEN_URLS['EU']
@@ -120,7 +133,10 @@ class TestPercipioAuthHelperGetToken:
         with patch('channel_integrations.integrated_channel.percipio_auth.cache') as mock_cache:
             mock_cache.get.return_value = None  # simulate cache miss
             client = PercipioAuthHelper()
-            client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+            config = EnterpriseWebhookConfiguration.objects.filter(
+                region='US',
+            ).first()
+            client.get_token('US', config)
 
             # TTL should be expires_in (120) minus buffer (60) = 60
             mock_cache.set.assert_called_once_with(
@@ -138,10 +154,12 @@ class TestPercipioAuthHelperGetToken:
             json={'error': 'invalid_client'},
             status=401,
         )
-
+        config = EnterpriseWebhookConfiguration.objects.filter(
+            region='US',
+        ).first()
         client = PercipioAuthHelper()
         with pytest.raises(requests.HTTPError):
-            client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
+            client.get_token('US', config)
 
 
 @pytest.mark.django_db
@@ -158,16 +176,17 @@ class TestPercipioAuthHelperFetchToken:
             status=200,
         )
 
+        config = EnterpriseWebhookConfiguration.objects.filter(region='US').first()
         client = PercipioAuthHelper()
-        access_token, expires_in = client._fetch_token('US', 'my-client-id', 'my-client-secret')  # pylint: disable=protected-access
+        access_token, expires_in = client._fetch_token('US', config)  # pylint: disable=protected-access
 
         assert access_token == 'mock-bearer-token-abc123'
         assert expires_in == 3600
 
         sent_body = json.loads(responses.calls[0].request.body)
         assert sent_body == {
-            'client_id': 'my-client-id',
-            'client_secret': 'my-client-secret',
+            'client_id': TEST_CLIENT_ID,
+            'client_secret': TEST_CLIENT_SECRET,
             'grant_type': 'client_credentials',
             'scope': 'api',
         }
@@ -187,8 +206,9 @@ class TestPercipioAuthHelperFetchToken:
             status=200,
         )
 
+        config = EnterpriseWebhookConfiguration.objects.filter(region='US').first()
         client = PercipioAuthHelper()
-        client._fetch_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)  # pylint: disable=protected-access
+        client._fetch_token('US', config)  # pylint: disable=protected-access
 
         assert responses.calls[0].request.url == custom_url
 
@@ -202,6 +222,7 @@ class TestPercipioAuthHelperFetchToken:
             status=200,
         )
 
+        config = EnterpriseWebhookConfiguration.objects.filter(region='US').first()
         client = PercipioAuthHelper()
         with pytest.raises(KeyError):
-            client._fetch_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)  # pylint: disable=protected-access
+            client._fetch_token('US', config)  # pylint: disable=protected-access
