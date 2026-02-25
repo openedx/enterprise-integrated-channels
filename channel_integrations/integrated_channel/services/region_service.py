@@ -30,7 +30,7 @@ def get_user_region(user) -> str:
         user: Django User instance
 
     Returns:
-        str: One of 'US', 'EU', 'UK', 'OTHER'
+        str: One of 'US', 'EU', 'OTHER'
     """
     try:
         # Priority 1: Explicit region in SSO extra_data
@@ -38,7 +38,7 @@ def get_user_region(user) -> str:
         if social_auth and social_auth.extra_data:
             # Check for explicit region
             explicit_region = social_auth.extra_data.get('region')
-            if explicit_region in ['US', 'EU', 'UK', 'OTHER']:
+            if explicit_region in ['US', 'EU', 'OTHER']:
                 log.debug(f'[Region] User {user.id} has explicit region: {explicit_region}')
                 return explicit_region
 
@@ -72,8 +72,6 @@ def _map_country_to_region(country_code: str) -> str:
 
     if country_code == 'US':
         return 'US'
-    elif country_code == 'GB':
-        return 'UK'
     elif country_code in EU_COUNTRIES:
         return 'EU'
     else:

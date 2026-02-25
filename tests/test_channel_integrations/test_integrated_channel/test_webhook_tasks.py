@@ -15,6 +15,12 @@ from test_utils.factories import EnterpriseCustomerFactory
 
 User = get_user_model()
 
+DEFAULT_PERCIPIO_TOKEN_URLS = {
+    'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
+    'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
+    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
+}
+
 
 @pytest.mark.django_db
 class TestWebhookTasks:
@@ -530,3 +536,195 @@ class TestWebhookTasks:
         cancelled_queue_item.refresh_from_db()
         assert cancelled_queue_item.attempt_count == 2
         assert cancelled_queue_item.status == 'cancelled'
+
+
+@pytest.mark.django_db
+class TestWebhookTasksPercipioAuth:
+    """Tests for the Percipio OAuth2 token flow in process_webhook_queue."""
+
+    @responses.activate
+    def test_process_webhook_queue_uses_percipio_oauth(self):
+        """
+        When client_id and decrypted_client_secret are set on the config,
+        the Authorization header must use the token fetched from PercipioAuthHelper,
+        NOT the static webhook_auth_token.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_oauth')
+        delivery_url = 'https://example.com/webhook'
+        EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            # webhook_url points at the Percipio token endpoint for this region
+            webhook_url=DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            client_id='test-client-id',
+            decrypted_client_secret='test-client-secret',
+            # Static token present but should be ignored in favour of OAuth
+            webhook_auth_token='old-static-token',
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-oauth',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url=delivery_url,
+            payload={'event': 'test'},
+            deduplication_key='key-oauth-1',
+        )
+
+        # Mock the Percipio token endpoint
+        responses.add(
+            responses.POST,
+            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            json={'access_token': 'percipio-oauth-token', 'expires_in': 3600},
+            status=200,
+        )
+        # Mock the actual webhook delivery endpoint
+        responses.add(
+            responses.POST,
+            delivery_url,
+            json={'status': 'ok'},
+            status=200,
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+
+        # The webhook call is the second call (after the token fetch)
+        webhook_call = responses.calls[1]
+        assert webhook_call.request.headers['Authorization'] == 'Bearer percipio-oauth-token'
+        # Static token must NOT be used
+        assert webhook_call.request.headers['Authorization'] != 'Bearer old-static-token'
+
+    @responses.activate
+    def test_process_webhook_queue_falls_back_to_static_token(self):
+        """
+        When no Percipio credentials are set on the config, the task falls back
+        to the static webhook_auth_token.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_fallback')
+        delivery_url = 'https://example.com/webhook'
+        config = EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url=delivery_url,
+            webhook_auth_token='fallback-static-token',
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-fallback',
+            event_type='course_enrollment',
+            user_region='US',
+            webhook_url=config.webhook_url,
+            payload={'event': 'test'},
+            deduplication_key='key-fallback-1',
+        )
+
+        responses.add(
+            responses.POST,
+            delivery_url,
+            json={'status': 'ok'},
+            status=200,
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+        assert responses.calls[0].request.headers['Authorization'] == 'Bearer fallback-static-token'
+
+    @responses.activate
+    def test_process_webhook_queue_fails_when_token_fetch_fails(self):
+        """
+        When the Percipio token endpoint returns an error, the queue item
+        should be marked as failed and scheduled for retry.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_tokenfail')
+        EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='US',
+            webhook_url=DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            client_id='test-client-id',
+            decrypted_client_secret='test-client-secret',
+            webhook_retry_attempts=3,
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-tokenfail',
+            event_type='course_completion',
+            user_region='US',
+            webhook_url='https://example.com/webhook',
+            payload={'event': 'test'},
+            deduplication_key='key-tokenfail-1',
+        )
+
+        responses.add(
+            responses.POST,
+            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            json={'error': 'invalid_client'},
+            status=401,
+        )
+
+        with patch(
+            'channel_integrations.integrated_channel.tasks.process_webhook_queue.apply_async'
+        ) as mock_apply:
+            process_webhook_queue(queue_item.id)
+
+            queue_item.refresh_from_db()
+            assert queue_item.status == 'pending'  # Scheduled for retry
+            assert queue_item.attempt_count == 1
+            mock_apply.assert_called_once()
+
+    @responses.activate
+    def test_process_webhook_queue_eu_region_uses_eu_token_endpoint(self):
+        """
+        EU-region queue items must fetch a token from the EU token endpoint,
+        not the US endpoint.
+        """
+        enterprise = EnterpriseCustomerFactory()
+        user = User.objects.create(username='testuser_eu')
+        delivery_url = 'https://example.com/webhook'
+        EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='EU',
+            webhook_url=DEFAULT_PERCIPIO_TOKEN_URLS['EU'],
+            client_id='test-client-id',
+            decrypted_client_secret='test-client-secret',
+        )
+        queue_item = WebhookTransmissionQueue.objects.create(
+            enterprise_customer=enterprise,
+            user=user,
+            course_id='course-eu',
+            event_type='course_completion',
+            user_region='EU',
+            webhook_url=delivery_url,
+            payload={'event': 'test'},
+            deduplication_key='key-eu-oauth',
+        )
+
+        responses.add(
+            responses.POST,
+            DEFAULT_PERCIPIO_TOKEN_URLS['EU'],
+            json={'access_token': 'eu-token', 'expires_in': 3600},
+            status=200,
+        )
+        responses.add(
+            responses.POST,
+            delivery_url,
+            json={'status': 'ok'},
+            status=200,
+        )
+
+        process_webhook_queue(queue_item.id)
+
+        queue_item.refresh_from_db()
+        assert queue_item.status == 'success'
+        # First call must have gone to the EU token endpoint
+        assert DEFAULT_PERCIPIO_TOKEN_URLS['EU'] in responses.calls[0].request.url

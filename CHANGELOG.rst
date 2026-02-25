@@ -14,6 +14,12 @@ Change Log
 Unreleased
 **********
 
+
+0.1.41 – 2026-02-24
+*******************
+
+* fix: setup changes for region specific Percipio integration 
+
 0.1.40 – 2026-02-17
 *******************
 

@@ -18,6 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from enterprise.constants import TRANSMISSION_MARK_CREATE, TRANSMISSION_MARK_DELETE, TRANSMISSION_MARK_UPDATE
 from enterprise.models import EnterpriseCustomer, EnterpriseCustomerCatalog
 from enterprise.utils import localized_utcnow
+from fernet_fields import EncryptedCharField
 from jsonfield.fields import JSONField
 from model_utils.models import TimeStampedModel
 
@@ -1039,7 +1040,6 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         choices=[
             ('US', 'United States'),
             ('EU', 'European Union'),
-            ('UK', 'United Kingdom'),
             ('OTHER', 'Other'),
         ],
         db_index=True,
@@ -1074,9 +1074,26 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         default=True,
         help_text='Whether this webhook configuration is active'
     )
-    enrollment_events_processing = models.BooleanField(
+    enable_enrollment_events_processing = models.BooleanField(
         default=True,
         help_text='Enable processing of enrollment events'
+    )
+    client_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text='Percipio OAuth2 client ID'
+    )
+    decrypted_client_secret = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Encrypted API Client Secret",
+        help_text=(
+            "The encrypted API Client Secret provided to edX by the Percipio team. "
+            "It will be encrypted when stored in the database."
+        ),
+        null=True,
     )
 
     class Meta:
