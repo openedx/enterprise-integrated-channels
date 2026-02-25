@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.43 – 2026-02-24
+*******************
+
+* build: upgrade pip-tools to version 7.5.3
+
 
 0.1.42 – 2026-02-24
 *******************
