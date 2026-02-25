@@ -195,20 +195,6 @@ SNOWFLAKE_ROLE = 'TEST_ROLE'
 SNOWFLAKE_SERVICE_USER = 'test_service_user'
 SNOWFLAKE_SERVICE_USER_PASSWORD = 'test_password'  # In production, from secrets manager
 
-#################################### PERCIPIO ####################################
-
-# Percipio OAuth2 credentials.
-PERCIPIO_CLIENT_ID = ''
-PERCIPIO_CLIENT_SECRET = ''
-
-# Token endpoint URLs by region. Override in environment-specific settings to
-# point at staging/sandbox endpoints when testing end-to-end.
-PERCIPIO_TOKEN_URLS = {
-    'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
-    'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
-    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
-}
-
 #################################### FEATURES ####################################
 
 FEATURES = {

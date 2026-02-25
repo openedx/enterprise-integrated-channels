@@ -18,6 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from enterprise.constants import TRANSMISSION_MARK_CREATE, TRANSMISSION_MARK_DELETE, TRANSMISSION_MARK_UPDATE
 from enterprise.models import EnterpriseCustomer, EnterpriseCustomerCatalog
 from enterprise.utils import localized_utcnow
+from fernet_fields import EncryptedCharField
 from jsonfield.fields import JSONField
 from model_utils.models import TimeStampedModel
 
@@ -1083,11 +1084,16 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         null=True,
         help_text='Percipio OAuth2 client ID'
     )
-    client_secret = models.CharField(
+    decrypted_client_secret = EncryptedCharField(
         max_length=255,
         blank=True,
+        default='',
+        verbose_name="Encrypted API Client Secret",
+        help_text=(
+            "The encrypted API Client Secret provided to edX by the enterprise customer to be used to make "
+            " API calls to Canvas on behalf of the customer. It will be encrypted when stored in the database."
+        ),
         null=True,
-        help_text='Percipio OAuth2 client secret'
     )
 
     class Meta:

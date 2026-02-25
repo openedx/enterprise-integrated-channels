@@ -27,7 +27,7 @@ from channel_integrations.integrated_channel.models import (
     OrphanedContentTransmissions,
     WebhookTransmissionQueue,
 )
-from channel_integrations.integrated_channel.percipio_auth import PercipioAuthClient
+from channel_integrations.integrated_channel.percipio_auth import PercipioAuthHelper
 from channel_integrations.integrated_channel.services.webhook_routing import route_webhook_by_region
 from channel_integrations.integrated_channel.snowflake_client import SnowflakeLearningTimeClient
 from channel_integrations.utils import generate_formatted_log
@@ -617,18 +617,16 @@ def process_webhook_queue(queue_item_id):
             'User-Agent': 'OpenEdX-Enterprise-Webhook/1.0',
         }
 
-        percipio_client_id = getattr(settings, 'PERCIPIO_CLIENT_ID', None)
-        percipio_client_secret = getattr(settings, 'PERCIPIO_CLIENT_SECRET', None)
+        percipio_client_id = config.client_id
+        percipio_client_secret = config.decrypted_client_secret
 
         if percipio_client_id and percipio_client_secret:
-            token = PercipioAuthClient().get_token(queue_item.user_region, percipio_client_id, percipio_client_secret)
+            token = PercipioAuthHelper().get_token(queue_item.user_region, percipio_client_id, percipio_client_secret)
             headers['Authorization'] = f"Bearer {token}"
         elif config.webhook_auth_token:
-            # TODO: Remove this fallback once PERCIPIO_CLIENT_ID /
-            # PERCIPIO_CLIENT_SECRET are configured in all environments and the
-            # static webhook_auth_token field can be retired.
+            # TODO: Remove this fallback once the deprecated webhook_auth_token
+            # field is dropped.
             headers['Authorization'] = f"Bearer {config.webhook_auth_token}"
-
 
         response = requests.post(
             queue_item.webhook_url,

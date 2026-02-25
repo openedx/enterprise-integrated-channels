@@ -8,21 +8,13 @@ import pytest
 import requests
 import responses
 from django.core.cache import cache
-from django.test import override_settings
 
+from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration
 from channel_integrations.integrated_channel.percipio_auth import (
-    DEFAULT_PERCIPIO_TOKEN_URLS,
-    PercipioAuthClient,
+    PercipioAuthHelper,
     _CACHE_KEY_TEMPLATE,
 )
-
-
-@pytest.fixture(autouse=True)
-def clear_cache():
-    """Clear the Django cache before and after every test."""
-    cache.clear()
-    yield
-    cache.clear()
+from test_utils.factories import EnterpriseCustomerFactory
 
 
 MOCK_TOKEN_RESPONSE = {
@@ -34,9 +26,36 @@ MOCK_TOKEN_RESPONSE = {
 TEST_CLIENT_ID = 'test-client-id'
 TEST_CLIENT_SECRET = 'test-client-secret'
 
+DEFAULT_PERCIPIO_TOKEN_URLS = {
+    'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
+    'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
+    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
+}
 
-class TestPercipioAuthClientGetToken:
-    """Tests for PercipioAuthClient.get_token."""
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    """Clear the Django cache before and after every test."""
+    cache.clear()
+    yield
+    cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def percipio_token_configs():
+    """Create one EnterpriseWebhookConfiguration per region pointing at the Percipio token endpoints."""
+    enterprise = EnterpriseCustomerFactory()
+    for region, url in DEFAULT_PERCIPIO_TOKEN_URLS.items():
+        EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region=region,
+            webhook_url=url,
+        )
+
+
+@pytest.mark.django_db
+class TestPercipioAuthHelperGetToken:
+    """Tests for PercipioAuthHelper.get_token."""
 
     @responses.activate
     def test_get_token_fetches_when_cache_empty(self):
@@ -48,7 +67,7 @@ class TestPercipioAuthClientGetToken:
             status=200,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         token = client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
 
         assert token == 'mock-bearer-token-abc123'
@@ -64,7 +83,7 @@ class TestPercipioAuthClientGetToken:
             status=200,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         first = client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
         second = client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
 
@@ -82,7 +101,7 @@ class TestPercipioAuthClientGetToken:
             status=200,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         token = client.get_token('EU', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
 
         assert token == 'mock-bearer-token-abc123'
@@ -100,7 +119,7 @@ class TestPercipioAuthClientGetToken:
 
         with patch('channel_integrations.integrated_channel.percipio_auth.cache') as mock_cache:
             mock_cache.get.return_value = None  # simulate cache miss
-            client = PercipioAuthClient()
+            client = PercipioAuthHelper()
             client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
 
             # TTL should be expires_in (120) minus buffer (60) = 60
@@ -120,13 +139,14 @@ class TestPercipioAuthClientGetToken:
             status=401,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         with pytest.raises(requests.HTTPError):
             client.get_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)
 
 
-class TestPercipioAuthClientFetchToken:
-    """Tests for PercipioAuthClient._fetch_token."""
+@pytest.mark.django_db
+class TestPercipioAuthHelperFetchToken:
+    """Tests for PercipioAuthHelper._fetch_token."""
 
     @responses.activate
     def test_fetch_token_sends_correct_payload(self):
@@ -138,7 +158,7 @@ class TestPercipioAuthClientFetchToken:
             status=200,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         access_token, expires_in = client._fetch_token('US', 'my-client-id', 'my-client-secret')  # pylint: disable=protected-access
 
         assert access_token == 'mock-bearer-token-abc123'
@@ -153,26 +173,24 @@ class TestPercipioAuthClientFetchToken:
         }
 
     @responses.activate
-    @override_settings(
-        PERCIPIO_TOKEN_URLS={
-            'US': 'https://custom-staging.example.com/token',
-            'EU': 'https://custom-staging-eu.example.com/token',
-            'OTHER': 'https://custom-staging.example.com/token',
-        },
-    )
-    def test_fetch_token_respects_settings_override(self):
-        """PERCIPIO_TOKEN_URLS in settings overrides the default endpoint map."""
+    def test_fetch_token_uses_webhook_url_from_config(self):
+        """_fetch_token uses the webhook_url from the matching EnterpriseWebhookConfiguration."""
+        custom_url = 'https://custom-staging.example.com/token'
+        EnterpriseWebhookConfiguration.objects.filter(region='US', active=True).update(
+            webhook_url=custom_url
+        )
+
         responses.add(
             responses.POST,
-            'https://custom-staging.example.com/token',
+            custom_url,
             json=MOCK_TOKEN_RESPONSE,
             status=200,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         client._fetch_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)  # pylint: disable=protected-access
 
-        assert responses.calls[0].request.url == 'https://custom-staging.example.com/token'
+        assert responses.calls[0].request.url == custom_url
 
     @responses.activate
     def test_fetch_token_raises_on_missing_access_token(self):
@@ -184,6 +202,6 @@ class TestPercipioAuthClientFetchToken:
             status=200,
         )
 
-        client = PercipioAuthClient()
+        client = PercipioAuthHelper()
         with pytest.raises(KeyError):
             client._fetch_token('US', TEST_CLIENT_ID, TEST_CLIENT_SECRET)  # pylint: disable=protected-access

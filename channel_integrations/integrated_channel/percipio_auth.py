@@ -14,17 +14,10 @@ Token endpoint URLs differ by geographic region:
 import logging
 
 import requests
-from django.conf import settings
 from django.core.cache import cache
+from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration
 
 LOGGER = logging.getLogger(__name__)
-
-# Default production token endpoints keyed by EnterpriseWebhookConfiguration.region
-DEFAULT_PERCIPIO_TOKEN_URLS = {
-    'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
-    'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
-    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
-}
 
 _CACHE_KEY_TEMPLATE = 'percipio_auth_token_{region}_{client_id}'
 
@@ -33,7 +26,7 @@ _CACHE_KEY_TEMPLATE = 'percipio_auth_token_{region}_{client_id}'
 _TOKEN_EXPIRY_BUFFER_SECONDS = 60
 
 
-class PercipioAuthClient:
+class PercipioAuthHelper:
     """
     Retrieves OAuth2 bearer tokens from the Percipio token endpoint.
 
@@ -43,7 +36,7 @@ class PercipioAuthClient:
 
     Usage::
 
-        token = PercipioAuthClient().get_token('US', config.client_id, config.client_secret)
+        token = PercipioAuthHelper().get_token('US', config.client_id, config.client_secret)
         headers['Authorization'] = f'Bearer {token}'
     """
 
@@ -107,10 +100,13 @@ class PercipioAuthClient:
             KeyError: If ``access_token`` or ``expires_in`` are absent from
                 the response JSON.
         """
-        # Allow the token URL mapping to be overridden in settings for
-        # staging / test environments.
-        token_urls = getattr(settings, 'PERCIPIO_TOKEN_URLS', DEFAULT_PERCIPIO_TOKEN_URLS)
-        url = token_urls.get(region, token_urls.get('US', DEFAULT_PERCIPIO_TOKEN_URLS['US']))
+        config = EnterpriseWebhookConfiguration.objects.filter(
+            region=region,
+            active=True
+        ).first()
+        if not config:
+            raise ValueError(f"No active EnterpriseWebhookConfiguration found for region {region!r}")
+        url = config.webhook_url
 
         LOGGER.debug('[Percipio] POSTing to token endpoint %s for region %s', url, region)
 
