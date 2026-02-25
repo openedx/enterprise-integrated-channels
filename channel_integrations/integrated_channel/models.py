@@ -1049,11 +1049,11 @@ class EnterpriseWebhookConfiguration(TimeStampedModel):
         max_length=500,
         help_text='HTTPS endpoint to receive webhooks'
     )
-    webhook_auth_token = models.CharField(
-        max_length=255,
+    webhook_token_url = models.URLField(
+        max_length=500,
         blank=True,
         null=True,
-        help_text='Bearer token for webhook authentication'
+        help_text='HTTPS endpoint to get validation token (10hr until expiration) to access webhooks'
     )
     webhook_timeout_seconds = models.IntegerField(
         default=30,
