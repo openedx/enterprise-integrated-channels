@@ -222,10 +222,3 @@ class WebhookTransmissionQueueAdmin(admin.ModelAdmin):
     )
 
     list_per_page = 100
-
-    def has_add_permission(self, request):
-        """
-        Disable manual creation of queue items via admin.
-        Queue items should be created automatically by signal handlers.
-        """
-        return False

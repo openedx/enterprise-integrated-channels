@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.46 – 2026-02-26
+*******************
+
+* fix: allowing django admin adding of WebhookTransmissionQueue
+
 0.1.45 – 2026-02-26
 *******************
 
