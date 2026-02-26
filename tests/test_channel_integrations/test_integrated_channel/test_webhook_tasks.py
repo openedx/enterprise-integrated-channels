@@ -8,6 +8,7 @@ import pytest
 import requests
 import responses
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 
 from channel_integrations.integrated_channel.models import EnterpriseWebhookConfiguration, WebhookTransmissionQueue
 from channel_integrations.integrated_channel.tasks import process_webhook_queue
@@ -15,11 +16,26 @@ from test_utils.factories import EnterpriseCustomerFactory
 
 User = get_user_model()
 
-DEFAULT_PERCIPIO_TOKEN_URLS = {
-    'US': 'https://oauth2-provider.percipio.com/oauth2-provider/token',
-    'EU': 'https://euc1-prod-oauth2-provider.percipio.com/oauth2-provider/token',
-    'OTHER': 'https://oauth2-provider.develop.squads-dev.com/oauth2-provider/token',
+
+@pytest.fixture(autouse=True)
+def clear_percipio_cache():
+    """Clear the Django cache before and after every test to prevent token cache pollution."""
+    cache.clear()
+    yield
+    cache.clear()
+
+
+TOKEN_URLS = {
+    'US': 'https://fake-us-url.example.com/token',
+    'EU': 'https://fake-eu-url.example.com/token',
+    'OTHER': 'https://fake-develop-url.example.com/token',
 }
+WEBHOOK_URLS = {
+    'US': 'https://fake-us-url.example.com',
+    'EU': 'https://fake-eu-url.example.com',
+    'OTHER': 'https://fake-develop-url.example.com',
+}
+REGIONS = ['US', 'EU', 'OTHER']
 
 
 @pytest.mark.django_db
@@ -34,8 +50,10 @@ class TestWebhookTasks:
         config = EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
             region='US',
-            webhook_url='https://example.com/webhook',
-            webhook_auth_token='test-token'
+            webhook_url=WEBHOOK_URLS['US'],
+            webhook_token_url=TOKEN_URLS['US'],
+            client_id='test-client-id',
+            decrypted_client_secret='test-secret',
         )
 
         queue_item = WebhookTransmissionQueue.objects.create(
@@ -49,6 +67,13 @@ class TestWebhookTasks:
             deduplication_key='key1'
         )
 
+        # Mock the token endpoint first, then the webhook delivery endpoint
+        responses.add(
+            responses.POST,
+            TOKEN_URLS['US'],
+            json={'access_token': 'test-token', 'expires_in': 3600},
+            status=200,
+        )
         responses.add(
             responses.POST,
             config.webhook_url,
@@ -64,9 +89,9 @@ class TestWebhookTasks:
         assert queue_item.attempt_count == 1
         assert queue_item.completed_at is not None
 
-        # Verify headers
-        assert responses.calls[0].request.headers['Authorization'] == 'Bearer test-token'
-        assert responses.calls[0].request.headers['User-Agent'] == 'OpenEdX-Enterprise-Webhook/1.0'
+        # Verify headers on the webhook delivery call (call[1]; call[0] is the token fetch)
+        assert responses.calls[1].request.headers['Authorization'] == 'Bearer test-token'
+        assert responses.calls[1].request.headers['User-Agent'] == 'OpenEdX-Enterprise-Webhook/1.0'
 
     @responses.activate
     def test_process_webhook_queue_retry(self):
@@ -546,8 +571,7 @@ class TestWebhookTasksPercipioAuth:
     def test_process_webhook_queue_uses_percipio_oauth(self):
         """
         When client_id and decrypted_client_secret are set on the config,
-        the Authorization header must use the token fetched from PercipioAuthHelper,
-        NOT the static webhook_auth_token.
+        the Authorization header must use the token fetched from PercipioAuthHelper.
         """
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser_oauth')
@@ -555,12 +579,10 @@ class TestWebhookTasksPercipioAuth:
         EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
             region='US',
-            # webhook_url points at the Percipio token endpoint for this region
-            webhook_url=DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            webhook_url=delivery_url,
+            webhook_token_url=TOKEN_URLS['US'],
             client_id='test-client-id',
             decrypted_client_secret='test-client-secret',
-            # Static token present but should be ignored in favour of OAuth
-            webhook_auth_token='old-static-token',
         )
         queue_item = WebhookTransmissionQueue.objects.create(
             enterprise_customer=enterprise,
@@ -576,7 +598,7 @@ class TestWebhookTasksPercipioAuth:
         # Mock the Percipio token endpoint
         responses.add(
             responses.POST,
-            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            TOKEN_URLS['US'],
             json={'access_token': 'percipio-oauth-token', 'expires_in': 3600},
             status=200,
         )
@@ -600,10 +622,10 @@ class TestWebhookTasksPercipioAuth:
         assert webhook_call.request.headers['Authorization'] != 'Bearer old-static-token'
 
     @responses.activate
-    def test_process_webhook_queue_falls_back_to_static_token(self):
+    def test_process_webhook_queue_no_auth_header_without_credentials(self):
         """
-        When no Percipio credentials are set on the config, the task falls back
-        to the static webhook_auth_token.
+        When no Percipio credentials are set on the config, no Authorization
+        header is sent with the webhook request.
         """
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='testuser_fallback')
@@ -612,7 +634,6 @@ class TestWebhookTasksPercipioAuth:
             enterprise_customer=enterprise,
             region='US',
             webhook_url=delivery_url,
-            webhook_auth_token='fallback-static-token',
         )
         queue_item = WebhookTransmissionQueue.objects.create(
             enterprise_customer=enterprise,
@@ -636,7 +657,7 @@ class TestWebhookTasksPercipioAuth:
 
         queue_item.refresh_from_db()
         assert queue_item.status == 'success'
-        assert responses.calls[0].request.headers['Authorization'] == 'Bearer fallback-static-token'
+        assert 'Authorization' not in responses.calls[0].request.headers
 
     @responses.activate
     def test_process_webhook_queue_fails_when_token_fetch_fails(self):
@@ -649,7 +670,8 @@ class TestWebhookTasksPercipioAuth:
         EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
             region='US',
-            webhook_url=DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            webhook_url='https://example.com/webhook',
+            webhook_token_url=TOKEN_URLS['US'],
             client_id='test-client-id',
             decrypted_client_secret='test-client-secret',
             webhook_retry_attempts=3,
@@ -667,7 +689,7 @@ class TestWebhookTasksPercipioAuth:
 
         responses.add(
             responses.POST,
-            DEFAULT_PERCIPIO_TOKEN_URLS['US'],
+            TOKEN_URLS['US'],
             json={'error': 'invalid_client'},
             status=401,
         )
@@ -694,7 +716,8 @@ class TestWebhookTasksPercipioAuth:
         EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
             region='EU',
-            webhook_url=DEFAULT_PERCIPIO_TOKEN_URLS['EU'],
+            webhook_url=delivery_url,
+            webhook_token_url=TOKEN_URLS['EU'],
             client_id='test-client-id',
             decrypted_client_secret='test-client-secret',
         )
@@ -711,7 +734,7 @@ class TestWebhookTasksPercipioAuth:
 
         responses.add(
             responses.POST,
-            DEFAULT_PERCIPIO_TOKEN_URLS['EU'],
+            TOKEN_URLS['EU'],
             json={'access_token': 'eu-token', 'expires_in': 3600},
             status=200,
         )
@@ -727,4 +750,4 @@ class TestWebhookTasksPercipioAuth:
         queue_item.refresh_from_db()
         assert queue_item.status == 'success'
         # First call must have gone to the EU token endpoint
-        assert DEFAULT_PERCIPIO_TOKEN_URLS['EU'] in responses.calls[0].request.url
+        assert TOKEN_URLS['EU'] in responses.calls[0].request.url

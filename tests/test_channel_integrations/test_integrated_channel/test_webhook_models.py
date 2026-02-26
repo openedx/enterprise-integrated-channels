@@ -348,7 +348,6 @@ class TestWebhookIntegration:
             enterprise_customer=enterprise,
             region='US',
             webhook_url='https://integration.example.com/webhook',
-            webhook_auth_token='test-token',
             webhook_timeout_seconds=45,
             webhook_retry_attempts=5
         )

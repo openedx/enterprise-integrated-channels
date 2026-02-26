@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.44 – 2026-02-25
+*******************
+
+* fix: renaming token field in EnterpriseWebhookConfiguration to be URL
+
 0.1.43 – 2026-02-24
 *******************
 
