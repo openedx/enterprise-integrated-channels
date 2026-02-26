@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.45 – 2026-02-26
+*******************
+
+* chore: upgrade python requirements
+
 0.1.44 – 2026-02-25
 *******************
 
@@ -33,7 +38,7 @@ Unreleased
 0.1.41 – 2026-02-24
 *******************
 
-* fix: setup changes for region specific Percipio integration 
+* fix: setup changes for region specific Percipio integration
 
 0.1.40 – 2026-02-17
 *******************
