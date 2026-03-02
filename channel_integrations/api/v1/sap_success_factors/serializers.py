@@ -36,8 +36,9 @@ class SAPSuccessFactorsConfigSerializer(EnterpriseCustomerPluginConfigSerializer
         """
         Helper to update credentials consistently.
         """
-        if key and secret:
+        if key is not None:
             instance.encrypted_key = key
+        if secret is not None:
             instance.encrypted_secret = secret
 
     def create(self, validated_data):

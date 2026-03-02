@@ -32,8 +32,9 @@ class Degreed2ConfigSerializer(EnterpriseCustomerPluginConfigSerializer):
         """
         Helper to update credentials consistently.
         """
-        if client_id and client_secret:
+        if client_id is not None:
             instance.encrypted_client_id = client_id
+        if client_secret is not None:
             instance.encrypted_client_secret = client_secret
 
     def create(self, validated_data):
