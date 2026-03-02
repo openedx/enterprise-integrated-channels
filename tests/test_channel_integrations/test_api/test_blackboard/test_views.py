@@ -101,8 +101,8 @@ class BlackboardConfigurationViewSetTests(APITest):
         url = reverse('api:v1:blackboard:configuration-list')
         payload = {
             'active': True,
-            'encrypted_client_id': 1,
-            'encrypted_client_secret': 2,
+            'client_id': '1',
+            'client_secret': '2',
             'enterprise_customer': self.enterprise_customer.uuid,
         }
         response = self.client.post(url, payload, format='json')
@@ -119,8 +119,8 @@ class BlackboardConfigurationViewSetTests(APITest):
         )
         url = reverse('api:v1:blackboard:configuration-detail', args=[self.enterprise_customer_conf.id])
         payload = {
-            'encrypted_client_secret': 1000,
-            'encrypted_client_id': 1001,
+            'client_secret': '1000',
+            'client_id': '1001',
             'blackboard_base_url': 'http://testing2',
             'enterprise_customer': FAKE_UUIDS[0],
         }
@@ -140,7 +140,7 @@ class BlackboardConfigurationViewSetTests(APITest):
         url = reverse('api:v1:blackboard:configuration-detail', args=[self.enterprise_customer_conf.id])
         client_secret = getattr(self.enterprise_customer_conf, 'client_id', '')
         payload = {
-            'encrypted_client_secret': '1000',
+            'client_secret': '1000',
             'enterprise_customer': FAKE_UUIDS[0],
         }
         self.client.put(url, payload)
@@ -159,7 +159,7 @@ class BlackboardConfigurationViewSetTests(APITest):
         )
         url = reverse('api:v1:blackboard:configuration-detail', args=[self.enterprise_customer_conf.id])
         payload = {
-            'encrypted_client_id': 10001,
+            'client_id': '10001',
         }
         response = self.client.patch(url, payload)
         self.assertEqual(response.status_code, 200)
