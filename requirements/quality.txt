@@ -33,11 +33,11 @@ billiard==4.2.4
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.42.56
+boto3==1.42.59
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-botocore==1.42.56
+botocore==1.42.59
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -214,7 +214,7 @@ fastavro==1.12.1
     # via
     #   -r requirements/test.txt
     #   openedx-events
-filelock==3.24.3
+filelock==3.25.0
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
@@ -229,7 +229,7 @@ iniconfig==2.3.0
     # via
     #   -r requirements/test.txt
     #   pytest
-isort==8.0.0
+isort==8.0.1
     # via
     #   -r requirements/quality.in
     #   pylint

@@ -34,11 +34,11 @@ billiard==4.2.4
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.42.56
+boto3==1.42.59
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
-botocore==1.42.56
+botocore==1.42.59
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -242,10 +242,11 @@ fastavro==1.12.1
     # via
     #   -r requirements/quality.txt
     #   openedx-events
-filelock==3.24.3
+filelock==3.25.0
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
+    #   python-discovery
     #   snowflake-connector-python
     #   tox
     #   virtualenv
@@ -260,7 +261,7 @@ iniconfig==2.3.0
     # via
     #   -r requirements/quality.txt
     #   pytest
-isort==8.0.0
+isort==8.0.1
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -288,7 +289,7 @@ lxml[html-clean]==6.0.2
     # via
     #   edx-i18n-tools
     #   lxml-html-clean
-lxml-html-clean==0.4.3
+lxml-html-clean==0.4.4
     # via lxml
 markupsafe==3.0.3
     # via
@@ -331,6 +332,7 @@ platformdirs==4.9.2
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
     #   pylint
+    #   python-discovery
     #   snowflake-connector-python
     #   tox
     #   virtualenv
@@ -429,6 +431,10 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   celery
     #   freezegun
+python-discovery==1.1.0
+    # via
+    #   -r requirements/ci.txt
+    #   virtualenv
 python-slugify==8.0.4
     # via
     #   -r requirements/quality.txt
@@ -521,7 +527,7 @@ tomlkit==0.14.0
     #   -r requirements/quality.txt
     #   pylint
     #   snowflake-connector-python
-tox==4.46.3
+tox==4.47.0
     # via -r requirements/ci.txt
 typing-extensions==4.15.0
     # via
@@ -553,7 +559,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.39.0
+virtualenv==21.1.0
     # via
     #   -r requirements/ci.txt
     #   tox
