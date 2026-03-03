@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.47 – 2026-03-03
+*******************
+
+* fix: rendering django admin user field with raw_id
+
 0.1.46 – 2026-02-26
 *******************
 

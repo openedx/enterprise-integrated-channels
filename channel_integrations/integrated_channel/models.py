@@ -1188,11 +1188,6 @@ class WebhookTransmissionQueue(TimeStampedModel):
     )
     user_region = models.CharField(
         max_length=10,
-        choices=[
-            ('US', 'United States'),
-            ('EU', 'European Union'),
-            ('OTHER', 'Other')
-        ],
         help_text='User region at time of event'
     )
     webhook_url = models.URLField(
