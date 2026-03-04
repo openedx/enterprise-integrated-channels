@@ -97,12 +97,12 @@ class PercipioAuthHelper:
             KeyError: If ``access_token`` or ``expires_in`` are absent from
                 the response JSON.
         """
-        url = config.webhook_url
+        token_url = config.webhook_token_url
 
-        LOGGER.debug('[Percipio] POSTing to token endpoint %s for region %s', url, region)
+        LOGGER.debug('[Percipio] POSTing to token endpoint %s for region %s', token_url, region)
 
         response = requests.post(
-            url,
+            token_url,
             json={
                 'client_id': config.client_id,
                 'client_secret': config.decrypted_client_secret,

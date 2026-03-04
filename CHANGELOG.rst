@@ -14,6 +14,26 @@ Change Log
 Unreleased
 **********
 
+0.1.46 – 2026-02-26
+*******************
+
+* fix: allowing django admin adding of WebhookTransmissionQueue
+
+0.1.45 – 2026-02-26
+*******************
+
+* chore: upgrade python requirements
+
+0.1.44 – 2026-02-25
+*******************
+
+* fix: renaming token field in EnterpriseWebhookConfiguration to be URL
+
+0.1.43 – 2026-02-24
+*******************
+
+* build: upgrade pip-tools to version 7.5.3
+
 
 0.1.47 – 2026-03-04
 *******************
@@ -23,7 +43,7 @@ Unreleased
 0.1.41 – 2026-02-24
 *******************
 
-* fix: setup changes for region specific Percipio integration 
+* fix: setup changes for region specific Percipio integration
 
 0.1.40 – 2026-02-17
 *******************

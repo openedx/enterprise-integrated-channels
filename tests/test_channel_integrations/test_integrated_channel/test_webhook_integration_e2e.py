@@ -53,11 +53,14 @@ class TestWebhookEndToEndFlow:
         user = User.objects.create(username='testuser', email='test@example.com')
         EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
 
+        token_url = 'https://token.example.com/token'
         config = EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
             region='US',
             webhook_url='https://us.example.com/webhook',
-            webhook_auth_token='test-token-123',
+            webhook_token_url=token_url,
+            client_id='test-client-id',
+            decrypted_client_secret='test-secret',
             active=True
         )
 
@@ -69,7 +72,13 @@ class TestWebhookEndToEndFlow:
             extra_data={'country': 'US'}  # Region detection Priority #2
         )
 
-        # 3. Mock HTTP endpoint
+        # 3. Mock the token endpoint and the webhook delivery endpoint
+        responses.add(
+            responses.POST,
+            token_url,
+            json={'access_token': 'test-token-123', 'expires_in': 3600},
+            status=200,
+        )
         responses.add(
             responses.POST,
             config.webhook_url,
@@ -104,8 +113,9 @@ class TestWebhookEndToEndFlow:
         assert queue_item.course_id == str(course_key)
 
         # 6. Verify HTTP request was made correctly (Celery already processed it)
-        assert len(responses.calls) == 1
-        request = responses.calls[0].request
+        # calls[0] is the token fetch; calls[1] is the webhook delivery
+        assert len(responses.calls) == 2
+        request = responses.calls[1].request
 
         # Verify headers
         assert request.headers['Authorization'] == 'Bearer test-token-123'
@@ -137,7 +147,6 @@ class TestWebhookEndToEndFlow:
             enterprise_customer=enterprise,
             region='EU',
             webhook_url='https://eu.example.com/webhook',
-            webhook_auth_token='eu-token',
             active=True
         )
 
@@ -304,7 +313,6 @@ class TestWebhookEndToEndFlow:
             enterprise_customer=enterprise,
             region='OTHER',
             webhook_url='https://noauth.example.com/webhook',
-            webhook_auth_token='',  # No token
             active=True
         )
 

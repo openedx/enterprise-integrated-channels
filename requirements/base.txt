@@ -8,30 +8,29 @@ amqp==5.3.1
     # via kombu
 aniso8601==10.0.1
     # via edx-tincan-py35
-asgiref==3.11.0
+asgiref==3.11.1
     # via django
 asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.42.34
+boto3==1.42.56
     # via snowflake-connector-python
-botocore==1.42.34
+botocore==1.42.56
     # via
     #   boto3
     #   s3transfer
     #   snowflake-connector-python
 celery==5.6.2
     # via -r requirements/base.in
-certifi==2026.1.4
+certifi==2026.2.25
     # via
     #   requests
     #   snowflake-connector-python
-cffi==1.17.1
+cffi==2.0.0
     # via
     #   cryptography
     #   pynacl
-    #   snowflake-connector-python
 charset-normalizer==3.4.4
     # via
     #   requests
@@ -49,14 +48,14 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==46.0.0
+cryptography==46.0.5
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
     #   pyopenssl
     #   snowflake-connector-python
-django==5.2.10
+django==5.2.11
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -114,7 +113,7 @@ edx-drf-extensions==10.6.0
     # via
     #   -r requirements/base.in
     #   edx-rbac
-edx-opaque-keys[django]==3.0.0
+edx-opaque-keys[django]==3.1.0
     # via
     #   -r requirements/base.in
     #   edx-drf-extensions
@@ -124,7 +123,7 @@ edx-rest-api-client==6.2.0
     # via -r requirements/base.in
 edx-tincan-py35==2.0.0
     # via -r requirements/base.in
-filelock==3.20.3
+filelock==3.24.3
     # via snowflake-connector-python
 idna==3.11
     # via
@@ -148,15 +147,15 @@ packaging==26.0
     # via
     #   kombu
     #   snowflake-connector-python
-platformdirs==4.5.1
+platformdirs==4.9.2
     # via snowflake-connector-python
 prompt-toolkit==3.0.52
     # via click-repl
-psutil==7.2.1
+psutil==7.2.2
     # via edx-django-utils
 pycparser==3.0
     # via cffi
-pyjwt[crypto]==2.10.1
+pyjwt[crypto]==2.11.0
     # via
     #   drf-jwt
     #   edx-drf-extensions
@@ -164,7 +163,7 @@ pyjwt[crypto]==2.10.1
     #   snowflake-connector-python
 pymongo==4.16.0
     # via edx-opaque-keys
-pynacl==1.6.0
+pynacl==1.6.2
     # via edx-django-utils
 pyopenssl==25.3.0
     # via snowflake-connector-python
@@ -195,13 +194,13 @@ six==1.17.0
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/base.in
-snowflake-connector-python==3.18.0
+snowflake-connector-python==4.3.0
     # via -r requirements/base.in
 sortedcontainers==2.4.0
     # via snowflake-connector-python
 sqlparse==0.5.5
     # via django
-stevedore==5.6.0
+stevedore==5.7.0
     # via
     #   edx-django-utils
     #   edx-opaque-keys
@@ -228,7 +227,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.3.5
+wcwidth==0.6.0
     # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
