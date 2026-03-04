@@ -15,7 +15,7 @@ Unreleased
 **********
 
 
-0.1.42 – 2026-02-24
+0.1.47 – 2026-03-04
 *******************
 
 * fix: altering migration file to keep in sync
