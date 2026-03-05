@@ -64,6 +64,10 @@ docs/channel_integrations.*.rst
 requirements/private.in
 requirements/private.txt
 
+# Database files
+*.db
+*.sqlite3
+
 # Code editor settings
 .idea/
 .vscode/
