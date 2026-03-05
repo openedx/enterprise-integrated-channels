@@ -9,6 +9,7 @@ Tests that webhook payloads:
 - Include proper enterprise/learner/course metadata
 """
 from datetime import datetime
+from uuid import UUID
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -21,10 +22,17 @@ from openedx_events.learning.data import (
     UserData,
     UserPersonalData,
 )
+from social_django.models import UserSocialAuth
 
 from channel_integrations.integrated_channel.handlers import _prepare_completion_payload, _prepare_enrollment_payload
 
 User = get_user_model()
+
+# Mock UUIDs for testing
+MOCK_PERCIPIO_USER_UUID = 'a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d'
+MOCK_PERCIPIO_ORG_UUID = 'f6e5d4c3-b2a1-4f5e-9d8c-7b6a5e4d3c2b'
+MOCK_ENROLL_USER_UUID = '12345678-1234-5678-1234-567812345678'
+MOCK_ENROLL_ORG_UUID = '87654321-4321-8765-4321-876543218765'
 
 
 @pytest.mark.django_db
@@ -40,6 +48,18 @@ class TestWebhookPayloadValidation:
             first_name='Schema',
             last_name='Test'
         )
+        
+        # Create SSO data with Percipio UUIDs
+        UserSocialAuth.objects.create(
+            user=user,
+            provider='tpa-saml',
+            uid=f'skillsoft-us:{MOCK_PERCIPIO_USER_UUID}',
+            extra_data={
+                'PercipioUserUUID': MOCK_PERCIPIO_USER_UUID,
+                'percipioOrganizationUuid': MOCK_PERCIPIO_ORG_UUID
+            }
+        )
+        
         course_key = CourseKey.from_string('course-v1:edX+Schema+2024')
 
         # Create grade data
@@ -71,14 +91,35 @@ class TestWebhookPayloadValidation:
             assert key in payload, f"Missing required top-level key: {key}"
 
         # Validate top-level required keys
-        assert payload['content_id'] == str(course_key)
-        assert payload['user'] == user.username
+        # content_id should be course ID format (course:org+course), not course run
+        expected_course_id = f"course:{course_key.org}+{course_key.course}"
+        assert payload['content_id'] == expected_course_id
+        # user should be Percipio user UUID from SSO
+        assert payload['user'] == MOCK_PERCIPIO_USER_UUID
+        # Validate it's a proper UUID format
+        assert UUID(payload['user'], version=4)
+        # org_id should be Percipio organization UUID from SSO
+        assert payload.get('org_id') == MOCK_PERCIPIO_ORG_UUID
+        # Validate it's a proper UUID format
+        assert UUID(payload['org_id'], version=4)
         assert payload['status'] == 'completed'
         assert payload['completion_percentage'] == 100
 
     def test_completion_payload_data_types(self):
         """Verify completion payload uses correct data types."""
         user = User.objects.create(username='type-test', email='type@example.com')
+        
+        # Create SSO data with Percipio UUIDs
+        UserSocialAuth.objects.create(
+            user=user,
+            provider='tpa-saml',
+            uid=f'skillsoft-us:{MOCK_PERCIPIO_USER_UUID}',
+            extra_data={
+                'PercipioUserUUID': MOCK_PERCIPIO_USER_UUID,
+                'percipioOrganizationUuid': MOCK_PERCIPIO_ORG_UUID
+            }
+        )
+        
         course_key = CourseKey.from_string('course-v1:edX+Types+2024')
 
         grade_data = PersistentCourseGradeData(
@@ -104,6 +145,18 @@ class TestWebhookPayloadValidation:
     def test_completion_payload_timestamp_format(self):
         """Verify timestamps are in ISO 8601 format."""
         user = User.objects.create(username='timestamp-test', email='ts@example.com')
+        
+        # Create SSO data with Percipio UUIDs
+        UserSocialAuth.objects.create(
+            user=user,
+            provider='tpa-saml',
+            uid=f'skillsoft-us:{MOCK_PERCIPIO_USER_UUID}',
+            extra_data={
+                'PercipioUserUUID': MOCK_PERCIPIO_USER_UUID,
+                'percipioOrganizationUuid': MOCK_PERCIPIO_ORG_UUID
+            }
+        )
+        
         course_key = CourseKey.from_string('course-v1:edX+Timestamp+2024')
 
         grade_data = PersistentCourseGradeData(
@@ -127,6 +180,18 @@ class TestWebhookPayloadValidation:
     def test_enrollment_payload_schema_structure(self):
         """Verify enrollment payload has correct structure."""
         user = User.objects.create(username='enroll-schema', email='enroll@example.com')
+        
+        # Create SSO data with Percipio UUIDs
+        UserSocialAuth.objects.create(
+            user=user,
+            provider='tpa-saml',
+            uid=f'skillsoft-us:{MOCK_ENROLL_USER_UUID}',
+            extra_data={
+                'PercipioUserUUID': MOCK_ENROLL_USER_UUID,
+                'percipioOrganizationUuid': MOCK_ENROLL_ORG_UUID
+            }
+        )
+        
         course_key = CourseKey.from_string('course-v1:edX+EnrollSchema+2024')
 
         # Create enrollment data
@@ -160,8 +225,16 @@ class TestWebhookPayloadValidation:
             assert key in payload, f"Missing required top-level key: {key}"
 
         # Validate top-level required keys
-        assert payload['content_id'] == str(course_key)
-        assert payload['user'] == user.username
+        expected_course_id = f"course:{course_key.org}+{course_key.course}"
+        assert payload['content_id'] == expected_course_id
+        # user should be Percipio user UUID from SSO
+        assert payload['user'] == MOCK_ENROLL_USER_UUID
+        # Validate it's a proper UUID format
+        assert UUID(payload['user'], version=4)
+        # org_id should be Percipio organization UUID from SSO
+        assert payload.get('org_id') == MOCK_ENROLL_ORG_UUID
+        # Validate it's a proper UUID format
+        assert UUID(payload['org_id'], version=4)
         assert payload['status'] == 'started'
         assert payload['completion_percentage'] == 0
 

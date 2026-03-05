@@ -172,6 +172,7 @@ class TestWebhookHandlers:
         )
 
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            mock_route.return_value = (Mock(), True)
             handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
 
             mock_route.assert_called_once()
@@ -180,7 +181,7 @@ class TestWebhookHandlers:
 
             # Verify payload structure
             assert payload['completion_percentage'] == 100
-            assert payload['content_id'] == str(course_key)
+            assert payload['content_id'] == 'course:edX+DemoX'
             assert payload['status'] == 'completed'
 
     def test_handle_enrollment_complete_payload_structure(self):
@@ -200,6 +201,7 @@ class TestWebhookHandlers:
         )
 
         with patch('channel_integrations.integrated_channel.handlers.route_webhook_by_region') as mock_route:
+            mock_route.return_value = (Mock(), True)
             handle_enrollment_for_webhooks(sender=None, signal=None, enrollment=enrollment_data)
 
             mock_route.assert_called_once()
@@ -208,7 +210,7 @@ class TestWebhookHandlers:
 
             # Verify payload structure
             assert payload['completion_percentage'] == 0
-            assert payload['content_id'] == str(course_key)
+            assert payload['content_id'] == 'course:edX+DemoX'
             assert payload['status'] == 'started'
 
     def test_handle_grade_change_logging(self, caplog):
