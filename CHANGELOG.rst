@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.47 – 2026-03-05
+*******************
+
+* fix: extract Percipio user UUID from SSO metadata instead of truncating username
+* fix: use course ID format (course:Org+Course) instead of course run for content_id
+* feat: add Percipio organization UUID to webhook payloads
+* refactor: consolidate webhook payload preparation logic to reduce code duplication
+
 0.1.46 – 2026-02-26
 *******************
 
