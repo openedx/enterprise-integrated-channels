@@ -7,7 +7,7 @@ from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthenticat
 from rest_framework import permissions, viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from rest_framework.views import APIView
 
 from django.contrib import auth
@@ -58,63 +58,65 @@ class CornerstoneLearnerInformationView(APIView):
         enterprise_customer_uuid = request.data.get('enterpriseUUID')
         enterprise_customer = get_enterprise_customer_or_404(enterprise_customer_uuid)
         course_key = request.data.get('courseKey')
-        with transaction.atomic():
-            csod_user_guid = request.data.get('userGuid')
-            csod_callback_url = request.data.get('callbackUrl')
-            csod_session_token = request.data.get('sessionToken')
-            csod_subdomain = request.data.get("subdomain")
 
-            if csod_session_token and csod_subdomain:
-                LOGGER.info(
-                    f'integrated_channel=CSOD, '
-                    f'integrated_channel_enterprise_customer_uuid={enterprise_customer_uuid}, '
-                    f'integrated_channel_lms_user={user_id}, '
-                    f'integrated_channel_course_key={course_key}, '
-                    'saving CSOD learner information'
-                )
-                cornerstone_customer_configuration = \
-                    CornerstoneEnterpriseCustomerConfiguration.get_by_customer_and_subdomain(
-                        enterprise_customer=enterprise_customer,
-                        customer_subdomain=csod_subdomain
-                    )
-                if cornerstone_customer_configuration:
-                    # check if request user is linked as a learner with the given enterprise before savin anything
-                    enterprise_customer_user = get_enterprise_customer_user(user_id, enterprise_customer_uuid)
-                    if enterprise_customer_user:
-                        # saving session token in enterprise config to access cornerstone apis
-                        cornerstone_customer_configuration.session_token = csod_session_token
-                        cornerstone_customer_configuration.session_token_modified = localized_utcnow()
-                        cornerstone_customer_configuration.save()
-                        # saving learner information received from cornerstone
-                        create_cornerstone_learner_data(
-                            user_id,
-                            csod_user_guid,
-                            csod_session_token,
-                            csod_callback_url,
-                            csod_subdomain,
-                            cornerstone_customer_configuration,
-                            course_key
-                        )
-                    else:
-                        LOGGER.error(
-                            f'integrated_channel=CSOD, '
-                            f'integrated_channel_enterprise_customer_uuid={enterprise_customer_uuid}, '
-                            f'integrated_channel_lms_user={user_id}, '
-                            f'integrated_channel_course_key={course_key}, '
-                            f'user is not linked to the given enterprise'
-                        )
-                        message = (f'Cornerstone information could not be saved for learner with user_id={user_id}'
-                                   f'because user is not linked to the given enterprise {enterprise_customer_uuid}')
-                        return Response(data={'error': message}, status=HTTP_404_NOT_FOUND)
-                else:
-                    LOGGER.error(
-                        f'integrated_channel=CSOD, '
-                        f'integrated_channel_enterprise_customer_uuid={enterprise_customer_uuid}, '
-                        f'integrated_channel_lms_user={user_id}, '
-                        f'integrated_channel_course_key={course_key}, '
-                        f'unable to find cornerstone config matching subdomain {csod_subdomain}'
-                    )
-                    message = (f'Cornerstone information could not be saved for learner with user_id={user_id}'
-                               f'because no config exist with the subdomain {csod_subdomain}')
-                    return Response(data={'error': message}, status=HTTP_404_NOT_FOUND)
-            return Response(status=HTTP_200_OK)
+        csod_user_guid = request.data.get('userGuid')
+        csod_callback_url = request.data.get('callbackUrl')
+        csod_session_token = request.data.get('sessionToken')
+        csod_subdomain = request.data.get('subdomain')
+
+        log_prefix = (
+            f'integrated_channel=CSOD, '
+            f'integrated_channel_enterprise_customer_uuid={enterprise_customer_uuid}, '
+            f'integrated_channel_lms_user={user_id}, '
+            f'integrated_channel_course_key={course_key}'
+        )
+
+        if not csod_session_token or not csod_subdomain:
+            LOGGER.warning(
+                f'{log_prefix}, missing required fields: '
+                f'sessionToken={"<present>" if csod_session_token else "<missing>"}, subdomain={csod_subdomain}'
+            )
+            return Response(
+                data={'error': 'sessionToken and subdomain are required'},
+                status=HTTP_400_BAD_REQUEST
+            )
+
+        cornerstone_customer_configuration = (
+            CornerstoneEnterpriseCustomerConfiguration.get_by_customer_and_subdomain(
+                enterprise_customer=enterprise_customer,
+                customer_subdomain=csod_subdomain
+            )
+        )
+        if not cornerstone_customer_configuration:
+            LOGGER.error(f'{log_prefix}, unable to find cornerstone config matching subdomain {csod_subdomain}')
+            message = (
+                f'Cornerstone information could not be saved for learner with user_id={user_id} '
+                f'because no config exists with the subdomain {csod_subdomain}'
+            )
+            return Response(data={'error': message}, status=HTTP_404_NOT_FOUND)
+
+        enterprise_customer_user = get_enterprise_customer_user(user_id, enterprise_customer_uuid)
+        if not enterprise_customer_user:
+            LOGGER.error(f'{log_prefix}, user is not linked to the given enterprise')
+            message = (
+                f'Cornerstone information could not be saved for learner with user_id={user_id} '
+                f'because user is not linked to the given enterprise {enterprise_customer_uuid}'
+            )
+            return Response(data={'error': message}, status=HTTP_404_NOT_FOUND)
+
+        with transaction.atomic():
+            cornerstone_customer_configuration.session_token = csod_session_token
+            cornerstone_customer_configuration.session_token_modified = localized_utcnow()
+            cornerstone_customer_configuration.save()
+
+            create_cornerstone_learner_data(
+                user_id,
+                csod_user_guid,
+                csod_session_token,
+                csod_callback_url,
+                csod_subdomain,
+                cornerstone_customer_configuration,
+                course_key
+            )
+
+        return Response(status=HTTP_200_OK)
