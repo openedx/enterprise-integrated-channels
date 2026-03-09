@@ -194,7 +194,9 @@ def _get_percipio_user_id(user):
     try:
         social_auth = UserSocialAuth.objects.filter(user=user).first()
         if social_auth and social_auth.extra_data:
-            return social_auth.extra_data.get('PercipioUserUUID')
+            return _normalize_percipio_identifier(
+                social_auth.extra_data.get('PercipioUserUUID')
+            )
     except Exception as e:  # pylint: disable=broad-exception-caught
         log.warning(f'[Webhook] Error extracting Percipio user UUID for user {user.id}: {e}')
     return None
@@ -213,10 +215,26 @@ def _get_percipio_org_id(user):
     try:
         social_auth = UserSocialAuth.objects.filter(user=user).first()
         if social_auth and social_auth.extra_data:
-            return social_auth.extra_data.get('percipioOrganizationUuid')
+            return _normalize_percipio_identifier(
+                social_auth.extra_data.get('percipioOrganizationUuid')
+            )
     except Exception as e:  # pylint: disable=broad-exception-caught
         log.warning(f'[Webhook] Error extracting Percipio org UUID for user {user.id}: {e}')
     return None
+
+
+def _normalize_percipio_identifier(identifier_value):
+    """
+    Normalize Percipio identifiers to a scalar string (or None).
+
+    Percipio webhook payload expects scalar strings for userid/orgid; some SSO
+    metadata sources may provide single-item arrays.
+    """
+    if isinstance(identifier_value, (list, tuple)):
+        identifier_value = identifier_value[0] if identifier_value else None
+    if identifier_value is None:
+        return None
+    return str(identifier_value)
 
 
 def _get_course_id_from_course_key(course_key):
@@ -238,6 +256,10 @@ def _build_webhook_payload(user, content_id, status, event_date, completion_perc
     """
     Build webhook payload with Percipio identifiers and event data.
 
+    Payload identifier fields follow Percipio's expected naming and shape:
+    - `userid`: scalar string (or None)
+    - `orgid`: scalar string (or None)
+
     Args:
         user: Django User object
         content_id: Course ID string
@@ -254,12 +276,12 @@ def _build_webhook_payload(user, content_id, status, event_date, completion_perc
 
     payload = {
         'content_id': content_id,
-        'user': percipio_user_id,
+        'userid': percipio_user_id,
         'status': status,
         'event_date': event_date,
         'completion_percentage': completion_percentage,
         'duration_spent': None,  # TODO: populate duration_spent (ENT-11477)
-        'org_id': percipio_org_id,  # Always include org_id, even if None
+        'orgid': percipio_org_id,
     }
 
     return payload
