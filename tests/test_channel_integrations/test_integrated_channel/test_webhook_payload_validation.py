@@ -84,7 +84,7 @@ class TestWebhookPayloadValidation:
         assert isinstance(payload, dict)
 
         # Ensure existence of required Percipio fields for Skillsoft
-        percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
+        percipio_required_keys = ['content_id', 'userid', 'status', 'event_date',
                                   'completion_percentage']
 
         for key in percipio_required_keys:
@@ -94,14 +94,14 @@ class TestWebhookPayloadValidation:
         # content_id should be course ID format (course:org+course), not course run
         expected_course_id = f"course:{course_key.org}+{course_key.course}"
         assert payload['content_id'] == expected_course_id
-        # user should be Percipio user UUID from SSO
-        assert payload['user'] == MOCK_PERCIPIO_USER_UUID
+        # userid should be Percipio user UUID from SSO
+        assert payload['userid'] == MOCK_PERCIPIO_USER_UUID
         # Validate it's a proper UUID format
-        assert UUID(payload['user'], version=4)
-        # org_id should be Percipio organization UUID from SSO
-        assert payload.get('org_id') == MOCK_PERCIPIO_ORG_UUID
+        assert UUID(payload['userid'], version=4)
+        # orgid should be Percipio organization UUID from SSO
+        assert payload.get('orgid') == MOCK_PERCIPIO_ORG_UUID
         # Validate it's a proper UUID format
-        assert UUID(payload['org_id'], version=4)
+        assert UUID(payload['orgid'], version=4)
         assert payload['status'] == 'completed'
         assert payload['completion_percentage'] == 100
 
@@ -137,7 +137,7 @@ class TestWebhookPayloadValidation:
 
         # Validate data types
         assert isinstance(payload['content_id'], str)
-        assert isinstance(payload['user'], str)
+        assert isinstance(payload['userid'], str)
         assert isinstance(payload['status'], str)
         assert isinstance(payload['event_date'], str)
         assert isinstance(payload['completion_percentage'], int)
@@ -218,7 +218,7 @@ class TestWebhookPayloadValidation:
         payload = _prepare_enrollment_payload(enrollment_data, user)
 
         # Ensure existence of required Percipio fields for Skillsoft
-        percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
+        percipio_required_keys = ['content_id', 'userid', 'status', 'event_date',
                                   'completion_percentage']
 
         for key in percipio_required_keys:
@@ -227,16 +227,49 @@ class TestWebhookPayloadValidation:
         # Validate top-level required keys
         expected_course_id = f"course:{course_key.org}+{course_key.course}"
         assert payload['content_id'] == expected_course_id
-        # user should be Percipio user UUID from SSO
-        assert payload['user'] == MOCK_ENROLL_USER_UUID
+        # userid should be Percipio user UUID from SSO
+        assert payload['userid'] == MOCK_ENROLL_USER_UUID
         # Validate it's a proper UUID format
-        assert UUID(payload['user'], version=4)
-        # org_id should be Percipio organization UUID from SSO
-        assert payload.get('org_id') == MOCK_ENROLL_ORG_UUID
+        assert UUID(payload['userid'], version=4)
+        # orgid should be Percipio organization UUID from SSO
+        assert payload.get('orgid') == MOCK_ENROLL_ORG_UUID
         # Validate it's a proper UUID format
-        assert UUID(payload['org_id'], version=4)
+        assert UUID(payload['orgid'], version=4)
         assert payload['status'] == 'started'
         assert payload['completion_percentage'] == 0
+
+    def test_payload_identifier_array_values_are_normalized_to_strings(self):
+        """Verify userid and orgid are scalar strings when SSO metadata provides arrays."""
+        user = User.objects.create(username='array-test', email='array@example.com')
+
+        UserSocialAuth.objects.create(
+            user=user,
+            provider='tpa-saml',
+            uid='skillsoft-us:array-values',
+            extra_data={
+                'PercipioUserUUID': [MOCK_PERCIPIO_USER_UUID],
+                'percipioOrganizationUuid': [MOCK_PERCIPIO_ORG_UUID],
+            }
+        )
+
+        course_key = CourseKey.from_string('course-v1:edX+Array+2024')
+        grade_data = PersistentCourseGradeData(
+            user_id=user.id,
+            course=CourseData(course_key=course_key, display_name='Array Test'),
+            course_edited_timestamp=timezone.now(),
+            course_version='1',
+            grading_policy_hash='hash',
+            percent_grade=1.0,
+            letter_grade='A',
+            passed_timestamp=timezone.now()
+        )
+
+        payload = _prepare_completion_payload(grade_data, user)
+
+        assert payload['userid'] == MOCK_PERCIPIO_USER_UUID
+        assert payload['orgid'] == MOCK_PERCIPIO_ORG_UUID
+        assert isinstance(payload['userid'], str)
+        assert isinstance(payload['orgid'], str)
 
     def test_enrollment_payload_timestamp_format(self):
         """Verify enrollment timestamps are in ISO 8601 format."""

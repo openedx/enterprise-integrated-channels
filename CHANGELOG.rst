@@ -14,6 +14,13 @@ Change Log
 Unreleased
 **********
 
+0.1.49 – 2026-03-09
+*******************
+
+* fix: send Percipio identifiers using `userid` and `orgid` payload keys
+* fix: normalize Percipio identifier values to scalar strings (not arrays)
+* docs: add Percipio webhook payload examples for completion and enrollment events
+
 0.1.48 – 2026-03-05
 *******************
 
