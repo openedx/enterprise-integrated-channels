@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.50 – 2026-03-09
+*******************
+
+* fix: add logging and 400 response for missing sessionToken/subdomain in cornerstone view
+
 0.1.49 – 2026-03-09
 *******************
 
