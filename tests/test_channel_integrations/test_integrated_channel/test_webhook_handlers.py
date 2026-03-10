@@ -20,6 +20,7 @@ from openedx_events.learning.data import (
 from waffle.testutils import override_switch
 
 from channel_integrations.integrated_channel.handlers import (
+    _format_percipio_event_date,
     handle_enrollment_for_webhooks,
     handle_grade_change_for_webhooks,
 )
@@ -59,7 +60,7 @@ class TestWebhookHandlers:
             mock_route.assert_called_once()
             _, kwargs = mock_route.call_args
             assert kwargs['payload']['completion_percentage'] == 100
-            assert kwargs['payload']['event_date'] == passed_timestamp.isoformat()
+            assert kwargs['payload']['event_date'] == _format_percipio_event_date(passed_timestamp)
 
     @override_switch('enable_webhook_learning_time_enrichment', active=True)
     def test_handle_grade_change_with_learning_time_enrichment(self):
