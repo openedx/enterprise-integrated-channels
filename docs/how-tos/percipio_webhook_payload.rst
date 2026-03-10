@@ -9,10 +9,8 @@ Required identifier field names
 
 Percipio expects these identifier keys:
 
-- ``userid``: Percipio user UUID as a scalar string, or ``null``
+- ``user``: Percipio user UUID as a scalar string, or ``null``
 - ``orgid``: Percipio organization UUID as a scalar string, or ``null``
-
-Do not use ``user`` or ``org_id`` in Percipio payloads.
 
 Completion payload example
 **************************
@@ -21,10 +19,10 @@ Completion payload example
 
    {
      "content_id": "course:edX+DemoX",
-     "userid": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+     "user": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
      "orgid": "f6e5d4c3-b2a1-4f5e-9d8c-7b6a5e4d3c2b",
      "status": "completed",
-     "event_date": "2026-03-09T10:12:30.123456+00:00",
+    "event_date": "2025-02-25T06:45:00Z",
      "completion_percentage": 100,
      "duration_spent": null
    }
@@ -36,10 +34,10 @@ Enrollment payload example
 
    {
      "content_id": "course:edX+DemoX",
-     "userid": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+     "user": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
      "orgid": "f6e5d4c3-b2a1-4f5e-9d8c-7b6a5e4d3c2b",
      "status": "started",
-     "event_date": "2026-03-09T10:12:30.123456+00:00",
+    "event_date": "2025-02-25T06:45:00Z",
      "completion_percentage": 0,
      "duration_spent": null
    }
@@ -52,7 +50,7 @@ If Percipio IDs are missing from SSO metadata, identifiers are sent as ``null``:
 .. code-block:: json
 
    {
-     "userid": null,
+     "user": null,
      "orgid": null
    }
 

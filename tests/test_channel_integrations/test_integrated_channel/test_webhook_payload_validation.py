@@ -8,7 +8,7 @@ Tests that webhook payloads:
 - Conform to ISO 8601 timestamps
 - Include proper enterprise/learner/course metadata
 """
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
@@ -24,7 +24,11 @@ from openedx_events.learning.data import (
 )
 from social_django.models import UserSocialAuth
 
-from channel_integrations.integrated_channel.handlers import _prepare_completion_payload, _prepare_enrollment_payload
+from channel_integrations.integrated_channel.handlers import (
+    _format_percipio_event_date,
+    _prepare_completion_payload,
+    _prepare_enrollment_payload,
+)
 
 User = get_user_model()
 
@@ -38,6 +42,15 @@ MOCK_ENROLL_ORG_UUID = '87654321-4321-8765-4321-876543218765'
 @pytest.mark.django_db
 class TestWebhookPayloadValidation:
     """Test webhook payload schema validation and structure."""
+
+    def test_format_percipio_event_date_handles_none(self):
+        """Verify helper safely returns None when timestamp is missing."""
+        assert _format_percipio_event_date(None) is None
+
+    def test_format_percipio_event_date_uses_utc_z_format(self):
+        """Verify helper outputs Skillsoft expected UTC Z timestamp format."""
+        event_datetime = datetime(2025, 2, 25, 6, 45, 0, 123456, tzinfo=UTC)
+        assert _format_percipio_event_date(event_datetime) == '2025-02-25T06:45:00Z'
 
     def test_completion_payload_schema_structure(self):
         """Verify completion payload has correct structure and all required fields."""
@@ -84,7 +97,7 @@ class TestWebhookPayloadValidation:
         assert isinstance(payload, dict)
 
         # Ensure existence of required Percipio fields for Skillsoft
-        percipio_required_keys = ['content_id', 'userid', 'status', 'event_date',
+        percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
                                   'completion_percentage']
 
         for key in percipio_required_keys:
@@ -94,10 +107,10 @@ class TestWebhookPayloadValidation:
         # content_id should be course ID format (course:org+course), not course run
         expected_course_id = f"course:{course_key.org}+{course_key.course}"
         assert payload['content_id'] == expected_course_id
-        # userid should be Percipio user UUID from SSO
-        assert payload['userid'] == MOCK_PERCIPIO_USER_UUID
+        # user should be Percipio user UUID from SSO
+        assert payload['user'] == MOCK_PERCIPIO_USER_UUID
         # Validate it's a proper UUID format
-        assert UUID(payload['userid'], version=4)
+        assert UUID(payload['user'], version=4)
         # orgid should be Percipio organization UUID from SSO
         assert payload.get('orgid') == MOCK_PERCIPIO_ORG_UUID
         # Validate it's a proper UUID format
@@ -137,7 +150,7 @@ class TestWebhookPayloadValidation:
 
         # Validate data types
         assert isinstance(payload['content_id'], str)
-        assert isinstance(payload['userid'], str)
+        assert isinstance(payload['user'], str)
         assert isinstance(payload['status'], str)
         assert isinstance(payload['event_date'], str)
         assert isinstance(payload['completion_percentage'], int)
@@ -172,9 +185,8 @@ class TestWebhookPayloadValidation:
 
         payload = _prepare_completion_payload(grade_data, user)
 
-        # Validate event_date format (ISO 8601)
-        # Should not raise ValueError
-        event_date = datetime.fromisoformat(payload['event_date'].replace('Z', '+00:00'))
+        # Validate event_date format (YYYY-MM-DDTHH:MM:SSZ)
+        event_date = datetime.strptime(payload['event_date'], '%Y-%m-%dT%H:%M:%SZ')
         assert isinstance(event_date, datetime)
 
     def test_enrollment_payload_schema_structure(self):
@@ -218,7 +230,7 @@ class TestWebhookPayloadValidation:
         payload = _prepare_enrollment_payload(enrollment_data, user)
 
         # Ensure existence of required Percipio fields for Skillsoft
-        percipio_required_keys = ['content_id', 'userid', 'status', 'event_date',
+        percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
                                   'completion_percentage']
 
         for key in percipio_required_keys:
@@ -227,10 +239,10 @@ class TestWebhookPayloadValidation:
         # Validate top-level required keys
         expected_course_id = f"course:{course_key.org}+{course_key.course}"
         assert payload['content_id'] == expected_course_id
-        # userid should be Percipio user UUID from SSO
-        assert payload['userid'] == MOCK_ENROLL_USER_UUID
+        # user should be Percipio user UUID from SSO
+        assert payload['user'] == MOCK_ENROLL_USER_UUID
         # Validate it's a proper UUID format
-        assert UUID(payload['userid'], version=4)
+        assert UUID(payload['user'], version=4)
         # orgid should be Percipio organization UUID from SSO
         assert payload.get('orgid') == MOCK_ENROLL_ORG_UUID
         # Validate it's a proper UUID format
@@ -239,7 +251,7 @@ class TestWebhookPayloadValidation:
         assert payload['completion_percentage'] == 0
 
     def test_payload_identifier_array_values_are_normalized_to_strings(self):
-        """Verify userid and orgid are scalar strings when SSO metadata provides arrays."""
+        """Verify user and orgid are scalar strings when SSO metadata provides arrays."""
         user = User.objects.create(username='array-test', email='array@example.com')
 
         UserSocialAuth.objects.create(
@@ -266,9 +278,9 @@ class TestWebhookPayloadValidation:
 
         payload = _prepare_completion_payload(grade_data, user)
 
-        assert payload['userid'] == MOCK_PERCIPIO_USER_UUID
+        assert payload['user'] == MOCK_PERCIPIO_USER_UUID
         assert payload['orgid'] == MOCK_PERCIPIO_ORG_UUID
-        assert isinstance(payload['userid'], str)
+        assert isinstance(payload['user'], str)
         assert isinstance(payload['orgid'], str)
 
     def test_enrollment_payload_timestamp_format(self):
@@ -295,5 +307,5 @@ class TestWebhookPayloadValidation:
         payload = _prepare_enrollment_payload(enrollment_data, user)
 
         # Validate enrollment_date format (ISO 8601)
-        event_date = datetime.fromisoformat(payload['event_date'].replace('Z', '+00:00'))
+        event_date = datetime.strptime(payload['event_date'], '%Y-%m-%dT%H:%M:%SZ')
         assert isinstance(event_date, datetime)

@@ -14,6 +14,12 @@ Change Log
 Unreleased
 **********
 
+0.1.51 – 2026-03-10
+*******************
+
+* fix: use Skillsoft payload key `user` (UUID value) instead of `userid`
+* fix: keep timestamp field as `event_date` in `YYYY-MM-DDTHH:MM:SSZ` format
+
 0.1.50 – 2026-03-09
 *******************
 

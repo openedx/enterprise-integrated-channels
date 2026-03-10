@@ -4,6 +4,7 @@ These handlers are called directly by the consume_events management command and 
 towards the requirements of the Percipio LMS Content Submission Guidelines.
 https://documentation.skillsoft.com/en_us/pes/Integration/iX-Studio/iX_Studio_onboarding_content_guidelines.htm
 """
+from datetime import UTC
 import logging
 import waffle  # pylint: disable=invalid-django-waffle-import
 from django.contrib.auth import get_user_model
@@ -227,7 +228,7 @@ def _normalize_percipio_identifier(identifier_value):
     """
     Normalize Percipio identifiers to a scalar string (or None).
 
-    Percipio webhook payload expects scalar strings for userid/orgid; some SSO
+    Percipio webhook payload expects scalar strings for user/orgid; some SSO
     metadata sources may provide single-item arrays.
     """
     if isinstance(identifier_value, (list, tuple)):
@@ -252,19 +253,28 @@ def _get_course_id_from_course_key(course_key):
     return f"course:{course_key.org}+{course_key.course}"
 
 
+def _format_percipio_event_date(event_datetime):
+    """
+    Format datetime in Percipio expected UTC format: YYYY-MM-DDTHH:MM:SSZ.
+    """
+    if event_datetime is None:
+        return None
+    return event_datetime.astimezone(UTC).replace(microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
 def _build_webhook_payload(user, content_id, status, event_date, completion_percentage):
     """
     Build webhook payload with Percipio identifiers and event data.
 
     Payload identifier fields follow Percipio's expected naming and shape:
-    - `userid`: scalar string (or None)
+    - `user`: scalar string (or None)
     - `orgid`: scalar string (or None)
 
     Args:
         user: Django User object
         content_id: Course ID string
         status: Event status ('completed' or 'started')
-        event_date: ISO formatted timestamp string
+        event_date: UTC timestamp formatted as YYYY-MM-DDTHH:MM:SSZ
         completion_percentage: Integer percentage (0-100)
 
     Returns:
@@ -276,7 +286,7 @@ def _build_webhook_payload(user, content_id, status, event_date, completion_perc
 
     payload = {
         'content_id': content_id,
-        'userid': percipio_user_id,
+        'user': percipio_user_id,
         'status': status,
         'event_date': event_date,
         'completion_percentage': completion_percentage,
@@ -302,7 +312,7 @@ def _prepare_completion_payload(grade_data, user):
         user=user,
         content_id=_get_course_id_from_course_key(grade_data.course.course_key),
         status='completed',
-        event_date=grade_data.passed_timestamp.isoformat(),
+        event_date=_format_percipio_event_date(grade_data.passed_timestamp),
         completion_percentage=100
     )
 
@@ -322,6 +332,6 @@ def _prepare_enrollment_payload(enrollment_data, user):
         user=user,
         content_id=_get_course_id_from_course_key(enrollment_data.course.course_key),
         status='started',
-        event_date=enrollment_data.creation_date.isoformat(),
+        event_date=_format_percipio_event_date(enrollment_data.creation_date),
         completion_percentage=0
     )
