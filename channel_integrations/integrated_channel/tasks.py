@@ -258,7 +258,7 @@ def transmit_content_metadata(username, channel_code, channel_pk):
 @shared_task
 @set_code_owner_attribute
 @locked(expiry_seconds=TASK_LOCK_EXPIRY_SECONDS, lock_name_kwargs=['channel_code', 'channel_pk'])
-def transmit_learner_data(username, channel_code, channel_pk):
+def transmit_learner_data(username, channel_code, channel_pk, enterprise_enrollment_id=None, force_transmit=False):
     """
     Task to send learner data to a linked integrated channel.
 
@@ -274,7 +274,11 @@ def transmit_learner_data(username, channel_code, channel_pk):
 
     # Note: learner data transmission code paths don't raise any uncaught exception,
     # so we don't need a broad try-except block here.
-    integrated_channel.transmit_learner_data(api_user)
+    integrated_channel.transmit_learner_data(
+        api_user,
+        enterprise_enrollment_id=enterprise_enrollment_id,
+        force_transmit=force_transmit,
+    )
 
     duration = time.time() - start
     _log_batch_task_finish('transmit_learner_data', channel_code, api_user.id, integrated_channel, duration)
