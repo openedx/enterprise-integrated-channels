@@ -213,6 +213,7 @@ class WebhookTransmissionQueueAdmin(admin.ModelAdmin):
 
     raw_id_fields = (
         'enterprise_customer',
+        'user',
     )
 
     readonly_fields = (
