@@ -89,8 +89,8 @@ class SAPSuccessFactorsConfigurationViewSetTests(APITest):
             'sapsf_company_id': 'test',
             'enterprise_customer': ENTERPRISE_ID,
             'sapsf_user_id': 893489,
-            'encrypted_key': '',
-            'encrypted_secret': '',
+            'key': '',
+            'secret': '',
             'user_type': 'user',
         }
         response = self.client.put(url, payload)
@@ -117,7 +117,7 @@ class SAPSuccessFactorsConfigurationViewSetTests(APITest):
             'enterprise_customer': ENTERPRISE_ID,
             'sapsf_user_id': 893489,
             'user_type': 'user',
-            'encrypted_secret': '1000',
+            'secret': '1000',
         }
         self.client.put(url, payload)
         self.sap_config.refresh_from_db()

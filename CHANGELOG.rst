@@ -14,10 +14,41 @@ Change Log
 Unreleased
 **********
 
-0.1.47 – 2026-03-03
+0.1.53 – 2026-03-17
 *******************
 
 * fix: rendering django admin user field with raw_id
+
+0.1.52 – 2026-03-13
+*******************
+
+* fix: Handling Moodle errors
+
+0.1.51 – 2026-03-10
+*******************
+
+* fix: use Skillsoft payload key `user` (UUID value) instead of `userid`
+* fix: keep timestamp field as `event_date` in `YYYY-MM-DDTHH:MM:SSZ` format
+
+0.1.50 – 2026-03-09
+*******************
+
+* fix: add logging and 400 response for missing sessionToken/subdomain in cornerstone view
+
+0.1.49 – 2026-03-09
+*******************
+
+* fix: send Percipio identifiers using `userid` and `orgid` payload keys
+* fix: normalize Percipio identifier values to scalar strings (not arrays)
+* docs: add Percipio webhook payload examples for completion and enrollment events
+
+0.1.48 – 2026-03-05
+*******************
+
+* fix: extract Percipio user UUID from SSO metadata instead of truncating username
+* fix: use course ID format (course:Org+Course) instead of course run for content_id
+* feat: add Percipio organization UUID to webhook payloads
+* refactor: consolidate webhook payload preparation logic to reduce code duplication
 
 0.1.46 – 2026-02-26
 *******************
@@ -40,7 +71,7 @@ Unreleased
 * build: upgrade pip-tools to version 7.5.3
 
 
-0.1.42 – 2026-02-24
+0.1.47 – 2026-03-04
 *******************
 
 * fix: altering migration file to keep in sync

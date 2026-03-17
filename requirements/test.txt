@@ -27,11 +27,11 @@ billiard==4.2.4
     # via
     #   -r requirements/base.txt
     #   celery
-boto3==1.42.56
+boto3==1.42.63
     # via
     #   -r requirements/base.txt
     #   snowflake-connector-python
-botocore==1.42.56
+botocore==1.42.63
     # via
     #   -r requirements/base.txt
     #   boto3
@@ -49,9 +49,9 @@ cffi==2.0.0
     #   -r requirements/base.txt
     #   cryptography
     #   pynacl
-chardet==6.0.0.post1
+chardet==7.0.1
     # via diff-cover
-charset-normalizer==3.4.4
+charset-normalizer==3.4.5
     # via
     #   -r requirements/base.txt
     #   requests
@@ -77,7 +77,7 @@ click-repl==0.3.0
     # via
     #   -r requirements/base.txt
     #   celery
-code-annotations==2.3.0
+code-annotations==2.3.2
     # via -r requirements/test.in
 coverage[toml]==7.13.4
     # via pytest-cov
@@ -183,11 +183,11 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.txt
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==40.5.1
+faker==40.8.0
     # via factory-boy
 fastavro==1.12.1
     # via openedx-events
-filelock==3.24.3
+filelock==3.25.0
     # via
     #   -r requirements/base.txt
     #   snowflake-connector-python
@@ -239,7 +239,7 @@ packaging==26.0
     #   kombu
     #   pytest
     #   snowflake-connector-python
-platformdirs==4.9.2
+platformdirs==4.9.4
     # via
     #   -r requirements/base.txt
     #   snowflake-connector-python
@@ -302,7 +302,7 @@ python-slugify==8.0.4
     # via code-annotations
 python3-openid==3.2.0
     # via social-auth-core
-pytz==2025.2
+pytz==2026.1.post1
     # via
     #   -r requirements/base.txt
     #   edx-tincan-py35

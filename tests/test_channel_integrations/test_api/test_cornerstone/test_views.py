@@ -5,6 +5,8 @@ import json
 from unittest import mock
 from uuid import uuid4
 
+import ddt
+
 from django.conf import settings
 from django.urls import reverse
 
@@ -157,6 +159,7 @@ class CornerstoneConfigurationViewSetTests(APITest):
         assert not missing.get('missing') and not incorrect.get('incorrect')
 
 
+@ddt.ddt
 class CornerstoneLearnerInformationViewTests(APITest):
     """
     Tests for CornerstoneLearnerInformationView API endpoints
@@ -201,6 +204,39 @@ class CornerstoneLearnerInformationViewTests(APITest):
             course_id=self.course_key,
             user_id=self.user.id
         ).exists()
+
+    @ddt.data(
+        {"sessionToken": None, "subdomain": "dummy_subdomain"},  # missing sessionToken
+        {"sessionToken": "123123123", "subdomain": None},  # missing subdomain
+        {"sessionToken": None, "subdomain": None},  # both missing
+    )
+    @ddt.unpack
+    def test_save_learner_endpoint_missing_required_fields(self, sessionToken, subdomain):
+        """
+        Test that a 400 is returned when sessionToken or subdomain (or both) are missing.
+        """
+        post_data = {
+            "courseKey": self.course_key,
+            "enterpriseUUID": self.enterprise_customer.uuid,
+            "userGuid": "24142313",
+            "callbackUrl": "https://example.com/csod/callback/1",
+        }
+        if sessionToken is not None:
+            post_data["sessionToken"] = sessionToken
+        if subdomain is not None:
+            post_data["subdomain"] = subdomain
+
+        response = self.client.post(self.path, post_data)
+        assert response.status_code == 400
+        assert response.data['error'] == 'sessionToken and subdomain are required'
+        self.cornerstone_config.refresh_from_db()
+        assert self.cornerstone_config.session_token != '123123123'
+        assert CornerstoneLearnerDataTransmissionAudit.objects.filter(
+            enterprise_customer_uuid=self.enterprise_customer.uuid,
+            plugin_configuration_id=self.cornerstone_config.id,
+            course_id=self.course_key,
+            user_id=self.user.id
+        ).count() == 0
 
     def test_save_learner_endpoint_enterprise_customer_does_not_exist(self):
         """

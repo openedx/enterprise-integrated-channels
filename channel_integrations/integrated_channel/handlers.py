@@ -4,11 +4,13 @@ These handlers are called directly by the consume_events management command and 
 towards the requirements of the Percipio LMS Content Submission Guidelines.
 https://documentation.skillsoft.com/en_us/pes/Integration/iX-Studio/iX_Studio_onboarding_content_guidelines.htm
 """
+from datetime import UTC
 import logging
 import waffle  # pylint: disable=invalid-django-waffle-import
 from django.contrib.auth import get_user_model
 from enterprise.models import EnterpriseCustomerUser
 from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
+from social_django.models import UserSocialAuth
 
 from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,
@@ -180,25 +182,156 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable
             )
 
 
-def _prepare_completion_payload(grade_data, user):
-    """Prepare webhook payload for Percipio course completion event."""
-    return {
-        'content_id': str(grade_data.course.course_key),
-        'user': user.username,
-        'status': 'completed',
-        'event_date': grade_data.passed_timestamp.isoformat(),
-        'completion_percentage': 100,
+def _get_percipio_user_id(user):
+    """
+    Extract Percipio user UUID from SSO metadata.
+
+    Args:
+        user: Django User object
+
+    Returns:
+        str: Percipio user UUID or None if not found
+    """
+    try:
+        social_auth = UserSocialAuth.objects.filter(user=user).first()
+        if social_auth and social_auth.extra_data:
+            return _normalize_percipio_identifier(
+                social_auth.extra_data.get('PercipioUserUUID')
+            )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        log.warning(f'[Webhook] Error extracting Percipio user UUID for user {user.id}: {e}')
+    return None
+
+
+def _get_percipio_org_id(user):
+    """
+    Extract Percipio organization UUID from SSO metadata.
+
+    Args:
+        user: Django User object
+
+    Returns:
+        str: Percipio organization UUID or None if not found
+    """
+    try:
+        social_auth = UserSocialAuth.objects.filter(user=user).first()
+        if social_auth and social_auth.extra_data:
+            return _normalize_percipio_identifier(
+                social_auth.extra_data.get('percipioOrganizationUuid')
+            )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        log.warning(f'[Webhook] Error extracting Percipio org UUID for user {user.id}: {e}')
+    return None
+
+
+def _normalize_percipio_identifier(identifier_value):
+    """
+    Normalize Percipio identifiers to a scalar string (or None).
+
+    Percipio webhook payload expects scalar strings for user/orgid; some SSO
+    metadata sources may provide single-item arrays.
+    """
+    if isinstance(identifier_value, (list, tuple)):
+        identifier_value = identifier_value[0] if identifier_value else None
+    if identifier_value is None:
+        return None
+    return str(identifier_value)
+
+
+def _get_course_id_from_course_key(course_key):
+    """
+    Extract course ID from course run key.
+
+    Converts course-v1:Org+Course+Run to course:Org+Course format.
+
+    Args:
+        course_key: CourseKey object
+
+    Returns:
+        str: Course ID in format 'course:{org}+{course}'
+    """
+    return f"course:{course_key.org}+{course_key.course}"
+
+
+def _format_percipio_event_date(event_datetime):
+    """
+    Format datetime in Percipio expected UTC format: YYYY-MM-DDTHH:MM:SSZ.
+    """
+    if event_datetime is None:
+        return None
+    return event_datetime.astimezone(UTC).replace(microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
+def _build_webhook_payload(user, content_id, status, event_date, completion_percentage):
+    """
+    Build webhook payload with Percipio identifiers and event data.
+
+    Payload identifier fields follow Percipio's expected naming and shape:
+    - `user`: scalar string (or None)
+    - `orgid`: scalar string (or None)
+
+    Args:
+        user: Django User object
+        content_id: Course ID string
+        status: Event status ('completed' or 'started')
+        event_date: UTC timestamp formatted as YYYY-MM-DDTHH:MM:SSZ
+        completion_percentage: Integer percentage (0-100)
+
+    Returns:
+        dict: Webhook payload
+    """
+    # Extract Percipio identifiers from SSO metadata
+    percipio_user_id = _get_percipio_user_id(user)
+    percipio_org_id = _get_percipio_org_id(user)
+
+    payload = {
+        'content_id': content_id,
+        'user': percipio_user_id,
+        'status': status,
+        'event_date': event_date,
+        'completion_percentage': completion_percentage,
         'duration_spent': None,  # TODO: populate duration_spent (ENT-11477)
+        'orgid': percipio_org_id,
     }
+
+    return payload
+
+
+def _prepare_completion_payload(grade_data, user):
+    """
+    Prepare webhook payload for Percipio course completion event.
+
+    Args:
+        grade_data: PersistentCourseGradeData object
+        user: Django User object
+
+    Returns:
+        dict: Webhook payload with course completion data
+    """
+    return _build_webhook_payload(
+        user=user,
+        content_id=_get_course_id_from_course_key(grade_data.course.course_key),
+        status='completed',
+        event_date=_format_percipio_event_date(grade_data.passed_timestamp),
+        completion_percentage=100
+    )
 
 
 def _prepare_enrollment_payload(enrollment_data, user):
-    """Prepare webhook payload for course enrollment event."""
-    return {
-        'content_id': str(enrollment_data.course.course_key),
-        'user': user.username,
-        'status': 'started',
-        'event_date': enrollment_data.creation_date.isoformat(),
-        'completion_percentage': 0,
-        'duration_spent': None,  # TODO: populate duration_spent (ENT-11477)
-    }
+    """
+    Prepare webhook payload for course enrollment event.
+
+    Args:
+        enrollment_data: CourseEnrollmentData object
+        user: Django User object
+
+    Returns:
+        dict: Webhook payload with course enrollment data
+    """
+    return _build_webhook_payload(
+        user=user,
+        content_id=_get_course_id_from_course_key(enrollment_data.course.course_key),
+        status='started',
+        event_date=_format_percipio_event_date(enrollment_data.creation_date),
+        completion_percentage=0
+    )

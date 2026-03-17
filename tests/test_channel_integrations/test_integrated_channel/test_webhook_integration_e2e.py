@@ -21,6 +21,7 @@ from openedx_events.learning.data import (
 from social_django.models import UserSocialAuth
 
 from channel_integrations.integrated_channel.handlers import (
+    _format_percipio_event_date,
     handle_enrollment_for_webhooks,
     handle_grade_change_for_webhooks,
 )
@@ -125,7 +126,7 @@ class TestWebhookEndToEndFlow:
         # Verify body
         body = json.loads(request.body)
         assert body['status'] == 'completed'
-        assert body['event_date'] == passed_timestamp.isoformat()
+        assert body['event_date'] == _format_percipio_event_date(passed_timestamp)
 
         # 8. Verify queue item marked as success
         queue_item.refresh_from_db()

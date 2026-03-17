@@ -34,11 +34,11 @@ billiard==4.2.4
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.42.56
+boto3==1.42.63
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
-botocore==1.42.56
+botocore==1.42.63
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -48,7 +48,7 @@ build==1.4.0
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
-cachetools==7.0.1
+cachetools==7.0.4
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -64,11 +64,11 @@ cffi==2.0.0
     #   -r requirements/quality.txt
     #   cryptography
     #   pynacl
-chardet==6.0.0.post1
+chardet==7.0.1
     # via
     #   -r requirements/quality.txt
     #   diff-cover
-charset-normalizer==3.4.4
+charset-normalizer==3.4.5
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -102,7 +102,7 @@ click-repl==0.3.0
     # via
     #   -r requirements/quality.txt
     #   celery
-code-annotations==2.3.0
+code-annotations==2.3.2
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -141,7 +141,7 @@ distlib==0.4.0
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==5.2.11
+django==5.2.12
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -234,7 +234,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/quality.txt
 factory-boy==3.3.3
     # via -r requirements/quality.txt
-faker==40.5.1
+faker==40.8.0
     # via
     #   -r requirements/quality.txt
     #   factory-boy
@@ -242,10 +242,11 @@ fastavro==1.12.1
     # via
     #   -r requirements/quality.txt
     #   openedx-events
-filelock==3.24.3
+filelock==3.25.0
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
+    #   python-discovery
     #   snowflake-connector-python
     #   tox
     #   virtualenv
@@ -260,7 +261,7 @@ iniconfig==2.3.0
     # via
     #   -r requirements/quality.txt
     #   pytest
-isort==8.0.0
+isort==8.0.1
     # via
     #   -r requirements/quality.txt
     #   pylint
@@ -288,7 +289,7 @@ lxml[html-clean]==6.0.2
     # via
     #   edx-i18n-tools
     #   lxml-html-clean
-lxml-html-clean==0.4.3
+lxml-html-clean==0.4.4
     # via lxml
 markupsafe==3.0.3
     # via
@@ -326,11 +327,12 @@ path==16.16.0
     # via edx-i18n-tools
 pip-tools==7.5.3
     # via -r requirements/pip-tools.txt
-platformdirs==4.9.2
+platformdirs==4.9.4
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
     #   pylint
+    #   python-discovery
     #   snowflake-connector-python
     #   tox
     #   virtualenv
@@ -429,6 +431,10 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   celery
     #   freezegun
+python-discovery==1.1.1
+    # via
+    #   -r requirements/ci.txt
+    #   virtualenv
 python-slugify==8.0.4
     # via
     #   -r requirements/quality.txt
@@ -437,7 +443,7 @@ python3-openid==3.2.0
     # via
     #   -r requirements/quality.txt
     #   social-auth-core
-pytz==2025.2
+pytz==2026.1.post1
     # via
     #   -r requirements/quality.txt
     #   edx-tincan-py35
@@ -516,12 +522,16 @@ text-unidecode==1.3
     # via
     #   -r requirements/quality.txt
     #   python-slugify
+tomli-w==1.2.0
+    # via
+    #   -r requirements/ci.txt
+    #   tox
 tomlkit==0.14.0
     # via
     #   -r requirements/quality.txt
     #   pylint
     #   snowflake-connector-python
-tox==4.46.3
+tox==4.49.0
     # via -r requirements/ci.txt
 typing-extensions==4.15.0
     # via
@@ -553,7 +563,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.39.0
+virtualenv==21.1.0
     # via
     #   -r requirements/ci.txt
     #   tox
