@@ -258,7 +258,7 @@ def transmit_content_metadata(username, channel_code, channel_pk):
 @shared_task
 @set_code_owner_attribute
 @locked(expiry_seconds=TASK_LOCK_EXPIRY_SECONDS, lock_name_kwargs=['channel_code', 'channel_pk'])
-def transmit_learner_data(username, channel_code, channel_pk):
+def transmit_learner_data(username, channel_code, channel_pk, **kwargs):
     """
     Task to send learner data to a linked integrated channel.
 
