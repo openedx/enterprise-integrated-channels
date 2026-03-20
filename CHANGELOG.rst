@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.54 – 2026-03-20
+*******************
+
+* fix: added backward compatibility for ENT-9662
+
 0.1.53 – 2026-03-17
 *******************
 
