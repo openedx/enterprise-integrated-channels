@@ -401,13 +401,13 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         return ContentMetadataTransmitter(self)
 
-    def transmit_learner_data(self, user):
+    def transmit_learner_data(self, user, **kwargs):
         """
         Iterate over each learner data record and transmit it to the integrated channel.
         """
         exporter = self.get_learner_data_exporter(user)
         transmitter = self.get_learner_data_transmitter()
-        transmitter.transmit(exporter)
+        transmitter.transmit(exporter, **kwargs)
 
     def transmit_single_learner_data(self, **kwargs):
         """

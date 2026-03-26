@@ -1060,6 +1060,27 @@ class TestLearnerExporter(unittest.TestCase):
         assert self.course_id in unique_enrollments
         assert self.course_id_2 in unique_enrollments
 
+    def test_get_enrollments_to_process_filters_by_enterprise_enrollment_id(self):
+        """Exporter should be able to target exactly one enterprise enrollment id."""
+        enrollment_1 = factories.EnterpriseCourseEnrollmentFactory(
+            enterprise_customer_user=self.enterprise_customer_user,
+            course_id=self.course_id,
+        )
+        factories.EnterpriseCourseEnrollmentFactory(
+            enterprise_customer_user=self.enterprise_customer_user,
+            course_id=self.course_id_2,
+        )
+
+        enrollments = self.exporter.get_enrollments_to_process(
+            lms_user_for_filter=None,
+            course_run_id=None,
+            channel_name='channel_integration',
+            enterprise_enrollment_id=enrollment_1.id,
+        )
+
+        assert len(enrollments) == 1
+        assert enrollments[0].id == enrollment_1.id
+
     def test_grades_summary_for_completed_audit_has_autofilled_date(self):
         '''
         We will insert a current date time stamp for audit enrollment,

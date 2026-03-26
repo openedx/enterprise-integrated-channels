@@ -113,6 +113,60 @@ class TestLearnerDataTransmitter(unittest.TestCase):
         )
         self.learner_transmitter.process_transmission_error.assert_called_once()
 
+    @mock.patch('channel_integrations.integrated_channel.transmitters.'
+                'learner_data.LearnerExporterUtility.lms_user_id_for_ent_course_enrollment_id')
+    @mock.patch('channel_integrations.integrated_channel.transmitters.learner_data.is_already_transmitted')
+    def test_force_transmit_bypasses_already_transmitted_check(self, is_already_tx, mock_lms_id):
+        """Force mode should attempt transmission even when audit says already transmitted."""
+        mock_lms_id.return_value = 'abc'
+        is_already_tx.return_value = True
+        self.learner_transmitter.client.create_course_completion = Mock(return_value=(200, 'ok'))
+
+        exporter = MagicMock()
+        record = MagicMock()
+        record.course_completed = True
+        record.serialize = Mock(return_value='serialized data')
+        record.enterprise_course_enrollment_id = 11
+        record.grade = 'Pass'
+        record.course_id = 'course-v1:test+TST+2026'
+        record.user_id = 1
+        exporter.export = MagicMock(return_value=[record])
+
+        self.learner_transmitter.transmit(
+            exporter,
+            remote_user_id='user_id',
+            force_transmit=True,
+        )
+
+        self.learner_transmitter.client.create_course_completion.assert_called_once()
+
+    @mock.patch('channel_integrations.integrated_channel.transmitters.'
+                'learner_data.LearnerExporterUtility.lms_user_id_for_ent_course_enrollment_id')
+    @mock.patch('channel_integrations.integrated_channel.transmitters.learner_data.is_already_transmitted')
+    def test_force_transmit_still_respects_incomplete_course_rule(self, is_already_tx, mock_lms_id):
+        """Force mode should not send incomplete courses unless explicit incomplete-progress feature is enabled."""
+        mock_lms_id.return_value = 'abc'
+        is_already_tx.return_value = False
+        self.learner_transmitter.client.create_course_completion = Mock(return_value=(200, 'ok'))
+
+        exporter = MagicMock()
+        record = MagicMock()
+        record.course_completed = False
+        record.serialize = Mock(return_value='serialized data')
+        record.enterprise_course_enrollment_id = 22
+        record.grade = 'In Progress'
+        record.course_id = 'course-v1:test+TST+2026'
+        record.user_id = 1
+        exporter.export = MagicMock(return_value=[record])
+
+        self.learner_transmitter.transmit(
+            exporter,
+            remote_user_id='user_id',
+            force_transmit=True,
+        )
+
+        assert not self.learner_transmitter.client.create_course_completion.called
+
     def test_learner_data_transmission_feature_flag(self):
         """
         Test that a customer's configuration can disable learner data transmissions

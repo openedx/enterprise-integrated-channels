@@ -232,6 +232,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
             skip_transmitted,
             TransmissionAudit,
             grade,
+            enterprise_enrollment_id,
     ):
         """
         Determines which enrollments can be safely transmitted after checking
@@ -244,6 +245,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
             lms_user_for_filter,
             course_run_id,
             channel_name,
+            enterprise_enrollment_id,
         )
 
         if TransmissionAudit and skip_transmitted:
@@ -383,6 +385,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
         grade = kwargs.get('grade', None)
         skip_transmitted = kwargs.get('skip_transmitted', True)
         TransmissionAudit = kwargs.get('TransmissionAudit', None)
+        enterprise_enrollment_id = kwargs.get('enterprise_enrollment_id', None)
 
         # Fetch the consenting enrollment data, including the enterprise_customer_user.
         # Order by the course_id, to avoid fetching course API data more than we have to.
@@ -393,6 +396,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
             skip_transmitted,
             TransmissionAudit,
             grade,
+            enterprise_enrollment_id,
         )
         enrollment_ids_to_export = [enrollment.id for enrollment in enrollments_permitted]
 
@@ -507,10 +511,10 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
             included_enrollments.add(enterprise_enrollment)
         return included_enrollments
 
-    def get_enrollments_to_process(self, lms_user_for_filter, course_run_id, channel_name):
+    def get_enrollments_to_process(self, lms_user_for_filter, course_run_id, channel_name, enterprise_enrollment_id):
         """
         Fetches list of EnterpriseCourseEnrollments ordered by course_id.
-        List is filtered by learner and course_run_id if both are provided
+        List is filtered by enrollment id when provided, otherwise by learner and course_run_id if both are provided.
 
         lms_user_for_filter: If None, data for ALL courses and learners will be returned
         course_run_id: If None, data for ALL courses and learners will be returned
@@ -522,7 +526,19 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
             enterprise_customer_user__enterprise_customer=self.enterprise_customer,
             enterprise_customer_user__active=True,
         )
-        if lms_user_for_filter and course_run_id:
+
+        if enterprise_enrollment_id is not None:
+            enrollment_queryset = enrollment_queryset.filter(id=enterprise_enrollment_id)
+            LOGGER.info(generate_formatted_log(
+                channel_name,
+                self.enterprise_customer.uuid,
+                lms_user_for_filter,
+                course_run_id,
+                'get_enrollments_to_process run for enterprise_enrollment_id={enterprise_enrollment_id}.'.format(
+                    enterprise_enrollment_id=enterprise_enrollment_id,
+                )
+            ))
+        elif lms_user_for_filter and course_run_id:
             enrollment_queryset = enrollment_queryset.filter(
                 course_id=course_run_id,
                 enterprise_customer_user__user_id=lms_user_for_filter.id,
