@@ -277,6 +277,16 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
         kwargs.update(
             TransmissionAudit=TransmissionAudit,
         )
+        force_transmit = kwargs.get('force_transmit', False)
+        if force_transmit:
+            kwargs['skip_transmitted'] = False
+            LOGGER.info(generate_formatted_log(
+                self.enterprise_configuration.channel_code(),
+                enterprise_customer_uuid,
+                None,
+                None,
+                'Force transmit mode enabled for learner completion transmission.'
+            ))
 
         if self.enterprise_configuration.disable_learner_data_transmissions:
             LOGGER.info(generate_formatted_log(
@@ -311,10 +321,20 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
                 # so we shouldn't send a completion status call
                 remote_id = getattr(learner_data, kwargs.get('remote_user_id'))
                 encoded_serialized_payload = encode_data_for_logging(serialized_payload)
+                LOGGER.info(generate_formatted_log(
+                    self.enterprise_configuration.channel_code(),
+                    enterprise_customer_uuid,
+                    lms_user_id,
+                    learner_data.course_id,
+                    'Skipping incomplete enrollment transmission '
+                    f'integrated_channel_enterprise_enrollment_id={enterprise_enrollment_id}, '
+                    f'integrated_channel_remote_user_id={remote_id}, '
+                    f'integrated_channel_serialized_payload_base64={encoded_serialized_payload}'
+                ))
                 continue
 
             grade = getattr(learner_data, 'grade', None)
-            if is_already_transmitted(
+            if (not force_transmit) and is_already_transmitted(
                 TransmissionAudit,
                 enterprise_enrollment_id,
                 self.enterprise_configuration.id,
@@ -322,6 +342,14 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
                 detect_grade_updated=self.INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK,
             ):
                 # We've already sent a completion status for this enrollment
+                LOGGER.info(generate_formatted_log(
+                    self.enterprise_configuration.channel_code(),
+                    enterprise_customer_uuid,
+                    lms_user_id,
+                    learner_data.course_id,
+                    'Skipping previously transmitted enrollment '
+                    f'integrated_channel_enterprise_enrollment_id={enterprise_enrollment_id}'
+                ))
                 continue
 
             if self.enterprise_configuration.dry_run_mode_enabled:
