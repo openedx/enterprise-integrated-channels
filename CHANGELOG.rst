@@ -14,10 +14,11 @@ Change Log
 Unreleased
 **********
 
-0.1.55 – 2026-03-30
+0.1.56 – 2026-03-30
 *******************
-
 * feat: add transmit_course_completed_data and transmit_course_in_progress_data tasks and management commands for targeted learner data transmission
+* fix: route region using country metadata only, with support for array-based SSO values
+* fix: prioritize SSO `country` metadata for region detection and support array-based metadata values
 
 0.1.54 – 2026-03-20
 *******************

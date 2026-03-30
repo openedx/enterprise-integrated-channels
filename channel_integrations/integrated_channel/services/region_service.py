@@ -21,10 +21,9 @@ def get_user_region(user) -> str:
     Extract user region from SSO metadata with fallback strategy.
 
     Priority:
-    1. third_party_auth.UserSocialAuth.extra_data['region'] (explicit)
-    2. third_party_auth.UserSocialAuth.extra_data['country'] -> map to region
-    3. EnterpriseCustomerUser.data_sharing_consent_records (last resort)
-    4. Default to 'OTHER'
+    1. third_party_auth.UserSocialAuth.extra_data['country'] -> map to region
+    2. EnterpriseCustomerUser.data_sharing_consent_records (last resort)
+    3. Default to 'OTHER'
 
     Args:
         user: Django User instance
@@ -33,23 +32,18 @@ def get_user_region(user) -> str:
         str: One of 'US', 'EU', 'OTHER'
     """
     try:
-        # Priority 1: Explicit region in SSO extra_data
+        # Priority 1: SSO metadata in extra_data
         social_auth = UserSocialAuth.objects.filter(user=user).first()
         if social_auth and social_auth.extra_data:
-            # Check for explicit region
-            explicit_region = social_auth.extra_data.get('region')
-            if explicit_region in ['US', 'EU', 'OTHER']:
-                log.debug(f'[Region] User {user.id} has explicit region: {explicit_region}')
-                return explicit_region
-
-            # Priority 2: Map country code to region
-            country_code = social_auth.extra_data.get('country')
+            # Auth metadata values can be provided as one-item arrays.
+            # Prefer country first for region routing.
+            country_code = _extract_metadata_value(social_auth.extra_data.get('country'))
             if country_code:
                 region = _map_country_to_region(country_code)
                 log.debug(f'[Region] User {user.id} mapped from country {country_code} to {region}')
                 return region
 
-        # Priority 3: Check enterprise customer location (if available)
+        # Priority 2: Check enterprise customer location (if available)
         ecu = EnterpriseCustomerUser.objects.filter(user_id=user.id, active=True).first()
         if ecu and hasattr(ecu.enterprise_customer, 'country'):
             country_code = ecu.enterprise_customer.country
@@ -60,7 +54,7 @@ def get_user_region(user) -> str:
     except Exception as e:  # pylint: disable=broad-exception-caught
         log.warning(f'[Region] Error detecting region for user {user.id}: {e}', exc_info=True)
 
-    # Priority 4: Default fallback
+    # Priority 3: Default fallback
     log.info(f'[Region] No region metadata for user {user.id}, defaulting to OTHER')
     return 'OTHER'
 
@@ -72,7 +66,20 @@ def _map_country_to_region(country_code: str) -> str:
 
     if country_code == 'US':
         return 'US'
+    elif country_code == 'EU':
+        return 'EU'
     elif country_code in EU_COUNTRIES:
         return 'EU'
     else:
         return 'OTHER'
+
+
+def _extract_metadata_value(value) -> str:
+    """Normalize SSO metadata value to a scalar uppercase string."""
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return ''
+        value = value[0]
+
+    normalized = str(value or '').strip().upper()
+    return normalized

@@ -285,47 +285,47 @@ class TestWebhookRegionRoutingEdgeCases:
         assert len(responses.calls) == 1
 
     @responses.activate
-    def test_explicit_region_in_sso_overrides_country_mapping(self):
-        """Test that explicit 'region' in SSO data takes precedence over country mapping."""
+    def test_country_in_sso_overrides_region_field(self):
+        """Test that country in SSO data is used and explicit region is ignored."""
 
         # Setup
         enterprise = EnterpriseCustomerFactory()
         user = User.objects.create(username='explicit-region', email='explicit@example.com')
         EnterpriseCustomerUserFactory(enterprise_customer=enterprise, user_id=user.id)
 
-        # User has BOTH explicit region AND country in SSO
-        # Explicit region should take precedence
+        # User has BOTH explicit region AND country in SSO.
+        # Country should take precedence.
         UserSocialAuth.objects.create(
             user=user,
             provider='tpa-saml',
             uid='explicit-uid',
             extra_data={
-                'region': 'EU',  # Explicit region (Priority #1)
-                'country': 'US'  # Country that would map to US (Priority #2)
+                'region': 'EU',
+                'country': 'US'
             }
         )
 
-        # EU config
-        eu_config = EnterpriseWebhookConfiguration.objects.create(
-            enterprise_customer=enterprise,
-            region='EU',
-            webhook_url='https://eu.example.com/webhook',
-            active=True
-        )
-
-        # US config also exists
-        EnterpriseWebhookConfiguration.objects.create(
+        # US config
+        us_config = EnterpriseWebhookConfiguration.objects.create(
             enterprise_customer=enterprise,
             region='US',
-            webhook_url='https://us-wrong.example.com/webhook',
+            webhook_url='https://us.example.com/webhook',
             active=True
         )
 
-        # Mock EU endpoint
+        # EU config also exists
+        EnterpriseWebhookConfiguration.objects.create(
+            enterprise_customer=enterprise,
+            region='EU',
+            webhook_url='https://eu-ignored.example.com/webhook',
+            active=True
+        )
+
+        # Mock US endpoint
         responses.add(
             responses.POST,
-            eu_config.webhook_url,
-            json={'region': 'EU'},
+            us_config.webhook_url,
+            json={'region': 'US'},
             status=200
         )
 
@@ -345,15 +345,15 @@ class TestWebhookRegionRoutingEdgeCases:
         # Invoke handler
         handle_grade_change_for_webhooks(sender=None, signal=None, grade=grade_data)
 
-        # Verify routed to EU (explicit region) not US (country)
+        # Verify routed to US (country) and not EU (explicit region)
         queue_item = WebhookTransmissionQueue.objects.get(user=user)
-        assert queue_item.user_region == 'EU'
-        assert queue_item.webhook_url == eu_config.webhook_url
+        assert queue_item.user_region == 'US'
+        assert queue_item.webhook_url == us_config.webhook_url
         assert queue_item.status == 'success'
 
-        # Verify HTTP call went to EU endpoint
+        # Verify HTTP call went to US endpoint
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == eu_config.webhook_url
+        assert responses.calls[0].request.url == us_config.webhook_url
 
     @responses.activate
     def test_no_webhook_config_for_region_no_other_fallback_skips_queue(self):
