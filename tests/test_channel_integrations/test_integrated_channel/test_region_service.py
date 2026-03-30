@@ -148,6 +148,26 @@ class TestRegionService:
 
             assert region == 'OTHER'
 
+    def test_get_user_region_with_empty_social_auth_extra_data_defaults_to_other(self):
+        """Test empty social auth extra_data path falls back to OTHER."""
+        user = User.objects.create(username='testuser_empty_extra', email='test_empty_extra@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {}
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            with patch(
+                'channel_integrations.integrated_channel.services.region_service.EnterpriseCustomerUser'
+            ) as mock_ecu:
+                mock_ecu.objects.filter.return_value.first.return_value = None
+
+                region = get_user_region(user)
+
+                assert region == 'OTHER'
+
     def test_get_user_region_exception_handling(self, caplog):
         """Test region detection handles exceptions gracefully."""
         caplog.set_level(logging.WARNING)
