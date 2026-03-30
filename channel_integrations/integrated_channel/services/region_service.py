@@ -51,8 +51,6 @@ def get_user_region(user) -> str:
                     f'[Region] Resolved user {user.id} via SSO country: '
                     f'country={country_code} region={region}'
                 )
-                log.debug(f'[Region] User {user.id} mapped from country {country_code} to {region}')
-                return region
 
             log.info(f'[Region] No usable SSO country metadata for user {user.id}')
 
@@ -68,7 +66,7 @@ def get_user_region(user) -> str:
                 f'[Region] Resolved user {user.id} via enterprise country: '
                 f'country={country_code} region={region}'
             )
-            log.debug(f'[Region] User {user.id} using enterprise country {country_code} -> {region}')
+            log.info(f'[Region] User {user.id} using enterprise country {country_code} -> {region}')
             return region
 
         if ecu and not hasattr(ecu.enterprise_customer, 'country'):
