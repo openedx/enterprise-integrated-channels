@@ -51,8 +51,10 @@ def get_user_region(user) -> str:
                     f'[Region] Resolved user {user.id} via SSO country: '
                     f'country={country_code} region={region}'
                 )
+                return region
 
-            log.info(f'[Region] No usable SSO country metadata for user {user.id}')
+            else:
+                log.info(f'[Region] No usable SSO country metadata for user {user.id}')
 
         # Priority 2: Check enterprise customer location (if available)
         ecu = EnterpriseCustomerUser.objects.filter(user_id=user.id, active=True).first()
