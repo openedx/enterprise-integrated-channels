@@ -25,8 +25,8 @@ User = get_user_model()
 class TestRegionService:
     """Tests for region_service.py."""
 
-    def test_get_user_region_explicit(self):
-        """Verify explicit region in SSO extra_data."""
+    def test_get_user_region_explicit_region_ignored(self):
+        """Verify explicit region in SSO extra_data is ignored."""
         user = User.objects.create(username='testuser')
         UserSocialAuth.objects.create(
             user=user,
@@ -34,7 +34,7 @@ class TestRegionService:
             uid='test-uid',
             extra_data={'region': 'EU'}
         )
-        assert get_user_region(user) == 'EU'
+        assert get_user_region(user) == 'OTHER'
 
     def test_get_user_region_country_mapping(self):
         """Verify country code mapping in SSO extra_data."""

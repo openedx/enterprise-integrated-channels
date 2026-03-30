@@ -16,8 +16,88 @@ User = get_user_model()
 class TestRegionService:
     """Tests for region_service.py."""
 
-    def test_get_user_region_with_explicit_region_in_sso(self):
-        """Test region detection using explicit region from SSO extra_data."""
+    def test_get_user_region_with_country_array_in_sso(self):
+        """Test region detection using country from SSO extra_data list value."""
+        user = User.objects.create(username='testuser', email='test@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {
+                'country': ['DE'],
+            }
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            region = get_user_region(user)
+
+            assert region == 'EU'
+
+    def test_get_user_region_with_country_array_region_value(self):
+        """Test country metadata can carry region values like EU in a list."""
+        user = User.objects.create(username='testuser_ci', email='test_ci@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {'country': ['EU']}
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            region = get_user_region(user)
+
+            assert region == 'EU'
+
+    def test_get_user_region_with_empty_country_array_defaults_to_other(self):
+        """Test empty country array normalizes to empty value and falls back to OTHER."""
+        user = User.objects.create(username='testuser_empty_array', email='test_empty_array@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {'country': []}
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            region = get_user_region(user)
+
+            assert region == 'OTHER'
+
+    def test_get_user_region_with_country_tuple_value(self):
+        """Test tuple metadata values are also normalized and mapped correctly."""
+        user = User.objects.create(username='testuser_tuple', email='test_tuple@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {'country': ('US',)}
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            region = get_user_region(user)
+
+            assert region == 'US'
+
+    def test_get_user_region_with_country_array_takes_priority_over_region(self):
+        """Test country metadata is checked before explicit region metadata."""
+        user = User.objects.create(username='testuser_priority', email='test_priority@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {
+                'country': ['DE'],
+                'region': ['US'],
+            }
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            region = get_user_region(user)
+
+            assert region == 'EU'
+
+    def test_get_user_region_with_region_only_in_sso_defaults_to_other(self):
+        """Test region-only metadata is ignored and falls back to OTHER."""
         user = User.objects.create(username='testuser', email='test@example.com')
 
         with patch(
@@ -29,7 +109,7 @@ class TestRegionService:
 
             region = get_user_region(user)
 
-            assert region == 'US'
+            assert region == 'OTHER'
             mock_social_auth.objects.filter.assert_called_once_with(user=user)
 
     def test_get_user_region_with_enterprise_country(self):
@@ -67,6 +147,26 @@ class TestRegionService:
             region = get_user_region(user)
 
             assert region == 'OTHER'
+
+    def test_get_user_region_with_empty_social_auth_extra_data_defaults_to_other(self):
+        """Test empty social auth extra_data path falls back to OTHER."""
+        user = User.objects.create(username='testuser_empty_extra', email='test_empty_extra@example.com')
+
+        with patch(
+            'channel_integrations.integrated_channel.services.region_service.UserSocialAuth'
+        ) as mock_social_auth:
+            mock_social = MagicMock()
+            mock_social.extra_data = {}
+            mock_social_auth.objects.filter.return_value.first.return_value = mock_social
+
+            with patch(
+                'channel_integrations.integrated_channel.services.region_service.EnterpriseCustomerUser'
+            ) as mock_ecu:
+                mock_ecu.objects.filter.return_value.first.return_value = None
+
+                region = get_user_region(user)
+
+                assert region == 'OTHER'
 
     def test_get_user_region_exception_handling(self, caplog):
         """Test region detection handles exceptions gracefully."""
