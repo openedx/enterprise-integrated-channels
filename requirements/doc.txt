@@ -41,11 +41,11 @@ billiard==4.2.4
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.42.78
+boto3==1.42.83
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-botocore==1.42.78
+botocore==1.42.83
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -69,12 +69,12 @@ chardet==7.4.0.post2
     # via
     #   -r requirements/test.txt
     #   diff-cover
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via
     #   -r requirements/test.txt
     #   requests
     #   snowflake-connector-python
-click==8.3.1
+click==8.3.2
     # via
     #   -r requirements/test.txt
     #   celery
@@ -202,7 +202,7 @@ edx-drf-extensions==10.6.0
     # via
     #   -r requirements/test.txt
     #   edx-rbac
-edx-opaque-keys[django]==3.1.0
+edx-opaque-keys[django]==4.0.0
     # via
     #   -r requirements/test.txt
     #   edx-ccx-keys
@@ -216,7 +216,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/test.txt
 factory-boy==3.3.3
     # via -r requirements/test.txt
-faker==40.11.1
+faker==40.12.0
     # via
     #   -r requirements/test.txt
     #   factory-boy
@@ -288,7 +288,7 @@ mdurl==0.1.2
     # via markdown-it-py
 mock==5.2.0
     # via -r requirements/test.txt
-more-itertools==10.8.0
+more-itertools==11.0.1
     # via
     #   jaraco-classes
     #   jaraco-functools
@@ -405,7 +405,7 @@ pyyaml==6.0.3
     #   responses
 readme-renderer==44.0
     # via twine
-requests==2.33.0
+requests==2.33.1
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
@@ -523,7 +523,7 @@ typing-extensions==4.15.0
     #   pydata-sphinx-theme
     #   pyopenssl
     #   snowflake-connector-python
-tzdata==2025.3
+tzdata==2026.1
     # via
     #   -r requirements/test.txt
     #   kombu
