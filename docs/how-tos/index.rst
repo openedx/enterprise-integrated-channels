@@ -6,3 +6,4 @@ How-tos
 
 	percipio_webhook_payload
 	celery_queue_configuration
+	tpa_org_allowlist_api

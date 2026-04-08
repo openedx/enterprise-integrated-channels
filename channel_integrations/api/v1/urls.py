@@ -17,4 +17,5 @@ urlpatterns = [
     path('configs/health-check', IntegratedChannelHealthCheckView.as_view(), name='health_check'),
     path('configs/', IntegratedChannelsBaseViewSet.as_view({'get': 'list'}), name='configs'),
     path('logs/', include('channel_integrations.api.v1.logs.urls')),
+    path('tpa-org-allowlist/', include('channel_integrations.api.v1.tpa_org_allowlist.urls')),
 ]

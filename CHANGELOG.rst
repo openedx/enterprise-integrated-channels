@@ -14,6 +14,12 @@ Change Log
 Unreleased
 **********
 
+0.1.57 – 2026-04-10
+*******************
+
+* feat: add TPA org allowlist API with dedicated ``tpa_org_allowlist_admin`` role
+* feat: validate endpoint derives enterprise scope from caller credentials, no ``enterprise_customer`` param required
+
 0.1.56 – 2026-03-30
 *******************
 * feat: add transmit_course_completed_data and transmit_course_in_progress_data tasks and management commands for targeted learner data transmission
