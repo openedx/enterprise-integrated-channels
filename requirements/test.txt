@@ -326,6 +326,7 @@ requests-oauthlib==2.0.0
     # via social-auth-core
 responses==0.26.0
     # via -r requirements/test.in
+    # via -r requirements/base.txt
 s3transfer==0.16.0
     # via
     #   -r requirements/base.txt

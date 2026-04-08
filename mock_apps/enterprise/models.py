@@ -689,6 +689,14 @@ class EnterpriseCustomerUser(TimeStampedModel):
             return True
         return False
 
+    @classmethod
+    def get_active_enterprise_users(cls, user_id, enterprise_customer_uuids=None):
+        """Return active EnterpriseCustomerUser records for the given user."""
+        kwargs = {'user_id': user_id, 'active': True}
+        if enterprise_customer_uuids is not None:
+            kwargs['enterprise_customer__in'] = enterprise_customer_uuids
+        return cls.objects.filter(**kwargs)
+
     class Meta:
         app_label = 'enterprise'
 
@@ -758,6 +766,20 @@ class SystemWideEnterpriseUserRoleAssignment(UserRoleAssignment):
         related_name="system_wide_role_assignments",
         on_delete=models.CASCADE,
     )
+
+    enterprise_customer = models.ForeignKey(
+        EnterpriseCustomer,
+        null=True,
+        blank=True,
+        related_name="system_wide_role_assignments",
+        on_delete=models.CASCADE,
+    )
+
+    def get_context(self):
+        """Return a list containing the enterprise customer UUID string, or None."""
+        if self.enterprise_customer_id:
+            return [str(self.enterprise_customer.uuid)]
+        return None
 
     @classmethod
     def get_distinct_assignments_by_role_name(cls, user, role_names=None):

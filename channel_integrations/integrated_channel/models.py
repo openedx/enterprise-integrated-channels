@@ -1261,3 +1261,39 @@ class WebhookTransmissionQueue(TimeStampedModel):
             models.Index(fields=['event_type']),
             models.Index(fields=['deduplication_key']),
         ]
+
+
+class TpaOrgAllowlist(TimeStampedModel):
+    """
+    Allowlist of third-party auth org IDs permitted to access edX for an enterprise customer.
+
+    Each row permits users asserting `tpa_org_id` to authenticate into the associated
+    enterprise customer's edX environment.
+
+    .. no_pii:
+    """
+    enterprise_customer = models.ForeignKey(
+        EnterpriseCustomer,
+        on_delete=models.CASCADE,
+        related_name='tpa_org_allowlist',
+        help_text='Enterprise customer this org is permitted to access',
+    )
+    tpa_org_id = models.CharField(
+        max_length=255,
+        help_text='Org UUID as asserted by the IdP in the SAML attribute',
+    )
+    demo_account = models.BooleanField(
+        default=False,
+        help_text='Whether this is a demo/trial organisation',
+    )
+
+    class Meta:
+        app_label = 'channel_integration'
+        verbose_name = 'TPA Org Allowlist Entry'
+        verbose_name_plural = 'TPA Org Allowlist Entries'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['enterprise_customer', 'tpa_org_id'],
+                name='unique_tpa_org_per_enterprise',
+            )
+        ]
