@@ -188,6 +188,18 @@ class MoodleEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguratio
         )
     )
 
+    grade_assignment_cmid = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Grade Assignment Course Module ID",
+        help_text=_(
+            "The Moodle course module ID (cmid) for the grade assignment activity. "
+            "When set, this takes precedence over grade_assignment_name, making grade sync "
+            "immune to activity renames. Find the cmid via Moodle Admin → Course → Activities "
+            "or the core_course_get_contents web service. Strongly recommended for production."
+        ),
+    )
+
     enable_incomplete_progress_transmission = models.BooleanField(
         help_text=_("When set to True, the configured customer will receive learner data transmissions, for incomplete"
                     " courses as well"),
