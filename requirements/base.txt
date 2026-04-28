@@ -14,16 +14,16 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.42.91
+boto3==1.42.96
     # via snowflake-connector-python
-botocore==1.42.91
+botocore==1.42.96
     # via
     #   boto3
     #   s3transfer
     #   snowflake-connector-python
 celery==5.6.3
     # via -r requirements/base.in
-certifi==2026.2.25
+certifi==2026.4.22
     # via
     #   requests
     #   snowflake-connector-python
@@ -35,7 +35,7 @@ charset-normalizer==3.4.7
     # via
     #   requests
     #   snowflake-connector-python
-click==8.3.2
+click==8.3.3
     # via
     #   celery
     #   click-didyoumean
@@ -48,7 +48,7 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==46.0.7
+cryptography==47.0.0
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
@@ -88,7 +88,6 @@ django-oauth-toolkit==3.2.0
     # via -r requirements/base.in
 django-object-actions==5.0.0
     # via -r requirements/base.in
-    # via -r requirements/base.in
 django-simple-history==3.11.0
     # via -r requirements/base.in
 django-waffle==5.0.0
@@ -126,7 +125,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.in
 filelock==3.29.0
     # via snowflake-connector-python
-idna==3.11
+idna==3.13
     # via
     #   requests
     #   snowflake-connector-python
@@ -144,7 +143,7 @@ oauthlib==3.3.1
     # via django-oauth-toolkit
 openedx-atlas==0.7.0
     # via -r requirements/base.in
-packaging==26.1
+packaging==26.2
     # via
     #   kombu
     #   snowflake-connector-python
@@ -162,11 +161,11 @@ pyjwt[crypto]==2.12.1
     #   edx-drf-extensions
     #   edx-rest-api-client
     #   snowflake-connector-python
-pymongo==4.16.0
+pymongo==4.17.0
     # via edx-opaque-keys
 pynacl==1.6.2
     # via edx-django-utils
-pyopenssl==26.0.0
+pyopenssl==26.1.0
     # via snowflake-connector-python
 python-dateutil==2.9.0.post0
     # via
@@ -185,7 +184,7 @@ requests==2.33.1
     #   edx-rest-api-client
     #   slumber
     #   snowflake-connector-python
-s3transfer==0.16.0
+s3transfer==0.16.1
     # via boto3
 semantic-version==2.10.0
     # via edx-drf-extensions
@@ -213,7 +212,7 @@ typing-extensions==4.15.0
     #   jwcrypto
     #   pyopenssl
     #   snowflake-connector-python
-tzdata==2026.1
+tzdata==2026.2
     # via kombu
 tzlocal==5.3.1
     # via celery
