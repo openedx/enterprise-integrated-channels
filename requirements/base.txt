@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.42.96
+boto3==1.43.2
     # via snowflake-connector-python
-botocore==1.42.96
+botocore==1.43.2
     # via
     #   boto3
     #   s3transfer
@@ -86,7 +86,7 @@ django-model-utils==5.0.0
     #   edx-rbac
 django-oauth-toolkit==3.2.0
     # via -r requirements/base.in
-django-object-actions==5.0.0
+django-object-actions==5.0.1
     # via -r requirements/base.in
 django-simple-history==3.11.0
     # via -r requirements/base.in
@@ -184,7 +184,7 @@ requests==2.33.1
     #   edx-rest-api-client
     #   slumber
     #   snowflake-connector-python
-s3transfer==0.16.1
+s3transfer==0.17.0
     # via boto3
 semantic-version==2.10.0
     # via edx-drf-extensions
@@ -227,7 +227,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.6.0
+wcwidth==0.7.0
     # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
