@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.43.2
+boto3==1.43.6
     # via snowflake-connector-python
-botocore==1.43.2
+botocore==1.43.6
     # via
     #   boto3
     #   s3transfer
@@ -48,14 +48,14 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==47.0.0
+cryptography==48.0.0
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt
     #   pyopenssl
     #   snowflake-connector-python
-django==5.2.13
+django==5.2.14
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
@@ -125,7 +125,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.in
 filelock==3.29.0
     # via snowflake-connector-python
-idna==3.13
+idna==3.14
     # via
     #   requests
     #   snowflake-connector-python
@@ -165,13 +165,13 @@ pymongo==4.17.0
     # via edx-opaque-keys
 pynacl==1.6.2
     # via edx-django-utils
-pyopenssl==26.1.0
+pyopenssl==26.2.0
     # via snowflake-connector-python
 python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   celery
-pytz==2026.1.post1
+pytz==2026.2
     # via
     #   -r requirements/base.in
     #   edx-tincan-py35
@@ -204,7 +204,7 @@ stevedore==5.7.0
     # via
     #   edx-django-utils
     #   edx-opaque-keys
-tomlkit==0.14.0
+tomlkit==0.15.0
     # via snowflake-connector-python
 typing-extensions==4.15.0
     # via
@@ -218,7 +218,7 @@ tzlocal==5.3.1
     # via celery
 unicodecsv==0.14.1
     # via -r requirements/base.in
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   botocore
     #   requests
