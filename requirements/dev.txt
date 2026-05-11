@@ -34,11 +34,11 @@ billiard==4.2.4
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.43.2
+boto3==1.43.6
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
-botocore==1.43.2
+botocore==1.43.6
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -110,11 +110,11 @@ colorama==0.4.6
     # via
     #   -r requirements/ci.txt
     #   tox
-coverage[toml]==7.13.5
+coverage[toml]==7.14.0
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
-cryptography==47.0.0
+cryptography==48.0.0
     # via
     #   -r requirements/quality.txt
     #   django-fernet-fields-v2
@@ -142,7 +142,7 @@ distlib==0.4.0
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==5.2.13
+django==5.2.14
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -253,7 +253,7 @@ filelock==3.29.0
     #   virtualenv
 freezegun==1.5.5
     # via -r requirements/quality.txt
-idna==3.13
+idna==3.14
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -404,7 +404,7 @@ pynacl==1.6.2
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
-pyopenssl==26.1.0
+pyopenssl==26.2.0
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
@@ -432,7 +432,7 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   celery
     #   freezegun
-python-discovery==1.2.2
+python-discovery==1.3.0
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -445,7 +445,7 @@ python3-openid==3.2.0
     # via
     #   -r requirements/quality.txt
     #   social-auth-core
-pytz==2026.1.post1
+pytz==2026.2
     # via
     #   -r requirements/quality.txt
     #   edx-tincan-py35
@@ -528,7 +528,7 @@ tomli-w==1.2.0
     # via
     #   -r requirements/ci.txt
     #   tox
-tomlkit==0.14.0
+tomlkit==0.15.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -554,7 +554,7 @@ tzlocal==5.3.1
     #   celery
 unicodecsv==0.14.1
     # via -r requirements/quality.txt
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   -r requirements/quality.txt
     #   botocore
@@ -566,7 +566,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.3.0
+virtualenv==21.3.1
     # via
     #   -r requirements/ci.txt
     #   tox
