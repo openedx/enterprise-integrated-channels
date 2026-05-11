@@ -156,7 +156,10 @@ class MoodleLearnerDataTransmissionAuditAdmin(BaseLearnerDataTransmissionAuditAd
     def api_response_body(self, obj):
         if not obj.api_record or not obj.api_record.body:
             return ""
-        return format_html('<pre style="white-space: pre-wrap; margin: 0; max-width: 1200px;">{}</pre>', obj.api_record.body)
+        return format_html(
+            '<pre style="white-space: pre-wrap; margin: 0; max-width: 1200px;">{}</pre>',
+            obj.api_record.body,
+        )
 
     class Meta:
         model = MoodleLearnerDataTransmissionAudit
