@@ -6,6 +6,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django_object_actions import DjangoObjectActions
 
@@ -83,15 +84,44 @@ class MoodleLearnerDataTransmissionAuditAdmin(BaseLearnerDataTransmissionAuditAd
         "enterprise_course_enrollment_id",
         "course_id",
         "status",
+        "api_response_status_code",
+        "progress_status",
         "modified",
     )
 
     readonly_fields = (
+        "enterprise_customer_name",
+        "user_email",
         "moodle_user_email",
+        "course_id",
         "progress_status",
         "content_title",
+        "grade",
+        "status",
+        "is_transmitted",
         "enterprise_customer_name",
         "friendly_status_message",
+        "formatted_error_message",
+        "api_response_status_code",
+        "api_response_body",
+        "api_record",
+    )
+
+    fields = (
+        "enterprise_customer_name",
+        "enterprise_course_enrollment_id",
+        "user_email",
+        "moodle_user_email",
+        "course_id",
+        "content_title",
+        "progress_status",
+        "grade",
+        "status",
+        "is_transmitted",
+        "friendly_status_message",
+        "formatted_error_message",
+        "api_response_status_code",
+        "api_response_body",
         "api_record",
     )
 
@@ -100,10 +130,33 @@ class MoodleLearnerDataTransmissionAuditAdmin(BaseLearnerDataTransmissionAuditAd
         "enterprise_course_enrollment_id",
         "course_id",
         "content_title",
-        "friendly_status_message"
+        "friendly_status_message",
+        "error_message",
+    )
+
+    list_filter = (
+        "status",
+        "is_transmitted",
+        "progress_status",
     )
 
     list_per_page = 1000
+
+    @admin.display(description="API response status")
+    def api_response_status_code(self, obj):
+        return obj.api_record.status_code if obj.api_record else None
+
+    @admin.display(description="Error message")
+    def formatted_error_message(self, obj):
+        if not obj.error_message:
+            return ""
+        return format_html('<pre style="white-space: pre-wrap; margin: 0;">{}</pre>', obj.error_message)
+
+    @admin.display(description="API response body")
+    def api_response_body(self, obj):
+        if not obj.api_record or not obj.api_record.body:
+            return ""
+        return format_html('<pre style="white-space: pre-wrap; margin: 0; max-width: 1200px;">{}</pre>', obj.api_record.body)
 
     class Meta:
         model = MoodleLearnerDataTransmissionAudit
