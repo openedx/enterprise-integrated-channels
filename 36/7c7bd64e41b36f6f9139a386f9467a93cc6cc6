@@ -1,0 +1,20 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "367c7bd64e41b36f6f9139a386f9467a93cc6cc6",
+  "prompts": {
+    "d7881af7d1f1f135": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27d01015-9449-4fc0-b07f-7137bf1a3f36",
+        "model": "claude-opus-4-5-20251101"
+      },
+      "human_author": "Alexander Dusenbery <adusenbery@2u.com>",
+      "total_additions": 92,
+      "total_deletions": 0,
+      "accepted_lines": 92,
+      "overriden_lines": 0
+    }
+  }
+}
