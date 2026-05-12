@@ -71,3 +71,6 @@ requirements/private.txt
 # Code editor settings
 .idea/
 .vscode/
+
+# LLMs
+CLAUDE.md

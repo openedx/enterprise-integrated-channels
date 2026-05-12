@@ -14,6 +14,10 @@ Change Log
 Unreleased
 **********
 
+0.1.58
+******
+* fix: resolve Moodle grade sync module lookup failures
+
 0.1.57 – 2026-04-10
 *******************
 
