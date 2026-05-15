@@ -19,9 +19,9 @@ jobs:
         toxenv: [quality, pii_check, django42, django52]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
     - name: setup python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2.3.4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -38,7 +38,7 @@ jobs:
 
     - name: Run coverage
       if: matrix.python-version == '3.11' && matrix.toxenv == 'django42'
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
