@@ -27,11 +27,11 @@ billiard==4.2.4
     # via
     #   -r requirements/base.txt
     #   celery
-boto3==1.43.6
+boto3==1.43.14
     # via
     #   -r requirements/base.txt
     #   snowflake-connector-python
-botocore==1.43.6
+botocore==1.43.14
     # via
     #   -r requirements/base.txt
     #   boto3
@@ -39,7 +39,7 @@ botocore==1.43.6
     #   snowflake-connector-python
 celery==5.6.3
     # via -r requirements/base.txt
-certifi==2026.4.22
+certifi==2026.5.20
     # via
     #   -r requirements/base.txt
     #   requests
@@ -56,7 +56,7 @@ charset-normalizer==3.4.7
     #   -r requirements/base.txt
     #   requests
     #   snowflake-connector-python
-click==8.3.3
+click==8.4.1
     # via
     #   -r requirements/base.txt
     #   celery
@@ -96,7 +96,7 @@ defusedxml==0.7.1
     # via
     #   python3-openid
     #   social-auth-core
-diff-cover==10.2.0
+diff-cover==10.2.1
     # via -r requirements/test.in
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
@@ -134,7 +134,7 @@ django-model-utils==5.0.0
     #   edx-rbac
 django-oauth-toolkit==3.2.0
     # via -r requirements/base.txt
-django-object-actions==5.0.1
+django-object-actions==5.1.1
     # via -r requirements/base.txt
 django-simple-history==3.11.0
     # via -r requirements/base.txt
@@ -184,7 +184,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.txt
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==40.15.0
+faker==40.19.1
     # via factory-boy
 fastavro==1.12.2
     # via openedx-events
@@ -194,7 +194,7 @@ filelock==3.29.0
     #   snowflake-connector-python
 freezegun==1.5.5
     # via -r requirements/test.in
-idna==3.14
+idna==3.16
     # via
     #   -r requirements/base.txt
     #   requests
@@ -265,7 +265,7 @@ pygments==2.20.0
     # via
     #   diff-cover
     #   pytest
-pyjwt[crypto]==2.12.1
+pyjwt[crypto]==2.13.0
     # via
     #   -r requirements/base.txt
     #   drf-jwt
@@ -312,7 +312,7 @@ pyyaml==6.0.3
     # via
     #   code-annotations
     #   responses
-requests==2.33.1
+requests==2.34.2
     # via
     #   -r requirements/base.txt
     #   django-oauth-toolkit
@@ -325,7 +325,7 @@ requests==2.33.1
     #   social-auth-core
 requests-oauthlib==2.0.0
     # via social-auth-core
-responses==0.26.0
+responses==0.26.1
     # via -r requirements/test.in
 s3transfer==0.17.0
     # via
@@ -343,7 +343,7 @@ six==1.17.0
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/base.txt
-snowflake-connector-python==4.4.0
+snowflake-connector-python==4.5.0
     # via -r requirements/base.txt
 social-auth-app-django==5.4.3
     # via
@@ -359,13 +359,13 @@ sqlparse==0.5.5
     # via
     #   -r requirements/base.txt
     #   django
-stevedore==5.7.0
+stevedore==5.8.0
     # via
     #   -r requirements/base.txt
     #   code-annotations
     #   edx-django-utils
     #   edx-opaque-keys
-testfixtures==11.0.0
+testfixtures==12.0.0
     # via -r requirements/test.in
 text-unidecode==1.3
     # via python-slugify
