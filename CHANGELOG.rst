@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.59 – 2026-05-27
+*******************
+
+* feat: add flag-gated Datadog structured logging for Integrated Channels
+
 0.1.58
 ******
 * fix: resolve Moodle grade sync module lookup failures
