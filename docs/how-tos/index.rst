@@ -2,8 +2,9 @@ How-tos
 #######
 
 .. toctree::
-	:maxdepth: 1
+   :maxdepth: 1
 
-	percipio_webhook_payload
-	celery_queue_configuration
-	tpa_org_allowlist_api
+   integrated_channels_structured_logging
+   percipio_webhook_payload
+   celery_queue_configuration
+   tpa_org_allowlist_api
