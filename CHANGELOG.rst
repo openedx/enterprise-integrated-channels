@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.60 – 2026-06-12
+*******************
+
+* chore: change the cron schedule to run on friday instead of monday
+
 0.1.59 – 2026-05-27
 *******************
 
