@@ -292,6 +292,64 @@ class TestContentMetadataExporter(unittest.TestCase, EnterpriseMockMixin):
 
     @mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient.get_content_metadata')
     @mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient.get_catalog_diff')
+    def test_exporter_skips_create_items_missing_catalog_metadata(
+        self,
+        mock_get_catalog_diff,
+        mock_get_content_metadata,
+    ):
+        """
+        A create key returned by the catalog diff but absent from ``get_content_metadata`` is skipped
+        (logged, not fatal); other items still export.
+        """
+        good_key = 'GoodX+Create'
+        missing_key = 'MissingX+Create'
+        mock_get_catalog_diff.return_value = (
+            [{'content_key': good_key, 'date_updated': datetime.datetime.now()},
+             {'content_key': missing_key, 'date_updated': datetime.datetime.now()}],
+            [],
+            [],
+        )
+        # Metadata comes back only for the good key; the missing key has none.
+        good_metadata = get_fake_content_metadata()[:1]
+        good_metadata[0]['key'] = good_key
+        mock_get_content_metadata.return_value = good_metadata
+
+        create_payload, _, __ = ContentMetadataExporter('fake-user', self.config).export()
+
+        assert good_key in create_payload
+        assert missing_key not in create_payload
+
+    @mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient.get_content_metadata')
+    @mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient.get_catalog_diff')
+    def test_exporter_skips_update_items_missing_catalog_metadata(
+        self,
+        mock_get_catalog_diff,
+        mock_get_content_metadata,
+    ):
+        """
+        An update key matched by the catalog diff but absent from ``get_content_metadata`` is skipped
+        instead of raising ``KeyError`` and aborting the whole export (the prod CEPAL/General Mills case).
+        """
+        existing = ContentMetadataItemTransmissionFactory(
+            enterprise_customer=self.enterprise_customer_catalog.enterprise_customer,
+            enterprise_customer_catalog_uuid=self.enterprise_customer_catalog.uuid,
+            integrated_channel_code=self.config.channel_code(),
+            plugin_configuration_id=self.config.id,
+            remote_created_at=datetime.datetime.utcnow(),
+            content_last_changed=None,
+        )
+        # Catalog diff matches it for update, but the metadata endpoint returns nothing for it.
+        mock_get_catalog_diff.return_value = (
+            [], [], [{'content_key': existing.content_id, 'date_updated': datetime.datetime.now()}]
+        )
+        mock_get_content_metadata.return_value = []
+
+        _, update_payload, __ = ContentMetadataExporter('fake-user', self.config).export()
+
+        assert not update_payload
+
+    @mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient.get_content_metadata')
+    @mock.patch('enterprise.api_client.enterprise_catalog.EnterpriseCatalogApiClient.get_catalog_diff')
     def test_exporter_considers_failed_updates_as_existing_content(
         self,
         mock_get_catalog_diff,

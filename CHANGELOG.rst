@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.60 – 2026-06-15
+*******************
+
+* fix: skip content metadata items that have no catalog metadata instead of aborting the whole customer export
+
 0.1.59 – 2026-05-27
 *******************
 
