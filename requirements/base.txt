@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.43.24
+boto3==1.43.29
     # via snowflake-connector-python
-botocore==1.43.24
+botocore==1.43.29
     # via
     #   boto3
     #   s3transfer
@@ -48,7 +48,7 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==48.0.0
+cryptography==49.0.0
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
@@ -123,7 +123,7 @@ edx-rest-api-client==7.0.0
     # via -r requirements/base.in
 edx-tincan-py35==2.0.0
     # via -r requirements/base.in
-filelock==3.29.1
+filelock==3.29.4
     # via snowflake-connector-python
 idna==3.18
     # via
@@ -165,7 +165,7 @@ pymongo==4.17.0
     # via edx-opaque-keys
 pynacl==1.6.2
     # via edx-django-utils
-pyopenssl==26.2.0
+pyopenssl==26.3.0
     # via snowflake-connector-python
 python-dateutil==2.9.0.post0
     # via
@@ -227,7 +227,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.8.0
+wcwidth==0.8.1
     # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
