@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.61 – 2026-06-22
+*******************
+
+* refactor: configure Integrated Channels structured logging from ``AppConfig.ready()`` instead of edx-platform's shared ``logsettings.py``
+
 0.1.60 – 2026-06-15
 *******************
 

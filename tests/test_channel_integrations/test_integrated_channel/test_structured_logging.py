@@ -364,3 +364,66 @@ class TestStructuredLogging(unittest.TestCase):
         assert data['integrated_channel.customer_uuid'] == '5d566680-12a8-4b85-89d8-d9eacbf0f9eb'
         assert data['integrated_channel.user_id'] == 57164631
         assert data['integrated_channel.course_key'] == 'HP+HPGG02.en'
+
+    def _reset_channel_logger(self):
+        """
+        Isolate the shared ``channel_integrations`` logger and restore it after the test.
+        """
+        logger = logging.getLogger('channel_integrations')
+        original_handlers = logger.handlers[:]
+        original_propagate = logger.propagate
+        original_level = logger.level
+
+        def restore():
+            logger.handlers = original_handlers
+            logger.propagate = original_propagate
+            logger.setLevel(original_level)
+
+        self.addCleanup(restore)
+        logger.handlers = []
+        logger.propagate = True
+        logger.setLevel(logging.NOTSET)
+        return logger
+
+    @override_settings(INTEGRATED_CHANNELS_JSON_LOGGING=True)
+    def test_configure_structured_logging_wires_channel_logger_when_enabled(self):
+        logger = self._reset_channel_logger()
+
+        structured_logging.configure_structured_logging()
+
+        json_handlers = [h for h in logger.handlers if isinstance(h.formatter, JsonChannelFormatter)]
+        assert len(json_handlers) == 1
+        assert logger.level == logging.INFO
+        assert logger.propagate is False
+
+        # ready() can run more than once; a second call must not stack another handler.
+        structured_logging.configure_structured_logging()
+        json_handlers = [h for h in logger.handlers if isinstance(h.formatter, JsonChannelFormatter)]
+        assert len(json_handlers) == 1
+
+    def test_configure_structured_logging_noop_when_disabled(self):
+        # With the flag off the logger must be left untouched so records keep
+        # propagating to the root logger (this is what keeps pytest's caplog working).
+        logger = self._reset_channel_logger()
+
+        structured_logging.configure_structured_logging()
+
+        assert not any(isinstance(h.formatter, JsonChannelFormatter) for h in logger.handlers)
+        assert logger.propagate is True
+
+    @override_settings(INTEGRATED_CHANNELS_JSON_LOGGING=True)
+    @mock.patch('channel_integrations.integrated_channel.structured_logging.get_datadog_trace_id')
+    def test_configure_structured_logging_emits_json_when_enabled(self, mock_get_trace_id):
+        mock_get_trace_id.return_value = None
+        logger = self._reset_channel_logger()
+        structured_logging.configure_structured_logging()
+
+        handler = next(h for h in logger.handlers if isinstance(h.formatter, JsonChannelFormatter))
+        stream = io.StringIO()
+        handler.stream = stream
+
+        logging.getLogger('channel_integrations.test_enabled').error('boom')
+
+        data = json.loads(stream.getvalue())
+        assert data['message'] == 'boom'
+        assert data['status'] == 'error'
