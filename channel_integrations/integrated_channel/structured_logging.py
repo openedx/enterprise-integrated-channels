@@ -14,6 +14,11 @@ from django.conf import settings
 
 SERVICE_NAME = 'integrated_channels'
 
+# Root logger namespace for the integrated-channels package. Every
+# ``logging.getLogger(__name__)`` call inside channel_integrations is a child of
+# this logger, so configuring it here covers the whole package.
+CHANNEL_INTEGRATIONS_LOGGER = 'channel_integrations'
+
 LOG_STATUS_BY_LEVEL = {
     logging.CRITICAL: 'critical',
     logging.ERROR: 'error',
@@ -401,3 +406,32 @@ def build_datadog_log_record(record):
     }
     log_record.update(fields)
     return log_record
+
+
+def configure_structured_logging():
+    """
+    Route the integrated-channels logger through a JSON stderr handler when
+    ``INTEGRATED_CHANNELS_JSON_LOGGING`` is enabled.
+
+    Keeps integrated-channels logging configuration inside the library instead of
+    edx-platform's shared ``openedx/core/lib/logsettings.py``. When the flag is off
+    this is a no-op and records propagate to the root logger exactly as before; when
+    it is on, ``channel_integrations`` records are emitted as Datadog-ready JSON on
+    stderr and no longer propagate to the root console handler.
+    """
+    if not is_json_logging_enabled():
+        return
+
+    logger = logging.getLogger(CHANNEL_INTEGRATIONS_LOGGER)
+
+    # Idempotent: AppConfig.ready() can run more than once (e.g. across test reloads).
+    if any(isinstance(handler.formatter, JsonChannelFormatter) for handler in logger.handlers):
+        return
+
+    json_handler = logging.StreamHandler()  # defaults to sys.stderr
+    json_handler.setFormatter(JsonChannelFormatter())
+    logger.addHandler(json_handler)
+
+    logger.setLevel(logging.INFO)
+    # Stop propagation so records aren't also emitted by the root console handler.
+    logger.propagate = False
