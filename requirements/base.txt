@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.43.33
+boto3==1.43.36
     # via snowflake-connector-python
-botocore==1.43.33
+botocore==1.43.36
     # via
     #   boto3
     #   s3transfer
@@ -35,7 +35,7 @@ charset-normalizer==3.4.7
     # via
     #   requests
     #   snowflake-connector-python
-click==8.4.1
+click==8.4.2
     # via
     #   celery
     #   click-didyoumean
@@ -88,7 +88,7 @@ django-oauth-toolkit==3.3.0
     # via -r requirements/base.in
 django-object-actions==5.1.2
     # via -r requirements/base.in
-django-simple-history==3.11.0
+django-simple-history==3.12.0
     # via -r requirements/base.in
 django-waffle==5.0.0
     # via
@@ -135,7 +135,7 @@ jmespath==1.1.0
     #   botocore
 jsonfield==3.2.0
     # via -r requirements/base.in
-jwcrypto==1.5.7
+jwcrypto==1.5.8
     # via django-oauth-toolkit
 kombu==5.6.2
     # via celery
