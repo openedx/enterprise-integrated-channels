@@ -41,11 +41,11 @@ billiard==4.2.4
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.43.33
+boto3==1.43.36
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-botocore==1.43.33
+botocore==1.43.36
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -74,7 +74,7 @@ charset-normalizer==3.4.7
     #   -r requirements/test.txt
     #   requests
     #   snowflake-connector-python
-click==8.4.1
+click==8.4.2
     # via
     #   -r requirements/test.txt
     #   celery
@@ -97,7 +97,7 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.2
     # via -r requirements/test.txt
-coverage[toml]==7.14.1
+coverage[toml]==7.14.3
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -158,7 +158,7 @@ django-oauth-toolkit==3.3.0
     # via -r requirements/test.txt
 django-object-actions==5.1.2
     # via -r requirements/test.txt
-django-simple-history==3.11.0
+django-simple-history==3.12.0
     # via -r requirements/test.txt
 django-waffle==5.0.0
     # via
@@ -269,7 +269,7 @@ jmespath==1.1.0
     #   botocore
 jsonfield==3.2.0
     # via -r requirements/test.txt
-jwcrypto==1.5.7
+jwcrypto==1.5.8
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
@@ -293,7 +293,7 @@ more-itertools==11.1.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-nh3==0.3.5
+nh3==0.3.6
     # via readme-renderer
 oauthlib==3.3.1
     # via
@@ -371,7 +371,7 @@ pyopenssl==26.3.0
     #   snowflake-connector-python
 pyproject-hooks==1.2.0
     # via build
-pytest==9.1.0
+pytest==9.1.1
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -502,7 +502,7 @@ stevedore==5.8.0
     #   doc8
     #   edx-django-utils
     #   edx-opaque-keys
-testfixtures==12.1.0
+testfixtures==12.2.0
     # via -r requirements/test.txt
 text-unidecode==1.3
     # via
