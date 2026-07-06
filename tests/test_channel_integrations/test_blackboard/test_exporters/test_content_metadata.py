@@ -88,7 +88,7 @@ class TestBlackboardContentMetadataExporter(unittest.TestCase, EnterpriseMockMix
         description = exporter.transform_course_child_content_metadata(content_metadata_item)
         expected_description = {
             'title': content_metadata_item.get('title'),
-            'availability': 'Yes',
+            'availability': {'available': 'Yes'},
             'contentHandler': {
                 'id': 'resource/x-bb-document',
             },

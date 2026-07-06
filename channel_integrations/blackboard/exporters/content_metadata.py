@@ -73,7 +73,8 @@ class BlackboardContentMetadataExporter(ContentMetadataExporter):
         title = content_metadata_item.get('title', None)
         return {
             'title': BLACKBOARD_COURSE_CONTENT_NAME,
-            'availability': 'Yes',
+            # Blackboard content endpoints expect an availability object.
+            'availability': {'available': 'Yes'},
             'contentHandler': {
                 'id': 'resource/x-bb-document',
             },
