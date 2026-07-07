@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.62 – 2026-07-07
+*******************
+
+* fix: update Blackboard content payload formatting
+
 0.1.61 – 2026-06-22
 *******************
 
