@@ -307,6 +307,20 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
             True,
             0.0,
         ),
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': 'not-a-number',
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            True,
+            0.0,
+        ),
     )
     @ddt.unpack
     def test_transform_total_hours(self, content_metadata_item, transmit_flag, expected):
