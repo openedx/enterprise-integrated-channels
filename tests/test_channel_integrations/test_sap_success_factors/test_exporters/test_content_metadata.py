@@ -226,6 +226,248 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         ]
 
     @ddt.data(
+        (
+            {
+                'advertised_course_run_uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': 10.5,
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                    {
+                        'uuid': '28e2d4c2-a020-4959-b461-6f879bbe1391',
+                        'estimated_hours': 5.0,
+                        'start': '2023-01-01T00:00:00Z',
+                        'end': '2023-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            True,
+            10.5,
+        ),
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            True,
+            0.0,
+        ),
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': None,
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            True,
+            0.0,
+        ),
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': 10.5,
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            False,
+            0.0,
+        ),
+        (
+            {'course_runs': []},
+            True,
+            0.0,
+        ),
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': 0.0,
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            True,
+            0.0,
+        ),
+    )
+    @ddt.unpack
+    def test_transform_total_hours(self, content_metadata_item, transmit_flag, expected):
+        self.config.transmit_total_hours = transmit_flag
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+        assert exporter.transform_total_hours(content_metadata_item) == expected
+
+    @ddt.data(
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': 8.0,
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            True,
+            8.0,
+        ),
+        (
+            {
+                'course_runs': [
+                    {
+                        'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                        'estimated_hours': 8.0,
+                        'start': '2024-01-01T00:00:00Z',
+                        'end': '2024-06-01T00:00:00Z',
+                    },
+                ],
+            },
+            False,
+            0.0,
+        ),
+    )
+    @ddt.unpack
+    def test_transform_credit_hours(self, content_metadata_item, transmit_flag, expected):
+        self.config.transmit_total_hours = transmit_flag
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+        assert exporter.transform_credit_hours(content_metadata_item) == expected
+
+    def test_transform_total_hours_uses_advertised_course_run(self):
+        self.config.transmit_total_hours = True
+        self.config.save()
+        content_metadata_item = {
+            'advertised_course_run_uuid': '28e2d4c2-a020-4959-b461-6f879bbe1391',
+            'course_runs': [
+                {
+                    'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                    'estimated_hours': 5.0,
+                    'start': '2023-01-01T00:00:00Z',
+                    'end': '2023-06-01T00:00:00Z',
+                },
+                {
+                    'uuid': '28e2d4c2-a020-4959-b461-6f879bbe1391',
+                    'estimated_hours': 12.0,
+                    'start': '2024-01-01T00:00:00Z',
+                    'end': '2024-06-01T00:00:00Z',
+                },
+            ],
+        }
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+        assert exporter.transform_total_hours(content_metadata_item) == 12.0
+
+    def test_total_hours_and_credit_hours_are_equal(self):
+        self.config.transmit_total_hours = True
+        self.config.save()
+        content_metadata_item = {
+            'course_runs': [
+                {
+                    'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                    'estimated_hours': 7.5,
+                    'start': '2024-01-01T00:00:00Z',
+                    'end': '2024-06-01T00:00:00Z',
+                },
+            ],
+        }
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+        total_hours = exporter.transform_total_hours(content_metadata_item)
+        credit_hours = exporter.transform_credit_hours(content_metadata_item)
+        assert total_hours == credit_hours == 7.5
+
+    def test_transform_item_includes_hour_fields_when_enabled(self):
+        self.config.transmit_total_hours = True
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+        content_metadata_item = {
+            'aggregation_key': 'course:edX+DemoX',
+            'content_type': 'course',
+            'full_description': 'A demo course.',
+            'key': 'edX+DemoX',
+            'title': 'edX Demonstration Course',
+            'course_runs': [
+                {
+                    'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                    'key': 'course-v1:edX+DemoX+1T2024',
+                    'title': 'edX Demonstration Course',
+                    'short_description': 'A demo.',
+                    'availability': 'Current',
+                    'pacing_type': 'self_paced',
+                    'start': '2024-01-01T00:00:00Z',
+                    'end': '2024-12-31T00:00:00Z',
+                    'estimated_hours': 15.0,
+                    'status': 'published',
+                    'is_enrollable': True,
+                    'is_marketable': True,
+                    'seats': [],
+                },
+            ],
+            'advertised_course_run_uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+            'uuid': 'bbbf059e-b9fb-4ad7-a53e-4c6f85f47f4e',
+            'enrollment_url': 'https://courses.edx.org/enroll',
+        }
+        # pylint: disable=protected-access
+        transformed = exporter._transform_item(content_metadata_item, action='create')
+        assert 'totalHours' in transformed
+        assert 'creditHours' in transformed
+        assert transformed['totalHours'] == 15.0
+        assert transformed['creditHours'] == 15.0
+
+    def test_transform_item_includes_zero_hours_when_disabled(self):
+        self.config.transmit_total_hours = False
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+        content_metadata_item = {
+            'aggregation_key': 'course:edX+DemoX',
+            'content_type': 'course',
+            'full_description': 'A demo course.',
+            'key': 'edX+DemoX',
+            'title': 'edX Demonstration Course',
+            'course_runs': [
+                {
+                    'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                    'key': 'course-v1:edX+DemoX+1T2024',
+                    'title': 'edX Demonstration Course',
+                    'short_description': 'A demo.',
+                    'availability': 'Current',
+                    'pacing_type': 'self_paced',
+                    'start': '2024-01-01T00:00:00Z',
+                    'end': '2024-12-31T00:00:00Z',
+                    'estimated_hours': 15.0,
+                    'status': 'published',
+                    'is_enrollable': True,
+                    'is_marketable': True,
+                    'seats': [],
+                },
+            ],
+            'advertised_course_run_uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+            'uuid': 'bbbf059e-b9fb-4ad7-a53e-4c6f85f47f4e',
+            'enrollment_url': 'https://courses.edx.org/enroll',
+        }
+        # pylint: disable=protected-access
+        transformed = exporter._transform_item(content_metadata_item, action='create')
+        assert transformed['totalHours'] == 0.0
+        assert transformed['creditHours'] == 0.0
+
+    @ddt.data(
         {
             'start': '2013-02-05T05:00:00Z',
             'pacing_type': 'instructor_paced',
