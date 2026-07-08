@@ -205,9 +205,11 @@ class BlackboardEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigur
                   "used to re-request the access tokens over multiple client sessions."
     )
 
-    # overriding base model field, to use chunk size 1 default
+    # overriding base model field to use a Blackboard-specific default
+    # Increased from 1 to 10 to reduce individual API calls and avoid 429 rate limiting errors
+    # on Blackboard developer accounts. See ENT-12011.
     transmission_chunk_size = models.IntegerField(
-        default=1,
+        default=10,
         help_text=(
             "The maximum number of data items to transmit to the integrated channel "
             "with each request."
