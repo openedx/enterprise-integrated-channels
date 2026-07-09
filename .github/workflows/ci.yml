@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
     - '**'
+  # So the release workflow can run CI before cutting a release.
+  workflow_call:
 
 
 jobs:
@@ -19,22 +21,22 @@ jobs:
         toxenv: [quality, pii_check, django42, django52]
 
     steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: setup python
-      uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2.3.4
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install pip
-      run: pip install -r requirements/pip.txt
+    - name: Install uv
+      uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
 
     - name: Install Dependencies
-      run: pip install -r requirements/ci.txt
+      run: uv sync --group ci
 
     - name: Run Tests
       env:
         TOXENV: ${{ matrix.toxenv }}
-      run: tox
+      run: uv run tox
 
     - name: Run coverage
       if: matrix.python-version == '3.11' && matrix.toxenv == 'django42'
