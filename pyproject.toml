@@ -1,0 +1,164 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm>8.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enterprise-integrated-channels"
+description = "An integrated channel is an abstraction meant to represent a third-party system which provides an API that can be used to transmit EdX data to the third-party system."
+requires-python = ">=3.11"
+license = "AGPL-3.0-or-later"
+authors = [
+    {name = "Open edX Project", email = "oscm@openedx.org"},
+]
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Framework :: Django',
+    'Framework :: Django :: 4.2',
+    'Framework :: Django :: 5.2',
+    'Intended Audience :: Developers',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.11',
+]
+keywords = [
+    "Python",
+    "edx",
+]
+
+dynamic = ["readme", "version"]
+
+dependencies = [
+    "Django>=4.2",
+    "openedx-atlas",
+    "pytz",
+    "requests",
+    "edx-opaque-keys[django]",
+    "celery",
+    "edx_django_utils",
+    "jsonfield",
+    "django-model-utils",
+    "django-simple-history",
+    "django-config-models",
+    "django-fernet-fields-v2",
+    "edx-drf-extensions",
+    "edx-rest-api-client",
+    "django-oauth-toolkit",
+    "django-object-actions",
+    "unicodecsv",
+    "slumber",
+    "edx-rbac",
+    "edx-tincan-py35",
+    # Normally we don't pin anything here, but this flexible constraint helps ensure the version of
+    # enterprise-integrated-channels deployed has actually been tested with this major version of
+    # snowflake-connector-python.
+    "snowflake-connector-python>=4.0.0,<5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/openedx/enterprise-integrated-channels"
+Repository = "https://github.com/openedx/enterprise-integrated-channels"
+
+[dependency-groups]
+test-base = [
+    "code-annotations",
+    "ddt<1.4.0",
+    "diff-cover",
+    "factory_boy",
+    "freezegun",
+    "mock",
+    "openedx-events",
+    "pytest-cov",
+    "pytest-django",
+    "responses",
+    "social-auth-app-django",
+    "testfixtures",
+    "django-countries",
+]
+test = [
+    {include-group = "test-base"},
+]
+test-django42 = [
+    {include-group = "test-base"},
+    "Django>=4.0,<5.0",
+]
+test-django52 = [
+    {include-group = "test-base"},
+    "Django>=5.0,<6.0",
+]
+quality = [
+    {include-group = "test"},
+    "edx-lint",
+    "isort",
+    "pycodestyle",
+    "pydocstyle",
+]
+doc = [
+    {include-group = "test"},
+    "doc8",
+    "sphinx-book-theme",
+    "twine",
+    "build",
+    "Sphinx",
+]
+ci = [
+    "tox",
+    "tox-uv",
+]
+dev = [
+    {include-group = "quality"},
+    {include-group = "ci"},
+    "edx-i18n-tools",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
+
+[tool.setuptools.packages.find]
+include = ["channel_integrations*"]
+exclude = ["*tests*"]
+
+[tool.setuptools_scm]
+version_scheme = "only-version"
+local_scheme = "no-local-version"
+fallback_version = "0.0.0.dev0"
+
+[tool.semantic_release]
+build_command = "pip install build && SETUPTOOLS_SCM_PRETEND_VERSION=$NEW_VERSION python -m build"
+
+[tool.uv]
+#  DO NOT EDIT constraint-dependencies DIRECTLY.
+#  This list is managed by `edx_lint write_uv_constraints`
+#  and will be overwritten the next time `make upgrade` is run.
+#  - GLOBAL constraints: edit edx_lint/files/common_constraints.txt
+#  - REPO-SPECIFIC constraints: edit [tool.edx_lint].uv_constraints in this file
+constraint-dependencies = [
+    "Django<6.0",
+    "elasticsearch<7.14.0",
+    "social-auth-app-django<5.5",
+]
+conflicts = [
+    [
+        {group = "test-django42"},
+        {group = "test-django52"},
+    ],
+]
+
+[tool.edx_lint]
+uv_constraints = [
+    "social-auth-app-django<5.5",
+]
+
+[tool.isort]
+indent = '    '
+line_length = 120
+multi_line_output = 3
+include_trailing_comma = true
+skip = ["migrations"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "test_settings"
+addopts = "--cov channel_integrations --cov-report term-missing --cov-report xml"
+norecursedirs = [".*", "docs", "requirements", "site-packages"]
