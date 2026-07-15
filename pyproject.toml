@@ -131,6 +131,13 @@ fallback_version = "0.0.0.dev0"
 # wouldn't recognize any prior release and would restart versioning from scratch.
 tag_format = "{version}"
 build_command = "pip install build && SETUPTOOLS_SCM_PRETEND_VERSION=$NEW_VERSION python -m build"
+# This repo is still on a 0.x version. major_on_zero defaults to True, which
+# would auto-bump straight to 1.0.0 on the first breaking-change commit --
+# but 1.0.0 is supposed to signal a deliberate "first stable release", not an
+# accidental side effect of a conventional-commit marker. Keep bumps within
+# 0.x (0.x.y -> 0.(x+1).0) until a 1.0.0 release is a deliberate decision.
+major_on_zero = false
+allow_zero_version = true
 
 [tool.uv]
 # Every `uv sync`/`uv run` invocation in this repo names an explicit --group.
