@@ -1,4 +1,4 @@
 include CHANGELOG.rst
 include LICENSE.txt
 include README.rst
-recursive-include channel_integrations *.html *.png *.gif *.js *.css *.jpg *.jpeg *.svg
+recursive-include src/channel_integrations *.html *.png *.gif *.js *.css *.jpg *.jpeg *.svg
