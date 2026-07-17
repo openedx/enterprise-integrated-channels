@@ -321,6 +321,18 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
             True,
             0.0,
         ),
+        (
+            {
+                'content_type': 'courserun',
+                'estimated_hours': 6.25,
+                'start': '2024-01-01T00:00:00Z',
+                'end': '2024-06-01T00:00:00Z',
+                'availability': 'Current',
+                'status': 'published',
+            },
+            True,
+            6.25,
+        ),
     )
     @ddt.unpack
     def test_transform_total_hours(self, content_metadata_item, transmit_flag, expected):
@@ -357,6 +369,18 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
             },
             False,
             0.0,
+        ),
+        (
+            {
+                'content_type': 'courserun',
+                'estimated_hours': 4.5,
+                'start': '2024-01-01T00:00:00Z',
+                'end': '2024-06-01T00:00:00Z',
+                'availability': 'Current',
+                'status': 'published',
+            },
+            True,
+            4.5,
         ),
     )
     @ddt.unpack

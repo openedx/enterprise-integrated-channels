@@ -215,7 +215,11 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
         """
         Return estimated course run hours as a float, defaulting to ``0.0``.
         """
-        course_run = get_advertised_or_closest_course_run(content_metadata_item)
+        if content_metadata_item.get('content_type') == 'courserun':
+            course_run = content_metadata_item
+        else:
+            course_run = get_advertised_or_closest_course_run(content_metadata_item)
+
         if not course_run:
             return 0.0
 
@@ -233,9 +237,7 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
 
     def transform_credit_hours(self, content_metadata_item):
         """Return the credit hours for the content item, sourced from estimated_hours."""
-        if not self.enterprise_configuration.transmit_total_hours:
-            return 0.0
-        return self._get_estimated_hours(content_metadata_item)
+        return self.transform_total_hours(content_metadata_item)
 
     def transform_courserun_title(self, content_metadata_item):
         """
