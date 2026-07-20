@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.63 – 2026-07-20
+*******************
+
+* fix: implemented course hours field
+
 0.1.62 – 2026-07-07
 *******************
 
