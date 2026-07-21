@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.58 – 2026-07-21
+*******************
+
+* feat: make Blackboard transmission chunk size editable in Django Admin
+
 0.1.57 – 2026-04-10
 *******************
 
