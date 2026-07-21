@@ -42,6 +42,18 @@ class TestBlackboardEnterpriseCustomerConfigurationAdmin(TestCase):
         result = self.admin_instance.enterprise_customer_name(self.blackboard_config)
         assert result == self.blackboard_config.enterprise_customer.name
 
+    def test_readonly_fields_excludes_transmission_chunk_size(self):
+        """
+        Test that transmission_chunk_size is no longer included in readonly_fields.
+        """
+        assert "transmission_chunk_size" not in self.admin_instance.readonly_fields
+        assert self.admin_instance.readonly_fields == (
+            "enterprise_customer_name",
+            "refresh_token",
+            "customer_oauth_authorization_url",
+            "uuid",
+        )
+
     def test_customer_oauth_authorization_url_with_url(self):
         """
         Test customer_oauth_authorization_url when oauth_authorization_url is available.
@@ -105,3 +117,4 @@ class TestBlackboardEnterpriseCustomerConfigurationAdmin(TestCase):
         Test that the force_content_metadata_transmission method has the correct label.
         """
         assert self.admin_instance.force_content_metadata_transmission.label == "Force content metadata transmission"
+ 
