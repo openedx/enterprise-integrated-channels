@@ -114,7 +114,7 @@ dev = [
 include-package-data = true
 
 [tool.setuptools.dynamic]
-readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
+readme = {file = ["README.rst"], content-type = "text/x-rst"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -141,6 +141,7 @@ major_on_zero = false
 allow_zero_version = true
 
 [tool.uv]
+package = true
 # Every `uv sync`/`uv run` invocation in this repo names an explicit --group.
 # Without this, uv's implicit default group (named "dev") would be synced *in
 # addition* to whatever --group is passed, silently pulling the entire
@@ -180,3 +181,16 @@ skip = ["migrations"]
 DJANGO_SETTINGS_MODULE = "test_settings"
 addopts = "--cov channel_integrations --cov-report term-missing --cov-report xml"
 norecursedirs = [".*", "docs", "requirements", "site-packages"]
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["channel_integrations"]
+omit = [
+    "test_settings.py",
+    "*/migrations/*",
+    "*admin.py",
+    "*/static/*",
+    "*/templates/*",
+    # TODO: ENT-10733: Remove this exclusion and add proper test coverage for API v1 module
+    "channel_integrations/api/v1/*",
+]
