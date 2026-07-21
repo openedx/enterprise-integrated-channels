@@ -117,4 +117,3 @@ class TestBlackboardEnterpriseCustomerConfigurationAdmin(TestCase):
         Test that the force_content_metadata_transmission method has the correct label.
         """
         assert self.admin_instance.force_content_metadata_transmission.label == "Force content metadata transmission"
- 
