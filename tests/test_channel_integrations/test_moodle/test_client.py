@@ -401,6 +401,98 @@ class TestMoodleApiClient(unittest.TestCase):
         assert client.get_course_final_grade_module(2) == (1337, 'foobar')
         assert IntegratedChannelAPIRequestLogs.objects.count() == 1
 
+    @responses.activate
+    def test_get_course_final_grade_module_prefers_configured_cmid(self):
+        """
+        Test that a configured grade_assignment_cmid wins over the display name.
+        """
+        client = MoodleAPIClient(self.enterprise_custom_config)
+        client.enterprise_configuration.grade_assignment_cmid = 1337
+        client.enterprise_configuration.grade_assignment_name = 'A different name'
+
+        responses.add(
+            responses.GET,
+            client.api_url,
+            json=[
+                {
+                    'name': 'General',
+                    'modules': [
+                        {'name': 'Renamed Final Grade', 'id': 1337, 'modname': 'assign'},
+                        {'name': 'Quiz 1', 'id': 1444, 'modname': 'quiz'},
+                    ]
+                }
+            ],
+            status=200,
+        )
+
+        assert client.get_course_final_grade_module(2) == (1337, 'assign')
+
+    @responses.activate
+    def test_get_course_final_grade_module_missing_cmid_raises(self):
+        """
+        Test that a missing configured cmid raises a helpful 404.
+        """
+        client = MoodleAPIClient(self.enterprise_custom_config)
+        client.enterprise_configuration.grade_assignment_cmid = 99999
+
+        responses.add(
+            responses.GET,
+            client.api_url,
+            json=[
+                {
+                    'name': 'General',
+                    'modules': [
+                        {'name': 'Renamed Final Grade', 'id': 1337, 'modname': 'assign'},
+                        {'name': 'Quiz 1', 'id': 1444, 'modname': 'quiz'},
+                    ]
+                }
+            ],
+            status=200,
+        )
+
+        with pytest.raises(ClientError) as client_error:
+            client.get_course_final_grade_module(2)
+
+        assert 'Configured grade_assignment_cmid=99999 not found in Moodle course_id=2.' in client_error.value.message
+        assert 'cmid=1337 name="Renamed Final Grade" section="General"' in client_error.value.message
+
+    @responses.activate
+    def test_validate_grade_sync_prerequisites_success(self):
+        """
+        Test the pre-flight validation path using the real Moodle client flow.
+        """
+        client = MoodleAPIClient(self.enterprise_custom_config)
+        client.enterprise_configuration.grade_assignment_cmid = 1337
+
+        responses.add(
+            responses.GET,
+            client.api_url,
+            json={'courses': [{'id': 42}]},
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            client.api_url,
+            json=[
+                {
+                    'name': 'General',
+                    'modules': [
+                        {'name': 'Renamed Final Grade', 'id': 1337, 'modname': 'assign'},
+                    ]
+                }
+            ],
+            status=200,
+        )
+
+        client.get_creds_of_user_in_course = unittest.mock.MagicMock(return_value=77)
+
+        assert client.validate_grade_sync_prerequisites('course-v1:Org+Course+Run', self.user_email) == {
+            'course_id': 42,
+            'course_module_id': 1337,
+            'module_name': 'assign',
+            'moodle_user_id': 77,
+        }
+
     def test_successful_update_existing_content_metadata(self):
         """
         Test core logic of create_content_metadata to ensure

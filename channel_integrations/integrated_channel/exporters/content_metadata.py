@@ -462,6 +462,39 @@ class ContentMetadataExporter(Exporter):
         item.content_last_changed = metadata.get('content_last_modified')
         item.save()
 
+    def _build_action_payload(self, items, action, enterprise_customer_catalog, key_to_content_metadata_mapping):
+        """
+        Sanitize metadata for each item under ``action`` and return the resulting transmission payload.
+
+        Items whose content key has no metadata in ``key_to_content_metadata_mapping`` are skipped
+        (and logged) instead of raising, so a single missing key does not abort the whole export.
+        """
+        payload = {}
+        for key, item in items.items():
+            metadata = key_to_content_metadata_mapping.get(key)
+            if metadata is None:
+                self._log_info(
+                    f'Skipping content key {key} for "{action}": it was returned by the catalog diff '
+                    f'but get_content_metadata returned no metadata for it.',
+                    course_or_course_run_key=key,
+                )
+                continue
+            try:
+                self._sanitize_and_set_item_metadata(item, metadata, action)
+            except Exception as exc:
+                self._log_exception(
+                    f'Failed to sanitize and set item metadata for item: {item}, with content key: '
+                    f'{key}, and content metadata: {metadata}, action: {action}. Exception: {exc}'
+                )
+                raise exc
+
+            # Sanity check
+            item.enterprise_customer_catalog_uuid = enterprise_customer_catalog.uuid
+            item.save()
+
+            payload[key] = item
+        return payload
+
     def export(self, **kwargs):
         """
         Export transformed content metadata if there has been an update to the consumer's catalogs
@@ -515,38 +548,12 @@ class ContentMetadataExporter(Exporter):
                 key_to_content_metadata_mapping = {
                     get_content_metadata_item_id(item): item for item in content_metadata_items
                 }
-            for key, item in items_to_create.items():
-                try:
-                    self._sanitize_and_set_item_metadata(item, key_to_content_metadata_mapping[key], IC_CREATE_ACTION)
-                except Exception as exc:
-                    self._log_exception(
-                        f'Failed to sanitize and set item metadata for item: {item}, with content key: '
-                        f'{key}, and content metadata: {key_to_content_metadata_mapping[key]}, action: '
-                        f'{IC_CREATE_ACTION}. Exception: {exc}'
-                    )
-                    raise exc
-
-                # Sanity check
-                item.enterprise_customer_catalog_uuid = enterprise_customer_catalog.uuid
-                item.save()
-
-                create_payload[key] = item
-            for key, item in items_to_update.items():
-                try:
-                    self._sanitize_and_set_item_metadata(item, key_to_content_metadata_mapping[key], IC_UPDATE_ACTION)
-                except Exception as exc:
-                    self._log_exception(
-                        f'Failed to sanitize and set item metadata for item: {item}, with content key: '
-                        f'{key}, and content metadata: {key_to_content_metadata_mapping[key]}, action: '
-                        f'{IC_UPDATE_ACTION}. Exception: {exc}'
-                    )
-                    raise exc
-
-                # Sanity check
-                item.enterprise_customer_catalog_uuid = enterprise_customer_catalog.uuid
-                item.save()
-
-                update_payload[key] = item
+            create_payload.update(self._build_action_payload(
+                items_to_create, IC_CREATE_ACTION, enterprise_customer_catalog, key_to_content_metadata_mapping,
+            ))
+            update_payload.update(self._build_action_payload(
+                items_to_update, IC_UPDATE_ACTION, enterprise_customer_catalog, key_to_content_metadata_mapping,
+            ))
             for key, item in items_to_delete.items():
                 metadata = self._apply_delete_transformation(item.channel_metadata)
                 item.channel_metadata = metadata

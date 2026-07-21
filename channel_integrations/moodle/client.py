@@ -408,33 +408,166 @@ class MoodleAPIClient(IntegratedChannelApiClient):
 
     def get_course_final_grade_module(self, course_id):
         """
-        Sort through a Moodle course's components for the specific shell assignment designated
-        to be the edX integrated Final Grade. This is currently done by module name.
+        Locate the grade-sync assignment activity in the Moodle course.
+
+        Resolution order:
+        1. If ``grade_assignment_cmid`` is configured on the integration, use it directly
+           (ID-based lookup — preferred, immune to activity renames or section moves).
+        2. Otherwise fall back to searching every section by ``grade_assignment_name``
+           (name-based lookup — fragile, emits a warning encouraging migration to ID-based config).
 
         Returns:
-            - course_module_id (int): The ID of the shell assignment
-            - module_name (string): The string name of the module. Required for sending a grade update request.
-        """
-        response = self._get_course_contents(course_id)
-        course_module_id = None
-        module_name = None
-        if isinstance(response.json(), list):
-            for course in response.json():
-                if course.get('name') == 'General':
-                    modules = course.get('modules')
-                    for module in modules:
-                        if module.get('name') == self.enterprise_configuration.grade_assignment_name:
-                            course_module_id = module.get('id')
-                            module_name = module.get('modname')
+            tuple(int, str): (course_module_id, modname)
 
-        if not course_module_id:
+        Raises:
+            ClientError: 404 when no matching module is found, with an actionable message
+                listing the modules that ARE present in the course.
+        """
+        cfg = self.enterprise_configuration
+        response = self._get_course_contents(course_id)
+        sections = response.json() if isinstance(response.json(), list) else []
+
+        # Build a flat list of all modules across ALL sections (not just 'General').
+        all_modules = []
+        for section in sections:
+            for module in (section.get('modules') or []):
+                all_modules.append({
+                    'cmid': module.get('id'),
+                    'modname': module.get('modname'),
+                    'name': module.get('name'),
+                    'section': section.get('name'),
+                })
+
+        # --- ID-based lookup (preferred path) ---
+        configured_cmid = getattr(cfg, 'grade_assignment_cmid', None)
+        if configured_cmid:
+            match = next((m for m in all_modules if m['cmid'] == configured_cmid), None)
+            if match:
+                LOGGER.info(
+                    generate_formatted_log(
+                        cfg.channel_code(),
+                        cfg.enterprise_customer.uuid,
+                        None,
+                        cfg.id,
+                        f'Grade module resolved by cmid={configured_cmid} '
+                        f'name="{match["name"]}" modname={match["modname"]} '
+                        f'section="{match["section"]}" course_id={course_id}',
+                    )
+                )
+                return match['cmid'], match['modname']
+
+            available = [
+                f'cmid={m["cmid"]} name="{m["name"]}" section="{m["section"]}"'
+                for m in all_modules
+            ]
             raise ClientError(
-                'MoodleAPIClient request failed: 404 Completion course module not found in Moodle.'
-                ' The enterprise customer needs to create an activity within the course with the name '
-                '"(edX integration) Final Grade"',
-                HTTPStatus.NOT_FOUND.value
+                f'MoodleAPIClient request failed: 404 Configured grade_assignment_cmid={configured_cmid} '
+                f'not found in Moodle course_id={course_id}. '
+                f'Available modules: [{", ".join(available) if available else "none"}]. '
+                f'Update grade_assignment_cmid on the integration configuration to a valid cmid.',
+                HTTPStatus.NOT_FOUND.value,
             )
-        return course_module_id, module_name
+
+        # --- Name-based lookup (fallback — fragile) ---
+        assignment_name = cfg.grade_assignment_name
+        LOGGER.warning(
+            generate_formatted_log(
+                cfg.channel_code(),
+                cfg.enterprise_customer.uuid,
+                None,
+                cfg.id,
+                f'grade_assignment_cmid not configured; falling back to name-based module lookup '
+                f'for name="{assignment_name}" in course_id={course_id}. '
+                f'Set grade_assignment_cmid on the integration to avoid failures caused by '
+                f'activity renames or section moves in Moodle.',
+            )
+        )
+        match = next((m for m in all_modules if m['name'] == assignment_name), None)
+        if match:
+            LOGGER.info(
+                generate_formatted_log(
+                    cfg.channel_code(),
+                    cfg.enterprise_customer.uuid,
+                    None,
+                    cfg.id,
+                    f'Grade module resolved by name="{assignment_name}" '
+                    f'cmid={match["cmid"]} modname={match["modname"]} '
+                    f'section="{match["section"]}" course_id={course_id}. '
+                    f'Consider persisting grade_assignment_cmid={match["cmid"]} '
+                    f'on the integration configuration to prevent future lookup failures.',
+                )
+            )
+            return match['cmid'], match['modname']
+
+        available = [
+            f'cmid={m["cmid"]} name="{m["name"]}" section="{m["section"]}"'
+            for m in all_modules
+        ]
+        raise ClientError(
+            f'MoodleAPIClient request failed: 404 Completion course module not found in Moodle. '
+            f'No activity with name="{assignment_name}" found in course_id={course_id}. '
+            f'Available modules: [{", ".join(available) if available else "none"}]. '
+            f'Either create an assignment named "{assignment_name}" in the Moodle course, '
+            f'or set grade_assignment_cmid to the cmid of an existing activity.',
+            HTTPStatus.NOT_FOUND.value,
+        )
+
+    def validate_grade_sync_prerequisites(self, course_key, user_email):
+        """
+        Pre-flight validation before executing a grade sync for a single learner.
+
+        Verifies that:
+        - The Moodle course exists and is resolvable via its edX course key.
+        - The grade assignment module exists and is reachable in that course.
+        - The learner is enrolled in the course and has a resolvable Moodle user ID.
+
+        Call this method before submitting a batch of grade sync payloads to surface
+        configuration or setup problems early, before writes are attempted.
+
+        Args:
+            course_key (str): The edX course key used as the Moodle course ``idnumber``.
+            user_email (str): The learner's email address (must match Moodle account).
+
+        Returns:
+            dict with keys:
+                course_id (int): Moodle internal course ID.
+                course_module_id (int): Resolved cmid of the grade assignment.
+                module_name (str): Moodle modname (e.g. ``'assign'``).
+                moodle_user_id (int): Moodle internal user ID.
+
+        Raises:
+            ClientError: If any prerequisite is not satisfied, with a description of
+                what is missing and how to resolve it.
+        """
+        cfg = self.enterprise_configuration
+        LOGGER.info(
+            generate_formatted_log(
+                cfg.channel_code(),
+                cfg.enterprise_customer.uuid,
+                course_key,
+                cfg.id,
+                f'Starting grade sync pre-flight validation for user="{user_email}"',
+            )
+        )
+        course_id = self.get_course_id(course_key)
+        course_module_id, module_name = self.get_course_final_grade_module(course_id)
+        moodle_user_id = self.get_creds_of_user_in_course(course_id, user_email)
+        LOGGER.info(
+            generate_formatted_log(
+                cfg.channel_code(),
+                cfg.enterprise_customer.uuid,
+                course_key,
+                cfg.id,
+                f'Pre-flight OK: course_id={course_id} cmid={course_module_id} '
+                f'module_name={module_name} moodle_user_id={moodle_user_id}',
+            )
+        )
+        return {
+            'course_id': course_id,
+            'course_module_id': course_module_id,
+            'module_name': module_name,
+            'moodle_user_id': moodle_user_id,
+        }
 
     @moodle_request_wrapper
     def _get_courses(self, key):

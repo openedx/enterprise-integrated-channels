@@ -34,11 +34,11 @@ billiard==4.2.4
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.43.2
+boto3==1.43.40
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
-botocore==1.43.2
+botocore==1.43.40
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -48,13 +48,13 @@ build==1.5.0
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
-cachetools==7.1.1
+cachetools==7.1.4
     # via
     #   -r requirements/ci.txt
     #   tox
 celery==5.6.3
     # via -r requirements/quality.txt
-certifi==2026.4.22
+certifi==2026.6.17
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -73,7 +73,7 @@ charset-normalizer==3.4.7
     #   -r requirements/quality.txt
     #   requests
     #   snowflake-connector-python
-click==8.3.3
+click==8.4.2
     # via
     #   -r requirements/pip-tools.txt
     #   -r requirements/quality.txt
@@ -110,11 +110,11 @@ colorama==0.4.6
     # via
     #   -r requirements/ci.txt
     #   tox
-coverage[toml]==7.13.5
+coverage[toml]==7.15.0
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
-cryptography==47.0.0
+cryptography==49.0.0
     # via
     #   -r requirements/quality.txt
     #   django-fernet-fields-v2
@@ -130,7 +130,7 @@ defusedxml==0.7.1
     #   -r requirements/quality.txt
     #   python3-openid
     #   social-auth-core
-diff-cover==10.2.0
+diff-cover==10.3.0
     # via
     #   -r requirements/dev.in
     #   -r requirements/quality.txt
@@ -138,11 +138,11 @@ dill==0.4.1
     # via
     #   -r requirements/quality.txt
     #   pylint
-distlib==0.4.0
+distlib==0.4.3
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==5.2.13
+django==5.2.15
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -164,7 +164,7 @@ django==5.2.13
     #   social-auth-app-django
 django-config-models==3.0.0
     # via -r requirements/quality.txt
-django-countries==8.2.0
+django-countries==9.0.0
     # via -r requirements/quality.txt
 django-crum==0.7.9
     # via
@@ -177,11 +177,11 @@ django-model-utils==5.0.0
     # via
     #   -r requirements/quality.txt
     #   edx-rbac
-django-oauth-toolkit==3.2.0
+django-oauth-toolkit==3.3.0
     # via -r requirements/quality.txt
-django-object-actions==5.0.1
+django-object-actions==5.1.2
     # via -r requirements/quality.txt
-django-simple-history==3.11.0
+django-simple-history==3.12.0
     # via -r requirements/quality.txt
 django-waffle==5.0.0
     # via
@@ -235,7 +235,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/quality.txt
 factory-boy==3.3.3
     # via -r requirements/quality.txt
-faker==40.15.0
+faker==40.28.1
     # via
     #   -r requirements/quality.txt
     #   factory-boy
@@ -243,7 +243,7 @@ fastavro==1.12.2
     # via
     #   -r requirements/quality.txt
     #   openedx-events
-filelock==3.29.0
+filelock==3.29.4
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
@@ -253,7 +253,7 @@ filelock==3.29.0
     #   virtualenv
 freezegun==1.5.5
     # via -r requirements/quality.txt
-idna==3.13
+idna==3.18
     # via
     #   -r requirements/quality.txt
     #   requests
@@ -278,7 +278,7 @@ jmespath==1.1.0
     #   botocore
 jsonfield==3.2.0
     # via -r requirements/quality.txt
-jwcrypto==1.5.7
+jwcrypto==1.5.8
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
@@ -286,11 +286,11 @@ kombu==5.6.2
     # via
     #   -r requirements/quality.txt
     #   celery
-lxml[html-clean]==6.1.0
+lxml[html-clean]==6.1.1
     # via
     #   edx-i18n-tools
     #   lxml-html-clean
-lxml-html-clean==0.4.4
+lxml-html-clean==0.4.5
     # via lxml
 markupsafe==3.0.3
     # via
@@ -328,7 +328,7 @@ path==16.16.0
     # via edx-i18n-tools
 pip-tools==7.5.3
     # via -r requirements/pip-tools.txt
-platformdirs==4.9.6
+platformdirs==4.10.0
     # via
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
@@ -368,7 +368,7 @@ pygments==2.20.0
     #   -r requirements/quality.txt
     #   diff-cover
     #   pytest
-pyjwt[crypto]==2.12.1
+pyjwt[crypto]==2.13.0
     # via
     #   -r requirements/quality.txt
     #   drf-jwt
@@ -376,7 +376,7 @@ pyjwt[crypto]==2.12.1
     #   edx-rest-api-client
     #   snowflake-connector-python
     #   social-auth-core
-pylint==4.0.5
+pylint==4.0.6
     # via
     #   -r requirements/quality.txt
     #   edx-lint
@@ -404,11 +404,11 @@ pynacl==1.6.2
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
-pyopenssl==26.1.0
+pyopenssl==26.3.0
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
-pyproject-api==1.10.0
+pyproject-api==1.10.1
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -417,7 +417,7 @@ pyproject-hooks==1.2.0
     #   -r requirements/pip-tools.txt
     #   build
     #   pip-tools
-pytest==9.0.3
+pytest==9.1.1
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
@@ -432,7 +432,7 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   celery
     #   freezegun
-python-discovery==1.2.2
+python-discovery==1.4.2
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -445,7 +445,7 @@ python3-openid==3.2.0
     # via
     #   -r requirements/quality.txt
     #   social-auth-core
-pytz==2026.1.post1
+pytz==2026.2
     # via
     #   -r requirements/quality.txt
     #   edx-tincan-py35
@@ -456,7 +456,7 @@ pyyaml==6.0.3
     #   code-annotations
     #   edx-i18n-tools
     #   responses
-requests==2.33.1
+requests==2.34.2
     # via
     #   -r requirements/quality.txt
     #   django-oauth-toolkit
@@ -471,9 +471,9 @@ requests-oauthlib==2.0.0
     # via
     #   -r requirements/quality.txt
     #   social-auth-core
-responses==0.26.0
+responses==0.26.1
     # via -r requirements/quality.txt
-s3transfer==0.17.0
+s3transfer==0.19.0
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -490,11 +490,11 @@ six==1.17.0
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/quality.txt
-snowballstemmer==3.0.1
+snowballstemmer==3.1.1
     # via
     #   -r requirements/quality.txt
     #   pydocstyle
-snowflake-connector-python==4.4.0
+snowflake-connector-python==4.7.0
     # via -r requirements/quality.txt
 social-auth-app-django==5.4.3
     # via
@@ -512,13 +512,13 @@ sqlparse==0.5.5
     # via
     #   -r requirements/quality.txt
     #   django
-stevedore==5.7.0
+stevedore==5.9.0
     # via
     #   -r requirements/quality.txt
     #   code-annotations
     #   edx-django-utils
     #   edx-opaque-keys
-testfixtures==11.0.0
+testfixtures==12.2.0
     # via -r requirements/quality.txt
 text-unidecode==1.3
     # via
@@ -528,15 +528,15 @@ tomli-w==1.2.0
     # via
     #   -r requirements/ci.txt
     #   tox
-tomlkit==0.14.0
+tomlkit==0.15.0
     # via
     #   -r requirements/quality.txt
     #   edx-lint
     #   pylint
     #   snowflake-connector-python
-tox==4.53.1
+tox==4.56.1
     # via -r requirements/ci.txt
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via
     #   -r requirements/quality.txt
     #   django-countries
@@ -544,17 +544,18 @@ typing-extensions==4.15.0
     #   jwcrypto
     #   pyopenssl
     #   snowflake-connector-python
+    #   testfixtures
 tzdata==2026.2
     # via
     #   -r requirements/quality.txt
     #   kombu
-tzlocal==5.3.1
+tzlocal==5.4.4
     # via
     #   -r requirements/quality.txt
     #   celery
 unicodecsv==0.14.1
     # via -r requirements/quality.txt
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   -r requirements/quality.txt
     #   botocore
@@ -566,11 +567,11 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.3.0
+virtualenv==21.5.1
     # via
     #   -r requirements/ci.txt
     #   tox
-wcwidth==0.7.0
+wcwidth==0.8.2
     # via
     #   -r requirements/quality.txt
     #   prompt-toolkit
