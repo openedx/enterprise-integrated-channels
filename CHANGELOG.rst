@@ -10,14 +10,43 @@ Change Log
    This project adheres to Semantic Versioning (https://semver.org/).
 
 .. There should always be an "Unreleased" section for changes pending release.
-
 Unreleased
 **********
 
-0.1.58 – 2026-07-21
+0.1.64 – 2026-07-22
 *******************
 
 * feat: make Blackboard transmission chunk size editable in Django Admin
+
+
+0.1.63 – 2026-07-20
+*******************
+
+* fix: implemented course hours field
+
+0.1.62 – 2026-07-07
+*******************
+
+* fix: update Blackboard content payload formatting
+
+0.1.61 – 2026-06-22
+*******************
+
+* refactor: configure Integrated Channels structured logging from ``AppConfig.ready()`` instead of edx-platform's shared ``logsettings.py``
+
+0.1.60 – 2026-06-15
+*******************
+
+* fix: skip content metadata items that have no catalog metadata instead of aborting the whole customer export
+
+0.1.59 – 2026-05-27
+*******************
+
+* feat: add flag-gated Datadog structured logging for Integrated Channels
+
+0.1.58
+******
+* fix: resolve Moodle grade sync module lookup failures
 
 0.1.57 – 2026-04-10
 *******************
