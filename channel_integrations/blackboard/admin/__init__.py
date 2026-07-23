@@ -45,7 +45,7 @@ class BlackboardEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin.
         "refresh_token",
         "customer_oauth_authorization_url",
         "uuid",
-        "transmission_chunk_size",
+
     )
 
     raw_id_fields = (
