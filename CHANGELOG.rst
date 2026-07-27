@@ -10,14 +10,19 @@ Change Log
    This project adheres to Semantic Versioning (https://semver.org/).
 
 .. There should always be an "Unreleased" section for changes pending release.
+
 Unreleased
 **********
+
+0.1.65 – 2026-07-22
+*******************
+
+* docs: fix CHANGELOG formatting to enable pypi publish
 
 0.1.64 – 2026-07-22
 *******************
 
 * feat: make Blackboard transmission chunk size editable in Django Admin
-
 
 0.1.63 – 2026-07-20
 *******************
