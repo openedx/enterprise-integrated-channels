@@ -24,8 +24,9 @@ keywords = [
     "Python",
     "edx",
 ]
+readme = "README.rst"
 
-dynamic = ["readme", "version"]
+dynamic = ["version"]
 
 dependencies = [
     "Django>=4.2",
@@ -112,9 +113,6 @@ dev = [
 
 [tool.setuptools]
 include-package-data = true
-
-[tool.setuptools.dynamic]
-readme = {file = ["README.rst"], content-type = "text/x-rst"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
