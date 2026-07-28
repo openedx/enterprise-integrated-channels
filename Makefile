@@ -49,11 +49,10 @@ requirements: ## install development environment requirements
 	uv sync --group dev
 
 test: clean ## run tests in the current virtualenvs
-	PYTHONPATH=./:./mock_apps pytest
+        PYTHONPATH=./:./mock_apps uv run pytest
 
 diff_cover: test ## find diff lines that need test coverage
-	diff-cover coverage.xml
-
+        uv run diff-cover coverage.xml
 test-all: quality pii_check ## run tests on every supported Python/Django combination
 	uv run tox
 	uv run tox -e docs
@@ -67,15 +66,13 @@ selfcheck: ## check that the Makefile is well-formed
 
 extract_translations: ## extract strings to be translated, outputting .mo files
 	rm -rf docs/_build
-	cd src/channel_integrations && i18n_tool extract --no-segment
+        cd src/channel_integrations && uv run i18n_tool extract --no-segment
 
 compile_translations: ## compile translation files, outputting .po files for each supported language
-	cd src/channel_integrations && i18n_tool generate
+        cd src/channel_integrations && uv run i18n_tool generate
 
 detect_changed_source_translations:
-	cd src/channel_integrations && i18n_tool changed
-
-ifeq ($(OPENEDX_ATLAS_PULL),)
+        cd src/channel_integrations && uv run i18n_tool changed
 pull_translations: ## Pull translations from Transifex
 	tx pull -t -a -f --mode reviewed --minimum-perc=1
 else
@@ -83,8 +80,7 @@ else
 pull_translations:
 	find src/channel_integrations/conf/locale -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
 	atlas pull $(OPENEDX_ATLAS_ARGS) translations/enterprise-integrated-channels/channel_integrations/conf/locale:src/channel_integrations/conf/locale
-	python manage.py compilemessages
-
+        uv run python manage.py compilemessages
 	@echo "Translations have been pulled via Atlas and compiled."
 endif
 
@@ -92,8 +88,7 @@ push_translations: ## push source translation files (.po) from Transifex
 	tx push -s
 
 dummy_translations: ## generate dummy translation (.po) files
-	cd src/channel_integrations && i18n_tool dummy
-
+        cd src/channel_integrations && uv run i18n_tool dummy
 build_dummy_translations: extract_translations dummy_translations compile_translations ## generate and compile dummy translation files
 
 validate_translations: build_dummy_translations detect_changed_source_translations ## validate translations
