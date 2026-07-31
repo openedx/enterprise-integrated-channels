@@ -14,3 +14,11 @@
 # social-auth-app-django 5.7.0+ requires Django>=5.1, incompatible with Django 4.2 tests
 # Keep at 5.4.x for Django 4.2 compatibility
 social-auth-app-django<5.5
+
+# pip-tools 7.6.0  doesn't play nicely with pip 26
+pip<26
+pip-tools<7.6
+
+# 3.13 is incompatible with Django 4.2, which at the time of this comment
+# is the django version that edx-platform is on (and this library installs into edx-platform)
+django-simple-history<3.13.0
