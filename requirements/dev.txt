@@ -329,7 +329,9 @@ packaging==26.2
 path==16.16.0
     # via edx-i18n-tools
 pip-tools==7.6.0
-    # via -r requirements/pip-tools.txt
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/pip-tools.txt
 platformdirs==4.11.0
     # via
     #   -r requirements/ci.txt

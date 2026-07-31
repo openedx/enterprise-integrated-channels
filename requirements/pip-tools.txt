@@ -13,7 +13,9 @@ packaging==26.2
     #   build
     #   wheel
 pip-tools==7.6.0
-    # via -r requirements/pip-tools.in
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/pip-tools.in
 pyproject-hooks==1.2.0
     # via
     #   build
