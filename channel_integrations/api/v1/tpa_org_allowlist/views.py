@@ -6,6 +6,7 @@ from uuid import UUID
 import crum
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from edx_rbac.utils import has_access_to_all
@@ -64,6 +65,22 @@ class TpaOrgAllowlistViewSet(
         if not has_access_to_all(self.accessible_contexts):
             qs = qs.filter(enterprise_customer_id__in=self.accessible_contexts)
         return qs
+
+    def perform_create(self, serializer):
+        """
+        Reject attempts to create an entry for an enterprise customer outside the
+        caller's accessible contexts. Without this, any caller holding the
+        allowlist-admin role for *some* enterprise could target an arbitrary
+        `enterprise_customer` in the request body and grant SSO access into an
+        enterprise they have no assignment for.
+        """
+        enterprise_customer = serializer.validated_data['enterprise_customer']
+        if (
+            not has_access_to_all(self.accessible_contexts)
+            and str(enterprise_customer.pk) not in self.accessible_contexts
+        ):
+            raise PermissionDenied('You do not have access to manage the allowlist for this enterprise customer.')
+        serializer.save()
 
     @action(detail=False, methods=['get'], url_path='validate')
     def validate(self, request):
