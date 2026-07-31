@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.43.55
+boto3==1.43.61
     # via snowflake-connector-python
-botocore==1.43.55
+botocore==1.43.61
     # via
     #   boto3
     #   s3transfer
@@ -84,12 +84,14 @@ django-model-utils==5.0.0
     # via
     #   -r requirements/base.in
     #   edx-rbac
-django-oauth-toolkit==3.3.0
+django-oauth-toolkit==3.4.0
     # via -r requirements/base.in
 django-object-actions==5.1.2
     # via -r requirements/base.in
-django-simple-history==3.13.0
-    # via -r requirements/base.in
+django-simple-history==3.12.0
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/base.in
 django-waffle==5.0.0
     # via
     #   edx-django-utils
@@ -123,7 +125,7 @@ edx-rest-api-client==7.0.0
     # via -r requirements/base.in
 edx-tincan-py35==2.0.0
     # via -r requirements/base.in
-filelock==3.32.0
+filelock==3.32.2
     # via snowflake-connector-python
 idna==3.18
     # via
@@ -149,7 +151,7 @@ packaging==26.2
     #   snowflake-connector-python
 platformdirs==4.11.0
     # via snowflake-connector-python
-prompt-toolkit==3.0.52
+prompt-toolkit==3.0.53
     # via click-repl
 psutil==7.2.2
     # via edx-django-utils
@@ -171,7 +173,7 @@ python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   celery
-pytz==2026.2
+pytz==2026.3.post1
     # via
     #   -r requirements/base.in
     #   edx-tincan-py35
@@ -221,6 +223,7 @@ unicodecsv==0.14.1
 urllib3==2.7.0
     # via
     #   botocore
+    #   django-oauth-toolkit
     #   requests
 vine==5.1.0
     # via

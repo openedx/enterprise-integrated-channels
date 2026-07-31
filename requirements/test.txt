@@ -27,11 +27,11 @@ billiard==4.2.4
     # via
     #   -r requirements/base.txt
     #   celery
-boto3==1.43.55
+boto3==1.43.61
     # via
     #   -r requirements/base.txt
     #   snowflake-connector-python
-botocore==1.43.55
+botocore==1.43.61
     # via
     #   -r requirements/base.txt
     #   boto3
@@ -96,7 +96,7 @@ defusedxml==0.7.1
     # via
     #   python3-openid
     #   social-auth-core
-diff-cover==10.4.0
+diff-cover==10.4.1
     # via -r requirements/test.in
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
@@ -132,12 +132,14 @@ django-model-utils==5.0.0
     #   -r requirements/base.txt
     #   -r requirements/test.in
     #   edx-rbac
-django-oauth-toolkit==3.3.0
+django-oauth-toolkit==3.4.0
     # via -r requirements/base.txt
 django-object-actions==5.1.2
     # via -r requirements/base.txt
-django-simple-history==3.13.0
-    # via -r requirements/base.txt
+django-simple-history==3.12.0
+    # via
+    #   -c requirements/constraints.txt
+    #   -r requirements/base.txt
 django-waffle==5.0.0
     # via
     #   -r requirements/base.txt
@@ -184,11 +186,11 @@ edx-tincan-py35==2.0.0
     # via -r requirements/base.txt
 factory-boy==3.3.3
     # via -r requirements/test.in
-faker==40.35.0
+faker==40.36.0
     # via factory-boy
 fastavro==1.12.2
     # via openedx-events
-filelock==3.32.0
+filelock==3.32.2
     # via
     #   -r requirements/base.txt
     #   snowflake-connector-python
@@ -249,7 +251,7 @@ pluggy==1.6.0
     #   diff-cover
     #   pytest
     #   pytest-cov
-prompt-toolkit==3.0.52
+prompt-toolkit==3.0.53
     # via
     #   -r requirements/base.txt
     #   click-repl
@@ -303,7 +305,7 @@ python-slugify==8.0.4
     # via code-annotations
 python3-openid==3.2.0
     # via social-auth-core
-pytz==2026.2
+pytz==2026.3.post1
     # via
     #   -r requirements/base.txt
     #   edx-tincan-py35
@@ -399,6 +401,7 @@ urllib3==2.7.0
     # via
     #   -r requirements/base.txt
     #   botocore
+    #   django-oauth-toolkit
     #   requests
     #   responses
 vine==5.1.0
