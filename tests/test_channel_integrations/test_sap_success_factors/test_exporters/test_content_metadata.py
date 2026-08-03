@@ -286,7 +286,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
                 ],
             },
             False,
-            0.0,
+            None,
         ),
         (
             {'course_runs': []},
@@ -368,7 +368,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
                 ],
             },
             False,
-            0.0,
+            None,
         ),
         (
             {
@@ -469,7 +469,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         assert transformed['totalHours'] == 15.0
         assert transformed['creditHours'] == 15.0
 
-    def test_transform_item_includes_zero_hours_when_disabled(self):
+    def test_transform_item_omits_hour_fields_when_disabled(self):
         self.config.transmit_total_hours = False
         self.config.save()
         exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
@@ -502,8 +502,8 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         }
         # pylint: disable=protected-access
         transformed = exporter._transform_item(content_metadata_item, action='create')
-        assert transformed['totalHours'] == 0.0
-        assert transformed['creditHours'] == 0.0
+        assert 'totalHours' not in transformed
+        assert 'creditHours' not in transformed
 
     @ddt.data(
         {
