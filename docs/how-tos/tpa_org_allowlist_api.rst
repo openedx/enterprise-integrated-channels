@@ -48,11 +48,18 @@ Add an org (``POST /tpa-org-allowlist/``)
    {
      "enterprise_customer": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
      "tpa_org_id": "11111111-2222-3333-4444-555555555555",
-     "demo_account": false
+     "demo_account": false,
+     "enterprise_group_uuid": null
    }
 
 Returns ``201 Created`` with the created record, or ``400 Bad Request`` if the
 ``(enterprise_customer, tpa_org_id)`` combination already exists.
+
+``enterprise_group_uuid`` is optional and defaults to ``null``, meaning the org is allowlisted
+for login but has no Learner Credit budget mapped yet. When set, it must be the UUID of a
+budget-type ``EnterpriseGroup`` belonging to the same ``enterprise_customer`` - see
+:doc:`onboard_skillsoft_org_budget` for how this field is used to automatically place learners
+into the right budget group at login.
 
 Validate an org (``GET /tpa-org-allowlist/validate/``)
 =======================================================

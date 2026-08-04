@@ -14,7 +14,7 @@ from django.contrib import auth
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-from model_utils.models import TimeStampedModel
+from model_utils.models import TimeStampedModel, SoftDeletableModel
 from django_countries.fields import CountryField
 from edx_rbac.models import UserRole, UserRoleAssignment
 from jsonfield.encoder import JSONEncoder
@@ -24,7 +24,14 @@ from slumber.exceptions import HttpClientError
 from enterprise import utils
 from enterprise.api_client.lms import EnrollmentApiClient, ThirdPartyAuthApiClient
 from enterprise.utils import get_enterprise_worker_user, get_user_valid_idp, CourseEnrollmentDowngradeError, CourseEnrollmentPermissionError
-from enterprise.constants import json_serialized_course_modes, ALL_ACCESS_CONTEXT
+from enterprise.constants import (
+    json_serialized_course_modes,
+    ALL_ACCESS_CONTEXT,
+    GROUP_TYPE_CHOICES,
+    GROUP_TYPE_FLEX,
+    GROUP_MEMBERSHIP_STATUS_CHOICES,
+    GROUP_MEMBERSHIP_PENDING_STATUS,
+)
 from enterprise.validators import validate_content_filter_fields
 
 
@@ -713,16 +720,64 @@ class EnterpriseFeatureUserRoleAssignment(models.Model):
         app_label = 'enterprise'
 
 
-class EnterpriseGroup(models.Model):
-    
+class EnterpriseGroup(TimeStampedModel, SoftDeletableModel):
+
+    uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    name = models.CharField(max_length=255, blank=False)
+    enterprise_customer = models.ForeignKey(
+        'EnterpriseCustomer',
+        related_name='groups',
+        on_delete=models.CASCADE,
+    )
+    group_type = models.CharField(
+        max_length=20,
+        choices=GROUP_TYPE_CHOICES,
+        default=GROUP_TYPE_FLEX,
+    )
+
     class Meta:
         app_label = 'enterprise'
+        unique_together = (('name', 'enterprise_customer'),)
 
 
-class EnterpriseGroupMembership(models.Model):
-    
+class EnterpriseGroupMembership(TimeStampedModel, SoftDeletableModel):
+
+    uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    group = models.ForeignKey(
+        EnterpriseGroup,
+        blank=False,
+        null=False,
+        related_name='members',
+        on_delete=models.CASCADE,
+    )
+    enterprise_customer_user = models.ForeignKey(
+        'EnterpriseCustomerUser',
+        blank=True,
+        null=True,
+        related_name='memberships',
+        on_delete=models.SET_NULL,
+    )
+    pending_enterprise_customer_user = models.ForeignKey(
+        'PendingEnterpriseCustomerUser',
+        blank=True,
+        null=True,
+        related_name='memberships',
+        on_delete=models.SET_NULL,
+    )
+    activated_at = models.DateTimeField(default=None, blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        choices=GROUP_MEMBERSHIP_STATUS_CHOICES,
+        default=GROUP_MEMBERSHIP_PENDING_STATUS,
+    )
+    removed_at = models.DateTimeField(default=None, blank=True, null=True)
+    errored_at = models.DateTimeField(default=None, null=True, blank=True)
+
     class Meta:
         app_label = 'enterprise'
+        unique_together = (('group', 'enterprise_customer_user'), ('group', 'pending_enterprise_customer_user'))
 
 
 class LearnerCreditEnterpriseCourseEnrollment(models.Model):
