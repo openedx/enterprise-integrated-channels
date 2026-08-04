@@ -9,8 +9,10 @@ from config_models.models import ConfigurationModel
 from django.conf import settings
 from django.contrib import auth
 from django.db import models
+from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
 from jsonfield import JSONField
 
 from channel_integrations.cornerstone.exporters.content_metadata import CornerstoneContentMetadataExporter
@@ -123,6 +125,75 @@ class CornerstoneEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigu
         help_text=_("The base URL used for API requests to Cornerstone, i.e. https://portalName.csod.com")
     )
 
+    decrypted_client_id = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Encrypted OAuth Client ID",
+        help_text=_(
+            "The encrypted OAuth Client ID provided to edX by the enterprise customer, used to obtain access tokens "
+            "for pushing course completions. When both this and the client secret are set, completions are "
+            "authenticated with OAuth instead of the learner's launch-time session token."
+        ),
+        null=True
+    )
+
+    @property
+    def encrypted_client_id(self):
+        """
+        Return encrypted client_id as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_client_id field. This method will encrypt the client_id again before sending.
+        """
+        if self.decrypted_client_id:
+            return force_str(
+                self._meta.get_field('decrypted_client_id').fernet.encrypt(
+                    force_bytes(self.decrypted_client_id)
+                )
+            )
+        return self.decrypted_client_id
+
+    @encrypted_client_id.setter
+    def encrypted_client_id(self, value):
+        """
+        Set the encrypted client_id.
+        """
+        self.decrypted_client_id = value
+
+    decrypted_client_secret = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Encrypted OAuth Client Secret",
+        help_text=_(
+            "The encrypted OAuth Client Secret provided to edX by the enterprise customer, used to obtain access "
+            "tokens for pushing course completions."
+        ),
+        null=True
+    )
+
+    @property
+    def encrypted_client_secret(self):
+        """
+        Return encrypted client_secret as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_client_secret field. This method will encrypt the client_secret again before sending.
+        """
+        if self.decrypted_client_secret:
+            return force_str(
+                self._meta.get_field('decrypted_client_secret').fernet.encrypt(
+                    force_bytes(self.decrypted_client_secret)
+                )
+            )
+        return self.decrypted_client_secret
+
+    @encrypted_client_secret.setter
+    def encrypted_client_secret(self, value):
+        """
+        Set the encrypted client_secret.
+        """
+        self.decrypted_client_secret = value
+
     session_token = models.CharField(
         max_length=255,
         blank=True,
@@ -150,6 +221,16 @@ class CornerstoneEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigu
 
     class Meta:
         app_label = 'cornerstone_channel'
+
+    @property
+    def uses_oauth_completion_auth(self):
+        """
+        Whether course completions for this customer should be authenticated with OAuth.
+
+        OAuth is opt-in per customer: a config with no credentials keeps using the learner's
+        launch-time session token, so existing customers are unaffected until credentials are set.
+        """
+        return bool(self.decrypted_client_id and self.decrypted_client_secret)
 
     @property
     def is_valid(self):

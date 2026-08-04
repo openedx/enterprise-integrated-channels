@@ -14,6 +14,13 @@ Change Log
 Unreleased
 **********
 
+0.1.66 – 2026-08-04
+*******************
+
+* feat: migrate Cornerstone learner data transmission from the launch-time completion callback to Cornerstone's
+  Transcript API, authenticated with OAuth client credentials instead of the learner's session token; opt-in per
+  customer via new encrypted ``client_id`` / ``client_secret`` config fields
+
 0.1.65 – 2026-07-22
 *******************
 
