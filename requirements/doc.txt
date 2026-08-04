@@ -41,11 +41,11 @@ billiard==4.2.4
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.43.61
+boto3==1.43.63
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-botocore==1.43.61
+botocore==1.43.63
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -60,7 +60,7 @@ certifi==2026.7.22
     #   -r requirements/test.txt
     #   requests
     #   snowflake-connector-python
-cffi==2.1.0
+cffi==2.1.1
     # via
     #   -r requirements/test.txt
     #   cryptography
@@ -97,11 +97,11 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.2
     # via -r requirements/test.txt
-coverage[toml]==7.15.2
+coverage[toml]==7.15.3
     # via
     #   -r requirements/test.txt
     #   pytest-cov
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   -r requirements/test.txt
     #   django-fernet-fields-v2
@@ -120,7 +120,7 @@ defusedxml==0.7.1
     #   social-auth-core
 diff-cover==10.4.1
     # via -r requirements/test.txt
-django==5.2.16
+django==5.2.17
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
@@ -368,7 +368,7 @@ pynacl==1.6.2
     # via
     #   -r requirements/test.txt
     #   edx-django-utils
-pyopenssl==26.3.0
+pyopenssl==26.4.0
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
