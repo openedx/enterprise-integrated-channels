@@ -34,11 +34,11 @@ billiard==4.2.4
     # via
     #   -r requirements/quality.txt
     #   celery
-boto3==1.43.61
+boto3==1.43.63
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
-botocore==1.43.61
+botocore==1.43.63
     # via
     #   -r requirements/quality.txt
     #   boto3
@@ -48,7 +48,7 @@ build==1.5.0
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
-cachetools==7.1.6
+cachetools==7.1.7
     # via
     #   -r requirements/ci.txt
     #   tox
@@ -59,7 +59,7 @@ certifi==2026.7.22
     #   -r requirements/quality.txt
     #   requests
     #   snowflake-connector-python
-cffi==2.1.0
+cffi==2.1.1
     # via
     #   -r requirements/quality.txt
     #   cryptography
@@ -110,11 +110,11 @@ colorama==0.4.6
     # via
     #   -r requirements/ci.txt
     #   tox
-coverage[toml]==7.15.2
+coverage[toml]==7.15.3
     # via
     #   -r requirements/quality.txt
     #   pytest-cov
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   -r requirements/quality.txt
     #   django-fernet-fields-v2
@@ -142,7 +142,7 @@ distlib==0.4.3
     # via
     #   -r requirements/ci.txt
     #   virtualenv
-django==5.2.16
+django==5.2.17
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/quality.txt
@@ -337,7 +337,6 @@ platformdirs==4.11.0
     #   -r requirements/ci.txt
     #   -r requirements/quality.txt
     #   pylint
-    #   python-discovery
     #   snowflake-connector-python
     #   tox
     #   virtualenv
@@ -408,7 +407,7 @@ pynacl==1.6.2
     # via
     #   -r requirements/quality.txt
     #   edx-django-utils
-pyopenssl==26.3.0
+pyopenssl==26.4.0
     # via
     #   -r requirements/quality.txt
     #   snowflake-connector-python
@@ -436,7 +435,7 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   celery
     #   freezegun
-python-discovery==1.5.0
+python-discovery==1.5.1
     # via
     #   -r requirements/ci.txt
     #   tox
