@@ -3,6 +3,7 @@ Tests for SAPSF content metadata exporters.
 """
 
 import unittest
+from unittest import mock
 
 import ddt
 import responses
@@ -286,7 +287,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
                 ],
             },
             False,
-            None,
+            0.0,
         ),
         (
             {'course_runs': []},
@@ -368,7 +369,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
                 ],
             },
             False,
-            None,
+            0.0,
         ),
         (
             {
@@ -451,7 +452,6 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
                     'pacing_type': 'self_paced',
                     'start': '2024-01-01T00:00:00Z',
                     'end': '2024-12-31T00:00:00Z',
-                    'estimated_hours': 15.0,
                     'status': 'published',
                     'is_enrollable': True,
                     'is_marketable': True,
@@ -466,8 +466,8 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         transformed = exporter._transform_item(content_metadata_item, action='create')
         assert 'totalHours' in transformed
         assert 'creditHours' in transformed
-        assert transformed['totalHours'] == 15.0
-        assert transformed['creditHours'] == 15.0
+        assert transformed['totalHours'] == 0.0
+        assert transformed['creditHours'] == 0.0
 
     def test_transform_item_omits_hour_fields_when_disabled(self):
         self.config.transmit_total_hours = False
@@ -504,6 +504,48 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         transformed = exporter._transform_item(content_metadata_item, action='create')
         assert 'totalHours' not in transformed
         assert 'creditHours' not in transformed
+
+    @ddt.data(
+        (True, True),
+        (False, False),
+    )
+    @ddt.unpack
+    def test_transform_item_removes_only_hour_fields_based_on_transmit_flag(self, transmit_flag, expect_hours):
+        self.config.transmit_total_hours = transmit_flag
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+
+        content_metadata_item = {'content_type': 'course'}
+        super_transformed = {
+            'courseID': 'edX+DemoX',
+            'thumbnailURI': 'https://example.com/image.jpg',
+            'totalHours': 0.0,
+            'creditHours': 0.0,
+            'status': 'ACTIVE',
+        }
+
+        with mock.patch(
+            (
+                'channel_integrations.integrated_channel.exporters.content_metadata.'
+                'ContentMetadataExporter._transform_item'
+            ),
+            return_value=super_transformed.copy(),
+        ) as mock_super_transform:
+            # pylint: disable=protected-access
+            transformed = exporter._transform_item(content_metadata_item, action='create')
+
+        mock_super_transform.assert_called_once_with(content_metadata_item, 'create')
+
+        if expect_hours:
+            assert transformed['totalHours'] == 0.0
+            assert transformed['creditHours'] == 0.0
+        else:
+            assert 'totalHours' not in transformed
+            assert 'creditHours' not in transformed
+
+        assert transformed['thumbnailURI'] == 'https://example.com/image.jpg'
+        assert transformed['courseID'] == 'edX+DemoX'
+        assert transformed['status'] == 'ACTIVE'
 
     @ddt.data(
         {

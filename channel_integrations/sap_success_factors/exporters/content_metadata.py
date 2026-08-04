@@ -50,8 +50,17 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
         'creditHours': 'credit_hours',
     }
 
-    # Omit keys whose transformer returns None (e.g. hour fields when flag is off)
-    SKIP_KEY_IF_NONE = True
+    def _transform_item(self, content_metadata_item, action):
+        """
+        Transform the content metadata item and omit hours fields when disabled.
+        """
+        transformed_item = super()._transform_item(content_metadata_item, action)
+
+        if not self.enterprise_configuration.transmit_total_hours:
+            transformed_item.pop('totalHours', None)
+            transformed_item.pop('creditHours', None)
+
+        return transformed_item
 
     def _apply_delete_transformation(self, metadata):
         """
@@ -235,7 +244,7 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
     def transform_total_hours(self, content_metadata_item):
         """Return the total hours for the content item, sourced from estimated_hours."""
         if not self.enterprise_configuration.transmit_total_hours:
-            return None
+            return 0.0
         return self._get_estimated_hours(content_metadata_item)
 
     def transform_credit_hours(self, content_metadata_item):
