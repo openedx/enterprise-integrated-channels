@@ -14,6 +14,11 @@ Change Log
 Unreleased
 **********
 
+0.1.66 – 2026-08-04
+*******************
+
+* fix: add override method to omit hours fields when disabled
+
 0.1.65 – 2026-07-22
 *******************
 
