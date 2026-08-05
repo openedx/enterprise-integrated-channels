@@ -16,6 +16,26 @@ Change Log
 Unreleased
 **********
 
+0.1.66 – 2026-08-04
+*******************
+
+* fix: add override method to omit hours fields when disabled
+
+0.1.65 – 2026-07-22
+*******************
+
+* docs: fix CHANGELOG formatting to enable pypi publish
+
+0.1.64 – 2026-07-22
+*******************
+
+* feat: make Blackboard transmission chunk size editable in Django Admin
+
+0.1.63 – 2026-07-20
+*******************
+
+* fix: implemented course hours field
+
 0.1.62 – 2026-07-07
 *******************
 

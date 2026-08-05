@@ -50,6 +50,18 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
         'creditHours': 'credit_hours',
     }
 
+    def _transform_item(self, content_metadata_item, action):
+        """
+        Transform the content metadata item and omit hours fields when disabled.
+        """
+        transformed_item = super()._transform_item(content_metadata_item, action)
+
+        if not self.enterprise_configuration.transmit_total_hours:
+            transformed_item.pop('totalHours', None)
+            transformed_item.pop('creditHours', None)
+
+        return transformed_item
+
     def _apply_delete_transformation(self, metadata):
         """
         Specific transformations required for "deleting" a course on a SAP external service.
