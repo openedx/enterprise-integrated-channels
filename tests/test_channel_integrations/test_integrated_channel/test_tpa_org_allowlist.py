@@ -87,6 +87,30 @@ class TestTpaOrgAllowlistCreate:
         response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
         assert response.status_code == 400
 
+    def test_cannot_create_entry_for_different_enterprise(self, api_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """A scoped user cannot create an entry for an enterprise customer they aren't assigned to."""
+        other_enterprise = EnterpriseCustomerFactory()
+
+        scoped_user = UserFactory(username='tpa_svc_create', is_active=True, is_superuser=False, is_staff=False)
+        scoped_user.set_password('password')
+        scoped_user.save()
+        role, _ = SystemWideEnterpriseRole.objects.get_or_create(name=TPA_ORG_ALLOWLIST_ADMIN_ROLE)
+        SystemWideEnterpriseUserRoleAssignment.objects.create(
+            user=scoped_user,
+            role=role,
+            enterprise_customer=enterprise_customer,  # scoped to a DIFFERENT enterprise than the target
+        )
+
+        api_client.force_authenticate(user=scoped_user)
+
+        payload = {
+            'enterprise_customer': str(other_enterprise.uuid),
+            'tpa_org_id': str(uuid4()),
+        }
+        response = api_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
+        assert response.status_code == 403
+        assert not TpaOrgAllowlist.objects.filter(enterprise_customer=other_enterprise).exists()
+
 
 @pytest.mark.django_db
 class TestTpaOrgAllowlistList:
