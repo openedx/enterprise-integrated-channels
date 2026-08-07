@@ -134,14 +134,78 @@ class TestCornerstoneApiClient(unittest.TestCase):
         assert "dummy_client_secret" not in token_record.payload
         assert "dummy_access_token" not in token_record.response_body
 
+    def _assignments_url(self, client):
+        return urljoin(self.cornerstone_base_url, client.LEARNING_ASSIGNMENTS_API_PATH)
+
     @responses.activate
-    def test_in_progress_records_are_skipped_on_the_transcript_api(self):
+    def test_in_progress_records_go_to_the_learning_assignments_api(self):
         """
-        The Transcript API's completion endpoint only marks transcripts complete, so a record that
-        is still in progress should be skipped rather than sent.
+        In-progress records are routed to the Learning Assignments API rather than the Transcript
+        API, since the Transcript API only understands completions.
         """
         self._migrate_config_to_oauth()
         cornerstone_api_client = CornerstoneAPIClient(self.csod_config)
+        assignments_url = self._assignments_url(cornerstone_api_client)
+
+        responses.add(
+            responses.POST,
+            cornerstone_api_client.get_oauth_url(),
+            json={"access_token": "dummy_access_token", "expires_in": 3600},
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            assignments_url,
+            json=[{"assignmentId": "dummy_assignment_id"}],
+            status=200,
+        )
+        responses.add(
+            responses.PATCH,
+            f"{assignments_url}/dummy_assignment_id",
+            json="{}",
+            status=200,
+        )
+
+        output = cornerstone_api_client.create_course_completion(
+            "test-learner@example.com",
+            self._completion_payload(status="In Progress", successStatus=None),
+        )
+
+        assert output == (200, '"{}"')
+
+        lookup_request = responses.calls[1]
+        assert lookup_request.request.method == "GET"
+        assert "userId=dummy_guid" in lookup_request.request.url
+        assert "loId=" in lookup_request.request.url
+
+        update_request = responses.calls[2]
+        assert update_request.request.method == "PATCH"
+        assert update_request.request.url == f"{assignments_url}/dummy_assignment_id"
+        body = json.loads(update_request.request.body)
+        assert body["Status"] == "In Progress"
+
+    @responses.activate
+    def test_in_progress_records_are_skipped_when_no_assignment_found(self):
+        """
+        If Cornerstone has no matching assignment for this learner/course, the update is skipped
+        rather than raising.
+        """
+        self._migrate_config_to_oauth()
+        cornerstone_api_client = CornerstoneAPIClient(self.csod_config)
+        assignments_url = self._assignments_url(cornerstone_api_client)
+
+        responses.add(
+            responses.POST,
+            cornerstone_api_client.get_oauth_url(),
+            json={"access_token": "dummy_access_token", "expires_in": 3600},
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            assignments_url,
+            json=[],
+            status=200,
+        )
 
         output = cornerstone_api_client.create_course_completion(
             "test-learner@example.com",
@@ -149,8 +213,7 @@ class TestCornerstoneApiClient(unittest.TestCase):
         )
 
         assert output == (200, '')
-        assert len(responses.calls) == 0
-        assert IntegratedChannelAPIRequestLogs.objects.count() == 0
+        assert len(responses.calls) == 2
 
     @responses.activate
     def test_unmigrated_config_still_uses_the_legacy_callback(self):

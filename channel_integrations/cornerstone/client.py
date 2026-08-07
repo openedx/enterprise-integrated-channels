@@ -38,11 +38,20 @@ class CornerstoneAPIClient(IntegratedChannelApiClient):
         '/services/api/v1/transcripts/complete',
     )
 
-    # Scope requested when minting a completion-writing access token.
+    # Cornerstone's Learning Assignments API endpoint for looking up/updating a learner's
+    # in-progress assignment record.
+    LEARNING_ASSIGNMENTS_API_PATH = getattr(
+        settings,
+        'ENTERPRISE_CORNERSTONE_LEARNING_ASSIGNMENTS_PATH',
+        '/services/api/v1/LearningAssignments',
+    )
+
+    # Scope requested when minting a completion-writing access token. Covers both the Transcript
+    # API (completions) and the Learning Assignments API (in-progress updates).
     COMPLETION_SCOPE = getattr(
         settings,
         'ENTERPRISE_CORNERSTONE_OAUTH_SCOPE',
-        'transcript:update',
+        'transcript:update learningassignment:read learningassignment:update',
     )
 
     def __init__(self, enterprise_configuration):
@@ -119,9 +128,12 @@ class CornerstoneAPIClient(IntegratedChannelApiClient):
             HTTPError: if we received a failure response code from Cornerstone
         """
         json_payload = json.loads(payload)
+        data = json_payload['data']
         if self.enterprise_configuration.uses_oauth_completion_auth:
-            return self._complete_transcript(json_payload['data'])
-        return self._post_completion_callback(json_payload['data'])
+            if data.get('status') == 'Completed':
+                return self._complete_transcript(data)
+            return self._update_learning_assignment(data)
+        return self._post_completion_callback(data)
 
     def _complete_transcript(self, data):
         """
@@ -132,22 +144,6 @@ class CornerstoneAPIClient(IntegratedChannelApiClient):
 
         Returns: (status_code, response_text)
         """
-        # The Transcript API's completion endpoint only marks a transcript complete; it has no
-        # notion of partial progress. In-progress records have nowhere to go here, so they are
-        # skipped rather than sent as something they are not.
-        if data.get('status') != 'Completed':
-            LOGGER.info(
-                generate_formatted_log(
-                    self.enterprise_configuration.channel_code(),
-                    self.enterprise_configuration.enterprise_customer.uuid,
-                    None,
-                    data.get('courseId'),
-                    'Skipping transcript update: the Transcript API only accepts completions and this '
-                    'record has status {status}.'.format(status=data.get('status'))
-                )
-            )
-            return 200, ''
-
         url = urljoin(
             self.enterprise_configuration.cornerstone_base_url,
             self.TRANSCRIPT_COMPLETE_API_PATH,
@@ -178,6 +174,74 @@ class CornerstoneAPIClient(IntegratedChannelApiClient):
         API, plus somewhere to cache the result.
         """
         return get_or_create_key_pair(course_id).external_course_id
+
+    def _update_learning_assignment(self, data):
+        """
+        Update a learner's in-progress assignment through Cornerstone's Learning Assignments API.
+
+        The Transcript API only understands completions, so in-progress records are sent here
+        instead: first resolving the assignment ID for this learner/course pair, then patching
+        its status and last-accessed date.
+
+        Args:
+            data (dict): the serialized audit record.
+
+        Returns: (status_code, response_text)
+        """
+        self._create_session()
+
+        learning_object_id = self._get_learning_object_id(data.get('courseId'))
+        lookup_url = urljoin(
+            self.enterprise_configuration.cornerstone_base_url,
+            self.LEARNING_ASSIGNMENTS_API_PATH,
+        )
+        start_time = time.time()
+        lookup_response = self.session.get(
+            lookup_url,
+            params={
+                'userId': data.get('userGuid'),
+                'loId': learning_object_id,
+            },
+        )
+        duration_seconds = time.time() - start_time
+        self._store_api_call(lookup_url, {'userId': data.get('userGuid'), 'loId': learning_object_id},
+                              duration_seconds, lookup_response)
+
+        if not lookup_response.ok:
+            return lookup_response.status_code, lookup_response.text
+
+        try:
+            assignment_id = lookup_response.json()[0]['assignmentId']
+        except (KeyError, IndexError, ValueError):
+            LOGGER.info(
+                generate_formatted_log(
+                    self.enterprise_configuration.channel_code(),
+                    self.enterprise_configuration.enterprise_customer.uuid,
+                    None,
+                    data.get('courseId'),
+                    'Skipping learning assignment update: no assignment found for userGuid '
+                    '{user_guid} and learning object {lo_id}.'.format(
+                        user_guid=data.get('userGuid'), lo_id=learning_object_id
+                    )
+                )
+            )
+            return 200, ''
+
+        update_url = urljoin(
+            self.enterprise_configuration.cornerstone_base_url,
+            '{path}/{assignment_id}'.format(
+                path=self.LEARNING_ASSIGNMENTS_API_PATH, assignment_id=assignment_id
+            ),
+        )
+        assignment_payload = {
+            'Status': data.get('status'),
+            'LastAccessDate': data.get('completionDate'),
+        }
+        start_time = time.time()
+        response = self.session.patch(update_url, json=assignment_payload)
+        duration_seconds = time.time() - start_time
+        self._store_api_call(update_url, assignment_payload, duration_seconds, response)
+        return response.status_code, response.text
 
     def _post_completion_callback(self, data):
         """
