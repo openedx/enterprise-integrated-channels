@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.43.63
+boto3==1.43.66
     # via snowflake-connector-python
-botocore==1.43.63
+botocore==1.43.66
     # via
     #   boto3
     #   s3transfer
@@ -96,7 +96,7 @@ django-waffle==5.0.0
     # via
     #   edx-django-utils
     #   edx-drf-extensions
-djangorestframework==3.17.1
+djangorestframework==3.17.2
     # via
     #   django-config-models
     #   drf-jwt
@@ -145,7 +145,7 @@ oauthlib==3.3.1
     # via django-oauth-toolkit
 openedx-atlas==0.7.0
     # via -r requirements/base.in
-packaging==26.2
+packaging==26.3
     # via
     #   kombu
     #   snowflake-connector-python

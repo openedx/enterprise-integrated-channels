@@ -41,11 +41,11 @@ billiard==4.2.4
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.43.63
+boto3==1.43.66
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-botocore==1.43.63
+botocore==1.43.66
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -65,7 +65,7 @@ cffi==2.1.1
     #   -r requirements/test.txt
     #   cryptography
     #   pynacl
-chardet==7.4.3
+chardet==7.5.1
     # via
     #   -r requirements/test.txt
     #   diff-cover
@@ -97,7 +97,7 @@ click-repl==0.3.0
     #   celery
 code-annotations==2.3.2
     # via -r requirements/test.txt
-coverage[toml]==7.15.3
+coverage[toml]==7.15.4
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -167,7 +167,7 @@ django-waffle==5.0.0
     #   -r requirements/test.txt
     #   edx-django-utils
     #   edx-drf-extensions
-djangorestframework==3.17.1
+djangorestframework==3.17.2
     # via
     #   -r requirements/test.txt
     #   django-config-models
@@ -308,7 +308,7 @@ openedx-atlas==0.7.0
     # via -r requirements/test.txt
 openedx-events==10.5.0
     # via -r requirements/test.txt
-packaging==26.2
+packaging==26.3
     # via
     #   -r requirements/test.txt
     #   build
@@ -381,7 +381,7 @@ pytest==9.1.1
     #   pytest-django
 pytest-cov==7.1.0
     # via -r requirements/test.txt
-pytest-django==4.12.0
+pytest-django==4.13.0
     # via -r requirements/test.txt
 python-dateutil==2.9.0.post0
     # via
@@ -476,7 +476,7 @@ sortedcontainers==2.4.0
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-soupsieve==2.9.1
+soupsieve==2.9.2
     # via beautifulsoup4
 sphinx==9.0.4
     # via
