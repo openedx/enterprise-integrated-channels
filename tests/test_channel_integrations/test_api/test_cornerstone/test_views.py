@@ -84,11 +84,31 @@ class CornerstoneConfigurationViewSetTests(APITest):
         payload = {
             'cornerstone_base_url': 'http://testing2',
             'enterprise_customer': ENTERPRISE_ID,
+            'client_id': 'testing',
+            'client_secret': 'secret',
         }
         response = self.client.put(url, payload)
         self.cornerstone_config.refresh_from_db()
         self.assertEqual(self.cornerstone_config.cornerstone_base_url, 'http://testing2')
+        self.assertEqual(self.cornerstone_config.decrypted_client_id, 'testing')
+        self.assertEqual(self.cornerstone_config.decrypted_client_secret, 'secret')
+        self.assertTrue(self.cornerstone_config.uses_oauth_completion_auth)
         self.assertEqual(response.status_code, 200)
+
+    @mock.patch('enterprise.rules.crum.get_current_request')
+    def test_oauth_is_opt_in(self, mock_current_request):
+        """
+        A config with no credentials keeps using the legacy session-token auth, and stays valid.
+        """
+        mock_current_request.return_value = self.get_request_with_jwt_cookie(
+            system_wide_role=ENTERPRISE_ADMIN_ROLE,
+            context=self.enterprise_customer.uuid,
+        )
+        self.assertFalse(self.cornerstone_config.uses_oauth_completion_auth)
+
+        url = reverse('api:v1:cornerstone:configuration-detail', args=[self.cornerstone_config.id])
+        data = json.loads(self.client.get(url).content.decode('utf-8'))
+        self.assertEqual(data.get('is_valid'), [{'missing': []}, {'incorrect': []}])
 
     @mock.patch('enterprise.rules.crum.get_current_request')
     def test_patch(self, mock_current_request):
