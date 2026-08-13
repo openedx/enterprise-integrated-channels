@@ -131,9 +131,9 @@ class CornerstoneEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigu
         default='',
         verbose_name="Encrypted OAuth Client ID",
         help_text=_(
-            "The encrypted OAuth Client ID provided to edX by the enterprise customer, used to obtain access tokens "
-            "for pushing course completions. When both this and the client secret are set, completions are "
-            "authenticated with OAuth instead of the learner's launch-time session token."
+            "The OAuth Client ID (encrypted at rest) that the enterprise customer gave edX for requesting access "
+            "tokens used to push course completions. If this and the client secret are both configured, "
+            "completions are authenticated via OAuth rather than the learner's launch-time session token."
         ),
         null=True
     )
