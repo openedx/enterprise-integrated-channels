@@ -203,6 +203,16 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         verbose_name=_("Transmit Total Hours"),
         help_text=_("Include totalHours in the transmitted completion data")
     )
+    transmit_course_hours = models.BooleanField(
+        default=False,
+        verbose_name=_("Transmit Course Hours (Catalog)"),
+        help_text=_(
+            "Include totalHours/creditHours in the transmitted course catalog (content metadata) payload. "
+            "This is independent of 'Transmit Total Hours', which only affects completion data -- some SAP "
+            "endpoints reject unrecognized fields, so only enable this for customers who have explicitly "
+            "requested it."
+        )
+    )
     prevent_self_submit_grades = models.BooleanField(
         default=False,
         verbose_name="Prevent Learner From Self-Submitting Grades",
