@@ -20,12 +20,13 @@ class TpaOrgAllowlistViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
     Viewset for managing TPA org allowlist entries.
-    Supports create, list, retrieve, destroy, and validate.
+    Supports create, list, retrieve, update, destroy, and validate.
     """
     serializer_class = TpaOrgAllowlistSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -54,7 +55,7 @@ class TpaOrgAllowlistViewSet(
         For list actions, delegate to the parent mixin which handles enterprise
         scoping via accessible_contexts and the enterprise_customer query param.
 
-        For retrieve and destroy, the parent mixin returns base_queryset without
+        For retrieve, update, and destroy, the parent mixin returns base_queryset without
         enterprise scoping — override to always restrict to the caller's accessible
         enterprise contexts so entries from other enterprises return 404.
         """

@@ -1286,6 +1286,15 @@ class TpaOrgAllowlist(TimeStampedModel):
         default=False,
         help_text='Whether this is a demo/trial organisation',
     )
+    enterprise_group_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=(
+            'Budget-type EnterpriseGroup that learners asserting this org should be placed in. '
+            'Null means this org is allowlisted for login but has no budget mapped yet.'
+        ),
+    )
 
     class Meta:
         app_label = 'channel_integration'

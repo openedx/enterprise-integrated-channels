@@ -14,7 +14,7 @@ from faker import Factory as FakerFactory
 from oauth2_provider.models import get_application_model
 
 from consent.models import DataSharingConsent
-from enterprise.constants import FulfillmentTypes
+from enterprise.constants import FulfillmentTypes, GROUP_TYPE_BUDGET
 from enterprise.models import (
     EnterpriseCatalogQuery,
     EnterpriseCourseEnrollment,
@@ -22,6 +22,8 @@ from enterprise.models import (
     EnterpriseCustomerCatalog,
     EnterpriseCustomerIdentityProvider,
     EnterpriseCustomerUser,
+    EnterpriseGroup,
+    EnterpriseGroupMembership,
     LearnerCreditEnterpriseCourseEnrollment,
 )
 from enterprise.utils import localized_utcnow
@@ -157,6 +159,39 @@ class EnterpriseCustomerUserFactory(factory.django.DjangoModelFactory):
     linked = True
     is_relinkable = True
     invite_key = None
+
+
+class EnterpriseGroupFactory(factory.django.DjangoModelFactory):
+    """
+    EnterpriseGroup factory.
+    """
+
+    class Meta:
+        """
+        Meta for EnterpriseGroupFactory.
+        """
+
+        model = EnterpriseGroup
+
+    enterprise_customer = factory.SubFactory(EnterpriseCustomerFactory)
+    name = factory.LazyAttribute(lambda x: FAKER.slug())
+    group_type = GROUP_TYPE_BUDGET
+
+
+class EnterpriseGroupMembershipFactory(factory.django.DjangoModelFactory):
+    """
+    EnterpriseGroupMembership factory.
+    """
+
+    class Meta:
+        """
+        Meta for EnterpriseGroupMembershipFactory.
+        """
+
+        model = EnterpriseGroupMembership
+
+    group = factory.SubFactory(EnterpriseGroupFactory)
+    enterprise_customer_user = factory.SubFactory(EnterpriseCustomerUserFactory)
 
 
 class EnterpriseCustomerIdentityProviderFactory(factory.django.DjangoModelFactory):

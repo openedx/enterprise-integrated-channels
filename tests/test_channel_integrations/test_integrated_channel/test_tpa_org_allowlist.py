@@ -12,7 +12,7 @@ from enterprise.models import SystemWideEnterpriseRole, SystemWideEnterpriseUser
 
 from channel_integrations.integrated_channel.constants import TPA_ORG_ALLOWLIST_ADMIN_ROLE
 from channel_integrations.integrated_channel.models import TpaOrgAllowlist
-from test_utils.factories import EnterpriseCustomerFactory, UserFactory
+from test_utils.factories import EnterpriseCustomerFactory, EnterpriseGroupFactory, UserFactory
 
 User = get_user_model()
 
@@ -56,6 +56,26 @@ def authenticated_client(api_client, admin_user):  # pylint: disable=redefined-o
 
 
 @pytest.mark.django_db
+class TestTpaOrgAllowlistEnterpriseGroupUuidField:
+    """
+    Rollout-safety tests for the enterprise_group_uuid field/migration: it must be nullable and
+    backward compatible, since existing allowlist rows are expected to have no group mapped yet.
+    """
+
+    def test_field_is_nullable(self):
+        """The migration adding enterprise_group_uuid must be backward compatible: nullable."""
+        field = TpaOrgAllowlist._meta.get_field('enterprise_group_uuid')
+        assert field.null is True
+        assert field.blank is True
+
+    def test_existing_rows_default_to_no_group_mapped(self, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """A row created without enterprise_group_uuid defaults to None, not an error."""
+        entry = TpaOrgAllowlist.objects.create(enterprise_customer=enterprise_customer, tpa_org_id=str(uuid4()))
+        entry.refresh_from_db()
+        assert entry.enterprise_group_uuid is None
+
+
+@pytest.mark.django_db
 class TestTpaOrgAllowlistCreate:
     """Tests for POST /tpa-org-allowlist/"""
 
@@ -86,6 +106,64 @@ class TestTpaOrgAllowlistCreate:
         }
         response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
         assert response.status_code == 400
+
+    def test_create_with_valid_budget_group_returns_201(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """POST with enterprise_group_uuid pointing at a matching budget-type group succeeds."""
+        group = EnterpriseGroupFactory(enterprise_customer=enterprise_customer)
+        payload = {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': str(uuid4()),
+            'enterprise_group_uuid': str(group.uuid),
+        }
+        response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
+        assert response.status_code == 201
+        assert response.data['enterprise_group_uuid'] == str(group.uuid)
+
+    def test_create_with_group_from_different_enterprise_returns_400(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """POST with a group belonging to a different enterprise_customer is rejected."""
+        other_enterprise = EnterpriseCustomerFactory()
+        group = EnterpriseGroupFactory(enterprise_customer=other_enterprise)
+        payload = {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': str(uuid4()),
+            'enterprise_group_uuid': str(group.uuid),
+        }
+        response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
+        assert response.status_code == 400
+        assert 'enterprise_group_uuid' in response.data
+
+    def test_create_with_non_budget_group_returns_400(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """POST with a flex-type group is rejected."""
+        group = EnterpriseGroupFactory(enterprise_customer=enterprise_customer, group_type='flex')
+        payload = {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': str(uuid4()),
+            'enterprise_group_uuid': str(group.uuid),
+        }
+        response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
+        assert response.status_code == 400
+        assert 'enterprise_group_uuid' in response.data
+
+    def test_create_with_unknown_group_uuid_returns_400(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """POST with an enterprise_group_uuid that doesn't exist is rejected."""
+        payload = {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': str(uuid4()),
+            'enterprise_group_uuid': str(uuid4()),
+        }
+        response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
+        assert response.status_code == 400
+        assert 'enterprise_group_uuid' in response.data
+
+    def test_create_without_group_uuid_returns_201(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """POST without enterprise_group_uuid still succeeds (null mapping is the expected default)."""
+        payload = {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': str(uuid4()),
+        }
+        response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL, data=payload, format='json')
+        assert response.status_code == 201
+        assert response.data['enterprise_group_uuid'] is None
 
 
 @pytest.mark.django_db
@@ -173,6 +251,87 @@ class TestTpaOrgAllowlistDelete:
         url = f'{TPA_ORG_ALLOWLIST_URL}{entry.id}/'
         response = api_client.get(url)
         assert response.status_code == 404
+
+
+@pytest.mark.django_db
+class TestTpaOrgAllowlistUpdate:
+    """
+    Tests for PATCH /tpa-org-allowlist/<id>/ - the only documented way to set
+    enterprise_group_uuid on an existing row (the ops runbook's onboarding step).
+    """
+
+    def test_patch_sets_enterprise_group_uuid(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """PATCH with a valid budget group uuid updates the row."""
+        entry = TpaOrgAllowlist.objects.create(enterprise_customer=enterprise_customer, tpa_org_id=str(uuid4()))
+        group = EnterpriseGroupFactory(enterprise_customer=enterprise_customer)
+
+        url = f'{TPA_ORG_ALLOWLIST_URL}{entry.id}/'
+        response = authenticated_client.patch(url, data={'enterprise_group_uuid': str(group.uuid)}, format='json')
+
+        assert response.status_code == 200
+        entry.refresh_from_db()
+        assert entry.enterprise_group_uuid == group.uuid
+
+    def test_patch_cannot_reassign_enterprise_customer_or_tpa_org_id(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """
+        enterprise_customer and tpa_org_id are read-only on update - a PATCH attempting to
+        change them is silently ignored rather than reassigning the row to a different org or
+        tenant.
+        """
+        original_org_id = str(uuid4())
+        entry = TpaOrgAllowlist.objects.create(enterprise_customer=enterprise_customer, tpa_org_id=original_org_id)
+        other_enterprise = EnterpriseCustomerFactory()
+
+        url = f'{TPA_ORG_ALLOWLIST_URL}{entry.id}/'
+        response = authenticated_client.patch(
+            url,
+            data={
+                'enterprise_customer': str(other_enterprise.uuid),
+                'tpa_org_id': str(uuid4()),
+            },
+            format='json',
+        )
+
+        assert response.status_code == 200
+        entry.refresh_from_db()
+        assert entry.enterprise_customer_id == enterprise_customer.pk
+        assert entry.tpa_org_id == original_org_id
+
+    def test_patch_with_group_from_different_enterprise_returns_400(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """PATCH with a group belonging to a different enterprise_customer is rejected."""
+        entry = TpaOrgAllowlist.objects.create(enterprise_customer=enterprise_customer, tpa_org_id=str(uuid4()))
+        other_enterprise = EnterpriseCustomerFactory()
+        group = EnterpriseGroupFactory(enterprise_customer=other_enterprise)
+
+        url = f'{TPA_ORG_ALLOWLIST_URL}{entry.id}/'
+        response = authenticated_client.patch(url, data={'enterprise_group_uuid': str(group.uuid)}, format='json')
+
+        assert response.status_code == 400
+        assert 'enterprise_group_uuid' in response.data
+
+    def test_cannot_patch_entry_belonging_to_different_enterprise(self, api_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """A scoped user cannot PATCH an entry belonging to a different enterprise customer."""
+        other_enterprise = EnterpriseCustomerFactory()
+        entry = TpaOrgAllowlist.objects.create(enterprise_customer=other_enterprise, tpa_org_id=str(uuid4()))
+        group = EnterpriseGroupFactory(enterprise_customer=other_enterprise)
+
+        scoped_user = UserFactory(username='tpa_svc_patch', is_active=True, is_superuser=False, is_staff=False)
+        scoped_user.set_password('password')
+        scoped_user.save()
+        role, _ = SystemWideEnterpriseRole.objects.get_or_create(name=TPA_ORG_ALLOWLIST_ADMIN_ROLE)
+        SystemWideEnterpriseUserRoleAssignment.objects.create(
+            user=scoped_user,
+            role=role,
+            enterprise_customer=enterprise_customer,  # scoped to a DIFFERENT enterprise than the entry
+        )
+        api_client.force_authenticate(user=scoped_user)
+
+        url = f'{TPA_ORG_ALLOWLIST_URL}{entry.id}/'
+        response = api_client.patch(url, data={'enterprise_group_uuid': str(group.uuid)}, format='json')
+
+        assert response.status_code == 404
+        entry.refresh_from_db()
+        assert entry.enterprise_group_uuid is None
 
 
 @pytest.mark.django_db
