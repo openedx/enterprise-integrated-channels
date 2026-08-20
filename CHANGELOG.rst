@@ -14,6 +14,18 @@ Change Log
 Unreleased
 **********
 
+0.1.67 – 2026-08-05
+*******************
+
+* feat: add ``enterprise_group_uuid`` mapping to ``TpaOrgAllowlist``, linking an allowlisted org
+  to its Learner Credit budget group
+* feat: add login-time sync (``pipeline.sync_tpa_budget_group``) that places a learner into
+  the budget group matching their org id, gated behind the ``enable_tpa_org_group_login_sync``
+  waffle switch (default off, inert until enabled per the ENT-12084 rollout plan)
+* refactor: promote org-id extraction from ``handlers.py`` into a shared
+  ``tpa_org_id_service.get_tpa_org_id``, reused by both the webhook payload builder and the new
+  login-time sync
+
 0.1.66 – 2026-08-04
 *******************
 

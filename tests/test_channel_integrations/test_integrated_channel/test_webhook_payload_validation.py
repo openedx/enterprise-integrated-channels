@@ -29,6 +29,7 @@ from channel_integrations.integrated_channel.handlers import (
     _prepare_completion_payload,
     _prepare_enrollment_payload,
 )
+from test_utils.factories import EnterpriseCustomerFactory
 
 User = get_user_model()
 
@@ -91,7 +92,8 @@ class TestWebhookPayloadValidation:
         )
 
         # Generate payload
-        payload = _prepare_completion_payload(grade_data, user)
+        enterprise_customer = EnterpriseCustomerFactory()
+        payload = _prepare_completion_payload(grade_data, user, enterprise_customer)
 
         # Validate top-level structure
         assert isinstance(payload, dict)
@@ -146,7 +148,8 @@ class TestWebhookPayloadValidation:
             passed_timestamp=timezone.now()
         )
 
-        payload = _prepare_completion_payload(grade_data, user)
+        enterprise_customer = EnterpriseCustomerFactory()
+        payload = _prepare_completion_payload(grade_data, user, enterprise_customer)
 
         # Validate data types
         assert isinstance(payload['content_id'], str)
@@ -183,7 +186,8 @@ class TestWebhookPayloadValidation:
             passed_timestamp=timezone.now()
         )
 
-        payload = _prepare_completion_payload(grade_data, user)
+        enterprise_customer = EnterpriseCustomerFactory()
+        payload = _prepare_completion_payload(grade_data, user, enterprise_customer)
 
         # Validate event_date format (YYYY-MM-DDTHH:MM:SSZ)
         event_date = datetime.strptime(payload['event_date'], '%Y-%m-%dT%H:%M:%SZ')
@@ -227,7 +231,8 @@ class TestWebhookPayloadValidation:
         )
 
         # Generate payload
-        payload = _prepare_enrollment_payload(enrollment_data, user)
+        enterprise_customer = EnterpriseCustomerFactory()
+        payload = _prepare_enrollment_payload(enrollment_data, user, enterprise_customer)
 
         # Ensure existence of required Percipio fields for Skillsoft
         percipio_required_keys = ['content_id', 'user', 'status', 'event_date',
@@ -276,7 +281,8 @@ class TestWebhookPayloadValidation:
             passed_timestamp=timezone.now()
         )
 
-        payload = _prepare_completion_payload(grade_data, user)
+        enterprise_customer = EnterpriseCustomerFactory()
+        payload = _prepare_completion_payload(grade_data, user, enterprise_customer)
 
         assert payload['user'] == MOCK_PERCIPIO_USER_UUID
         assert payload['orgid'] == MOCK_PERCIPIO_ORG_UUID
@@ -304,7 +310,8 @@ class TestWebhookPayloadValidation:
             creation_date=timezone.now()
         )
 
-        payload = _prepare_enrollment_payload(enrollment_data, user)
+        enterprise_customer = EnterpriseCustomerFactory()
+        payload = _prepare_enrollment_payload(enrollment_data, user, enterprise_customer)
 
         # Validate enrollment_date format (ISO 8601)
         event_date = datetime.strptime(payload['event_date'], '%Y-%m-%dT%H:%M:%SZ')

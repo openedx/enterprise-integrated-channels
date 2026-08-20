@@ -12,6 +12,7 @@ from enterprise.models import EnterpriseCustomerUser
 from openedx_events.learning.data import CourseEnrollmentData, PersistentCourseGradeData
 from social_django.models import UserSocialAuth
 
+from channel_integrations.integrated_channel.services.tpa_org_id_service import get_tpa_org_id
 from channel_integrations.integrated_channel.services.webhook_routing import (
     NoWebhookConfigured,
     route_webhook_by_region,
@@ -70,7 +71,7 @@ def handle_grade_change_for_webhooks(sender, signal, **kwargs):  # pylint: disab
 
     for ecu in enterprise_customer_users:
         try:
-            payload = _prepare_completion_payload(grade_data, user)
+            payload = _prepare_completion_payload(grade_data, user, ecu.enterprise_customer)
 
             # Check if learning time enrichment feature is enabled
             feature_enabled = waffle.switch_is_active('enable_webhook_learning_time_enrichment')
@@ -157,7 +158,7 @@ def handle_enrollment_for_webhooks(sender, signal, **kwargs):  # pylint: disable
 
     for ecu in enterprise_customer_users:
         try:
-            payload = _prepare_enrollment_payload(enrollment_data, user)
+            payload = _prepare_enrollment_payload(enrollment_data, user, ecu.enterprise_customer)
             queue_item, created = route_webhook_by_region(
                 user=user,
                 enterprise_customer=ecu.enterprise_customer,
@@ -203,27 +204,6 @@ def _get_percipio_user_id(user):
     return None
 
 
-def _get_percipio_org_id(user):
-    """
-    Extract Percipio organization UUID from SSO metadata.
-
-    Args:
-        user: Django User object
-
-    Returns:
-        str: Percipio organization UUID or None if not found
-    """
-    try:
-        social_auth = UserSocialAuth.objects.filter(user=user).first()
-        if social_auth and social_auth.extra_data:
-            return _normalize_percipio_identifier(
-                social_auth.extra_data.get('percipioOrganizationUuid')
-            )
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        log.warning(f'[Webhook] Error extracting Percipio org UUID for user {user.id}: {e}')
-    return None
-
-
 def _normalize_percipio_identifier(identifier_value):
     """
     Normalize Percipio identifiers to a scalar string (or None).
@@ -262,7 +242,7 @@ def _format_percipio_event_date(event_datetime):
     return event_datetime.astimezone(UTC).replace(microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
-def _build_webhook_payload(user, content_id, status, event_date, completion_percentage):
+def _build_webhook_payload(user, enterprise_customer, content_id, status, event_date, completion_percentage):
     """
     Build webhook payload with Percipio identifiers and event data.
 
@@ -272,6 +252,7 @@ def _build_webhook_payload(user, content_id, status, event_date, completion_perc
 
     Args:
         user: Django User object
+        enterprise_customer: EnterpriseCustomer the learner is enrolled/completing under
         content_id: Course ID string
         status: Event status ('completed' or 'started')
         event_date: UTC timestamp formatted as YYYY-MM-DDTHH:MM:SSZ
@@ -282,7 +263,7 @@ def _build_webhook_payload(user, content_id, status, event_date, completion_perc
     """
     # Extract Percipio identifiers from SSO metadata
     percipio_user_id = _get_percipio_user_id(user)
-    percipio_org_id = _get_percipio_org_id(user)
+    percipio_org_id = get_tpa_org_id(user, enterprise_customer)
 
     payload = {
         'content_id': content_id,
@@ -297,19 +278,21 @@ def _build_webhook_payload(user, content_id, status, event_date, completion_perc
     return payload
 
 
-def _prepare_completion_payload(grade_data, user):
+def _prepare_completion_payload(grade_data, user, enterprise_customer):
     """
     Prepare webhook payload for Percipio course completion event.
 
     Args:
         grade_data: PersistentCourseGradeData object
         user: Django User object
+        enterprise_customer: EnterpriseCustomer the learner completed the course under
 
     Returns:
         dict: Webhook payload with course completion data
     """
     return _build_webhook_payload(
         user=user,
+        enterprise_customer=enterprise_customer,
         content_id=_get_course_id_from_course_key(grade_data.course.course_key),
         status='completed',
         event_date=_format_percipio_event_date(grade_data.passed_timestamp),
@@ -317,19 +300,21 @@ def _prepare_completion_payload(grade_data, user):
     )
 
 
-def _prepare_enrollment_payload(enrollment_data, user):
+def _prepare_enrollment_payload(enrollment_data, user, enterprise_customer):
     """
     Prepare webhook payload for course enrollment event.
 
     Args:
         enrollment_data: CourseEnrollmentData object
         user: Django User object
+        enterprise_customer: EnterpriseCustomer the learner enrolled under
 
     Returns:
         dict: Webhook payload with course enrollment data
     """
     return _build_webhook_payload(
         user=user,
+        enterprise_customer=enterprise_customer,
         content_id=_get_course_id_from_course_key(enrollment_data.course.course_key),
         status='started',
         event_date=_format_percipio_event_date(enrollment_data.creation_date),
