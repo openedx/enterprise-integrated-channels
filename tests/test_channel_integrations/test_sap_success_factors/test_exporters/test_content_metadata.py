@@ -337,7 +337,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
     )
     @ddt.unpack
     def test_transform_total_hours(self, content_metadata_item, transmit_flag, expected):
-        self.config.transmit_total_hours = transmit_flag
+        self.config.transmit_course_hours = transmit_flag
         self.config.save()
         exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
         assert exporter.transform_total_hours(content_metadata_item) == expected
@@ -386,13 +386,13 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
     )
     @ddt.unpack
     def test_transform_credit_hours(self, content_metadata_item, transmit_flag, expected):
-        self.config.transmit_total_hours = transmit_flag
+        self.config.transmit_course_hours = transmit_flag
         self.config.save()
         exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
         assert exporter.transform_credit_hours(content_metadata_item) == expected
 
     def test_transform_total_hours_uses_advertised_course_run(self):
-        self.config.transmit_total_hours = True
+        self.config.transmit_course_hours = True
         self.config.save()
         content_metadata_item = {
             'advertised_course_run_uuid': '28e2d4c2-a020-4959-b461-6f879bbe1391',
@@ -415,7 +415,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         assert exporter.transform_total_hours(content_metadata_item) == 12.0
 
     def test_total_hours_and_credit_hours_are_equal(self):
-        self.config.transmit_total_hours = True
+        self.config.transmit_course_hours = True
         self.config.save()
         content_metadata_item = {
             'course_runs': [
@@ -433,7 +433,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         assert total_hours == credit_hours == 7.5
 
     def test_transform_item_includes_hour_fields_when_enabled(self):
-        self.config.transmit_total_hours = True
+        self.config.transmit_course_hours = True
         self.config.save()
         exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
         content_metadata_item = {
@@ -470,7 +470,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         assert transformed['creditHours'] == 0.0
 
     def test_transform_item_omits_hour_fields_when_disabled(self):
-        self.config.transmit_total_hours = False
+        self.config.transmit_course_hours = False
         self.config.save()
         exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
         content_metadata_item = {
@@ -511,7 +511,7 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
     )
     @ddt.unpack
     def test_transform_item_removes_only_hour_fields_based_on_transmit_flag(self, transmit_flag, expect_hours):
-        self.config.transmit_total_hours = transmit_flag
+        self.config.transmit_course_hours = transmit_flag
         self.config.save()
         exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
 
@@ -546,6 +546,95 @@ class TestSapSuccessFactorsContentMetadataExporter(unittest.TestCase, Enterprise
         assert transformed['thumbnailURI'] == 'https://example.com/image.jpg'
         assert transformed['courseID'] == 'edX+DemoX'
         assert transformed['status'] == 'ACTIVE'
+
+    @ddt.data(
+        (True, True),
+        (False, False),
+    )
+    @ddt.unpack
+    def test_apply_delete_transformation_removes_only_hour_fields_based_on_transmit_flag(
+        self, transmit_flag, expect_hours
+    ):
+        """
+        Regression test for ENT-12169: previously-stored channel_metadata (persisted before
+        transmit_course_hours was turned off, or before it existed) still carried totalHours/
+        creditHours, and _apply_delete_transformation resent it unchanged on delete, causing
+        SAP to 404/400 on "unrecognised fields". It must strip these fields the same way
+        _transform_item does for create/update.
+        """
+        self.config.transmit_course_hours = transmit_flag
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+
+        stale_stored_metadata = {
+            'courseID': 'edX+DemoX',
+            'status': 'ACTIVE',
+            'schedule': [{'startDate': 1704067200000, 'endDate': 1735689600000}],
+            'totalHours': 15.0,
+            'creditHours': 15.0,
+        }
+
+        # pylint: disable=protected-access
+        transformed = exporter._apply_delete_transformation(stale_stored_metadata)
+
+        assert transformed['status'] == 'INACTIVE'
+        if expect_hours:
+            assert transformed['totalHours'] == 15.0
+            assert transformed['creditHours'] == 15.0
+        else:
+            assert 'totalHours' not in transformed
+            assert 'creditHours' not in transformed
+
+    def test_catalog_hours_decoupled_from_legacy_completion_hours_flag(self):
+        """
+        Regression test for ENT-12169's actual root cause: transmit_total_hours predates this
+        feature and is used for a completely different purpose (gating totalHours in the
+        completion-data payload, see exporters/learner_data.py). A customer can legitimately
+        have transmit_total_hours=True for that reason while never having asked for -- or even
+        knowing about -- totalHours/creditHours in their course catalog payload. The two
+        settings must be independent: transmit_course_hours (not transmit_total_hours) is the
+        only thing allowed to control the catalog/content-metadata fields.
+        """
+        self.config.transmit_total_hours = True
+        self.config.transmit_course_hours = False
+        self.config.save()
+        exporter = SapSuccessFactorsContentMetadataExporter('fake-user', self.config)
+
+        content_metadata_item = {
+            'aggregation_key': 'course:edX+DemoX',
+            'content_type': 'course',
+            'full_description': 'A demo course.',
+            'key': 'edX+DemoX',
+            'title': 'edX Demonstration Course',
+            'course_runs': [{
+                'uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+                'key': 'course-v1:edX+DemoX+1T2024',
+                'title': 'edX Demonstration Course',
+                'short_description': 'A demo.',
+                'availability': 'Current',
+                'pacing_type': 'self_paced',
+                'start': '2024-01-01T00:00:00Z',
+                'end': '2024-12-31T00:00:00Z',
+                'estimated_hours': 15.0,
+                'status': 'published',
+                'is_enrollable': True,
+                'is_marketable': True,
+                'seats': [],
+            }],
+            'advertised_course_run_uuid': 'dd7bb3e4-56e9-4639-9296-ea9c2fb99c7f',
+            'uuid': 'bbbf059e-b9fb-4ad7-a53e-4c6f85f47f4e',
+            'enrollment_url': 'https://courses.edx.org/enroll',
+        }
+
+        # pylint: disable=protected-access
+        created = exporter._transform_item(content_metadata_item, action='create')
+        assert 'totalHours' not in created
+        assert 'creditHours' not in created
+
+        stale_stored_metadata = dict(created, totalHours=15.0, creditHours=15.0, status='ACTIVE')
+        deleted = exporter._apply_delete_transformation(stale_stored_metadata)
+        assert 'totalHours' not in deleted
+        assert 'creditHours' not in deleted
 
     @ddt.data(
         {

@@ -56,7 +56,7 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
         """
         transformed_item = super()._transform_item(content_metadata_item, action)
 
-        if not self.enterprise_configuration.transmit_total_hours:
+        if not self.enterprise_configuration.transmit_course_hours:
             transformed_item.pop('totalHours', None)
             transformed_item.pop('creditHours', None)
 
@@ -75,6 +75,13 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
             schedule = metadata_schedule[0]
             if not schedule.get('startDate') or not schedule.get('endDate'):
                 metadata['schedule'] = []
+
+        # The stored channel_metadata may predate transmit_course_hours (or a prior value of
+        # it), so strip these here too -- _transform_item's removal doesn't help since the
+        # delete path resends the previously stored payload rather than re-deriving it.
+        if not self.enterprise_configuration.transmit_course_hours:
+            metadata.pop('totalHours', None)
+            metadata.pop('creditHours', None)
         return metadata
 
     def transform_provider_id(self, content_metadata_item):  # pylint: disable=unused-argument
@@ -243,7 +250,7 @@ class SapSuccessFactorsContentMetadataExporter(ContentMetadataExporter):
 
     def transform_total_hours(self, content_metadata_item):
         """Return the total hours for the content item, sourced from estimated_hours."""
-        if not self.enterprise_configuration.transmit_total_hours:
+        if not self.enterprise_configuration.transmit_course_hours:
             return 0.0
         return self._get_estimated_hours(content_metadata_item)
 

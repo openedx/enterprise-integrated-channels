@@ -14,6 +14,13 @@ Change Log
 Unreleased
 **********
 
+0.1.68 – 2026-08-20
+*******************
+
+* fix: gate SAP SF totalHours/creditHours behind a new dedicated ``transmit_course_hours``
+  flag (defaults off), decoupled from the unrelated ``transmit_total_hours`` field, and strip
+  them on delete too, fixing the 400 "unrecognised fields" error for non-ACG customers.
+
 0.1.67 – 2026-08-05
 *******************
 
