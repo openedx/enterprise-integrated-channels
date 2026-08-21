@@ -322,7 +322,11 @@ class CanvasLearnerDataTransmissionAudit(LearnerDataTransmissionAudit):
 
     .. no_pii:
     """
-    canvas_user_email = models.CharField(
+    # TODO: canvas_user_email appears mis-annotated — the identical field on the sibling class
+    # CanvasLearnerAssessmentDataTransmissionAudit is correctly documented as
+    # `.. pii: ... .. pii_types: email_address .. pii_retirement: retained`. This class's
+    # `.. no_pii:` annotation above should be reviewed and likely corrected to match.
+    canvas_user_email = models.CharField(  # pylint: disable=pii-invalid-no-pii-annotation
         max_length=255,
         blank=False,
         null=False
