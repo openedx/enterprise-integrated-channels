@@ -127,3 +127,53 @@ class TestCornerstoneEnterpriseCustomerConfiguration(unittest.TestCase):
         self.config.save()
         with raises(ValidationError):
             self.config.clean()
+
+    def test_encrypted_client_id(self):
+        """
+        Test the encrypted_client_id property getter and setter.
+        """
+        assert self.config.encrypted_client_id == ''
+
+        self.config.decrypted_client_id = 'my-client-id'
+        encrypted_value = self.config.encrypted_client_id
+        assert encrypted_value != 'my-client-id'
+        assert isinstance(encrypted_value, str)
+
+        self.config.encrypted_client_id = encrypted_value
+        assert self.config.decrypted_client_id == encrypted_value
+
+    def test_encrypted_client_secret(self):
+        """
+        Test the encrypted_client_secret property getter and setter.
+        """
+        assert self.config.encrypted_client_secret == ''
+
+        self.config.decrypted_client_secret = 'my-client-secret'
+        encrypted_value = self.config.encrypted_client_secret
+        assert encrypted_value != 'my-client-secret'
+        assert isinstance(encrypted_value, str)
+
+        self.config.encrypted_client_secret = encrypted_value
+        assert self.config.decrypted_client_secret == encrypted_value
+
+    def test_uses_oauth_completion_auth(self):
+        """
+        Test the uses_oauth_completion_auth property.
+        """
+        assert self.config.uses_oauth_completion_auth is False
+
+        self.config.decrypted_client_id = 'my-client-id'
+        assert self.config.uses_oauth_completion_auth is False
+
+        self.config.decrypted_client_secret = 'my-client-secret'
+        assert self.config.uses_oauth_completion_auth is True
+
+    def test_str_and_repr(self):
+        """
+        Test the __str__ and __repr__ methods.
+        """
+        expected = "<CornerstoneEnterpriseCustomerConfiguration for Enterprise {}>".format(
+            self.enterprise_customer.name
+        )
+        assert str(self.config) == expected
+        assert repr(self.config) == expected
