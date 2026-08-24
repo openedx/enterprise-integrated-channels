@@ -155,6 +155,8 @@ constraint-dependencies = [
     "Django<6.0",
     "elasticsearch<7.14.0",
     "social-auth-app-django<5.5",
+    "django-simple-history<3.13.0",
+    "djangorestframework<3.18",
 ]
 conflicts = [
     [
@@ -166,6 +168,11 @@ conflicts = [
 [tool.edx_lint]
 uv_constraints = [
     "social-auth-app-django<5.5",
+    # Keep at 3.12.0 for Django 4.2 compatibility
+    "django-simple-history<3.13.0",
+    # djangorestframework 3.18.0+ requires Django>=5.2, incompatible with Django 4.2 tests
+    # Keep at 3.17.x for Django 4.2 compatibility
+    "djangorestframework<3.18",
 ]
 
 [tool.isort]

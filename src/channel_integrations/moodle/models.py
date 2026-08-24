@@ -66,7 +66,9 @@ class MoodleEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguratio
         )
     )
 
-    decrypted_username = EncryptedCharField(
+    # TODO: decrypted_username looks like a service-account webservice credential rather than a
+    # learner's personal username; confirm or correct the `.. no_pii:` classification above.
+    decrypted_username = EncryptedCharField(  # pylint: disable=pii-invalid-no-pii-annotation
         max_length=255,
         verbose_name="Encrypted Webservice Username",
         blank=True,
@@ -98,7 +100,7 @@ class MoodleEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguratio
         """
         Set the encrypted username.
         """
-        self.decrypted_username = value
+        self.decrypted_username = value  # pylint: disable=pii-invalid-no-pii-annotation
 
     decrypted_password = EncryptedCharField(
         max_length=255,
