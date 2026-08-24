@@ -1,23 +1,18 @@
 """
-Third-party-auth pipeline entry point for TPA org allowlist -> Learner Credit budget group sync.
-
-Registered as a SOCIAL_AUTH_PIPELINE entry in edx-platform, right after
-`enterprise.tpa_pipeline.handle_enterprise_logistration`. Runs on every SSO login on the
-platform, not just Skillsoft's, so this module carries the outermost safety layer: a waffle
-switch (default off) and a broad try/except that never raises. See the "Development spec" in the
-ENT-12084 plan for the rollout sequencing this switch is used for.
+Third-party-auth pipeline steps.
 """
 import logging
 
 import waffle  # pylint: disable=invalid-django-waffle-import
-
-from enterprise.tpa_pipeline import get_enterprise_customer_for_running_pipeline
 
 from channel_integrations.integrated_channel.services.org_group_sync_service import sync_learner_budget_group
 
 log = logging.getLogger(__name__)
 
 ENABLE_TPA_ORG_GROUP_LOGIN_SYNC_SWITCH = 'enable_tpa_org_group_login_sync'
+
+PIPELINE_STEP_PATH = 'channel_integrations.integrated_channel.pipeline.sync_tpa_budget_group'
+PLATFORM_PIPELINE_ANCHOR_STEP_PATH = 'common.djangoapps.third_party_auth.pipeline.ensure_redirect_url_is_safe'
 
 
 def sync_tpa_budget_group(backend, user, **kwargs):
@@ -36,6 +31,8 @@ def sync_tpa_budget_group(backend, user, **kwargs):
         return
 
     try:
+        from enterprise.tpa_pipeline import get_enterprise_customer_for_running_pipeline  # pylint: disable=import-outside-toplevel
+
         request = backend.strategy.request
         pipeline = {'backend': backend.name, 'kwargs': kwargs}
         enterprise_customer = get_enterprise_customer_for_running_pipeline(request, pipeline)
@@ -49,3 +46,24 @@ def sync_tpa_budget_group(backend, user, **kwargs):
             f'while syncing budget group: {e}',
             exc_info=True,
         )
+
+
+def register_pipeline_steps():
+    """
+    Register all `channel_integrations` pipeline steps.
+    """
+    try:
+        from django.conf import settings  # pylint: disable=import-outside-toplevel
+
+        pipeline = getattr(settings, 'SOCIAL_AUTH_PIPELINE', None)
+        if pipeline is None:
+            return
+        if PIPELINE_STEP_PATH in pipeline:
+            return
+        if PLATFORM_PIPELINE_ANCHOR_STEP_PATH in pipeline:
+            pipeline.insert(pipeline.index(PLATFORM_PIPELINE_ANCHOR_STEP_PATH) + 1, PIPELINE_STEP_PATH)
+        else:
+            pipeline.append(PIPELINE_STEP_PATH)
+        log.info(f'[OrgGroupSync] Registered {PIPELINE_STEP_PATH} in SOCIAL_AUTH_PIPELINE')
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        log.error(f'[OrgGroupSync] Error registering pipeline step: {e}', exc_info=True)

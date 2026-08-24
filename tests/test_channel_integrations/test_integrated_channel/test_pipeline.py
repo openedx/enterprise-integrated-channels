@@ -6,7 +6,9 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+from django.apps import apps as django_apps
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from enterprise.models import EnterpriseGroupMembership
 from social_django.models import UserSocialAuth
 from waffle.testutils import override_switch
@@ -14,6 +16,9 @@ from waffle.testutils import override_switch
 from channel_integrations.integrated_channel.models import TpaOrgAllowlist
 from channel_integrations.integrated_channel.pipeline import (
     ENABLE_TPA_ORG_GROUP_LOGIN_SYNC_SWITCH,
+    PIPELINE_STEP_PATH,
+    PLATFORM_PIPELINE_ANCHOR_STEP_PATH,
+    register_pipeline_steps,
     sync_tpa_budget_group,
 )
 from test_utils.factories import (
@@ -116,3 +121,85 @@ class TestSyncTpaBudgetGroup:
         sync_tpa_budget_group(backend, user)  # real call, nothing mocked
 
         assert not EnterpriseGroupMembership.available_objects.exists()
+
+
+class TestRegisterPipelineSteps:
+    """
+    Tests for register_pipeline_steps, the AppConfig.ready() hook that inserts
+    sync_tpa_budget_group into settings.SOCIAL_AUTH_PIPELINE.
+    """
+
+    @override_settings(SOCIAL_AUTH_PIPELINE=[
+        'social_core.pipeline.social_auth.social_user',
+        PLATFORM_PIPELINE_ANCHOR_STEP_PATH,
+        'social_core.pipeline.social_auth.load_extra_data',
+    ])
+    def test_inserts_step_right_after_platform_anchor_step(self, settings):
+        """The step is inserted at the correct position: immediately after the anchor step."""
+        register_pipeline_steps()
+
+        assert settings.SOCIAL_AUTH_PIPELINE == [
+            'social_core.pipeline.social_auth.social_user',
+            PLATFORM_PIPELINE_ANCHOR_STEP_PATH,
+            PIPELINE_STEP_PATH,
+            'social_core.pipeline.social_auth.load_extra_data',
+        ]
+
+    @override_settings(SOCIAL_AUTH_PIPELINE=[
+        'social_core.pipeline.social_auth.social_user',
+        PLATFORM_PIPELINE_ANCHOR_STEP_PATH,
+        PIPELINE_STEP_PATH,
+    ])
+    def test_idempotent_when_already_registered(self, settings):
+        """Calling this more than once per process (it isn't guaranteed to run only once) never
+        duplicates the entry."""
+        register_pipeline_steps()
+
+        assert settings.SOCIAL_AUTH_PIPELINE.count(PIPELINE_STEP_PATH) == 1
+
+    @override_settings(SOCIAL_AUTH_PIPELINE=[
+        'social_core.pipeline.social_auth.social_user',
+        'social_core.pipeline.social_auth.load_extra_data',
+    ])
+    def test_appends_when_anchor_step_missing(self, settings):
+        """
+        An unusual platform customization that removes/renames the anchor step falls back to
+        appending, rather than skipping registration entirely.
+        """
+        register_pipeline_steps()
+
+        assert settings.SOCIAL_AUTH_PIPELINE == [
+            'social_core.pipeline.social_auth.social_user',
+            'social_core.pipeline.social_auth.load_extra_data',
+            PIPELINE_STEP_PATH,
+        ]
+
+    def test_noop_when_social_auth_pipeline_undefined(self, settings):
+        """No SOCIAL_AUTH_PIPELINE setting at all is a silent no-op, not an AttributeError."""
+        del settings.SOCIAL_AUTH_PIPELINE
+
+        register_pipeline_steps()  # should not raise
+
+    @override_settings(SOCIAL_AUTH_PIPELINE=(PLATFORM_PIPELINE_ANCHOR_STEP_PATH,))
+    def test_exceptions_are_swallowed_and_never_raise(self, settings):
+        """
+        Any unexpected exception is caught and logged, never raised.
+        """
+        register_pipeline_steps()  # should not raise
+
+        assert PIPELINE_STEP_PATH not in settings.SOCIAL_AUTH_PIPELINE
+
+    @override_settings(SOCIAL_AUTH_PIPELINE=[
+        'social_core.pipeline.social_auth.social_user',
+        PLATFORM_PIPELINE_ANCHOR_STEP_PATH,
+    ])
+    def test_ready_actually_calls_register_pipeline_steps(self, settings):
+        """
+        Tests the real IntegratedChannelConfig.ready() wiring,
+        not just register_pipeline_steps() directly
+        """
+        app_config = django_apps.get_app_config('channel_integration')
+
+        app_config.ready()
+
+        assert PIPELINE_STEP_PATH in settings.SOCIAL_AUTH_PIPELINE

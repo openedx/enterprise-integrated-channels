@@ -15,10 +15,12 @@ class IntegratedChannelConfig(AppConfig):
 
     def ready(self):
         """
-        Register signal handlers and configure structured logging.
+        Register signal handlers, configure structured logging, and register social-auth pipeline steps.
         """
         # pylint: disable=import-outside-toplevel, unused-import
         from channel_integrations.integrated_channel import signals
+        from channel_integrations.integrated_channel.pipeline import register_pipeline_steps
         from channel_integrations.integrated_channel.structured_logging import configure_structured_logging
 
         configure_structured_logging()
+        register_pipeline_steps()
