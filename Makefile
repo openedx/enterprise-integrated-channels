@@ -1,4 +1,4 @@
-.PHONY: clean clean_tox compile_translations coverage diff_cover docs dummy_translations \
+.PHONY: clean clean_tox compile-requirements compile_translations coverage diff_cover docs dummy_translations \
         extract_translations fake_translations help pii_check pull_translations push_translations \
         quality requirements selfcheck test test-all upgrade validate install_transifex_client
 
@@ -29,52 +29,42 @@ coverage: clean ## generate and view HTML coverage report
 	$(BROWSER)htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	tox -e docs
+	uv sync --group doc
+	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=$(CURDIR) SPHINXOPTS=-W uv run doc8 --ignore-path docs/_build README.rst docs
+	rm -f docs/channel_integrations.rst
+	rm -f docs/modules.rst
+	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=$(CURDIR) SPHINXOPTS=-W uv run make -e -C docs clean
+	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=$(CURDIR) SPHINXOPTS=-W uv run make -e -C docs html
+	uv run python -m build --wheel
+	uv run twine check dist/*
 	$(BROWSER)docs/_build/html/index.html
 
-# Define PIP_COMPILE_OPTS=-v to get more information during make upgrade.
-PIP_COMPILE = pip-compile --upgrade $(PIP_COMPILE_OPTS)
+compile-requirements: ## generate the uv.lock file without upgrading packages
+	uv lock
 
-upgrade: export CUSTOM_COMPILE_COMMAND=make upgrade
-upgrade: ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
-	pip install -qr requirements/pip-tools.txt
-	# Make sure to compile files after any other files they include!
-	$(PIP_COMPILE) --allow-unsafe -o requirements/pip.txt requirements/pip.in
-	$(PIP_COMPILE) -o requirements/pip-tools.txt requirements/pip-tools.in
-	pip install -qr requirements/pip.txt
-	pip install -qr requirements/pip-tools.txt
-	$(PIP_COMPILE) -o requirements/base.txt requirements/base.in
-	$(PIP_COMPILE) -o requirements/test.txt requirements/test.in
-	$(PIP_COMPILE) -o requirements/doc.txt requirements/doc.in
-	$(PIP_COMPILE) -o requirements/quality.txt requirements/quality.in
-	$(PIP_COMPILE) -o requirements/ci.txt requirements/ci.in
-	$(PIP_COMPILE) -o requirements/dev.txt requirements/dev.in
-	# Let tox control the Django version for tests
-	sed '/^[dD]jango==/d' requirements/test.txt > requirements/test.tmp
-	mv requirements/test.tmp requirements/test.txt
+upgrade: ## upgrade all packages in uv.lock and sync constraints from edx-lint
+	uv run --with edx-lint edx_lint write_uv_constraints pyproject.toml
+	uv lock --upgrade
 
 quality: ## check coding style with pycodestyle and pylint
-	tox -e quality
+	touch tests/__init__.py
+	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=./mock_apps uv run pylint src/channel_integrations tests test_utils manage.py
+	rm tests/__init__.py
+	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=./mock_apps uv run pycodestyle src/channel_integrations tests manage.py
+	$(MAKE) selfcheck
 
 pii_check: ## check for PII annotations on all Django models
-	tox -e pii_check
+	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=./mock_apps uv run code_annotations django_find_annotations --config_file .pii_annotations.yml --lint --report --coverage
 
-piptools: ## install pinned version of pip-compile and pip-sync
-	pip install -r requirements/pip.txt
-	pip install -r requirements/pip-tools.txt
-
-requirements: clean_tox piptools ## install development environment requirements
-	pip-sync -q requirements/dev.txt requirements/private.*
+requirements: ## install development environment requirements
+	uv sync --group dev
 
 test: clean ## run tests in the current virtualenvs
-	PYTHONPATH=./:./mock_apps pytest
+	PYTHONPATH=./:./mock_apps uv run pytest
 
 diff_cover: test ## find diff lines that need test coverage
-	diff-cover coverage.xml
-
-test-all: quality pii_check ## run tests on every supported Python/Django combination
-	tox
-	tox -e docs
+	uv run diff-cover coverage.xml
+test-all: quality pii_check test docs ## run tests on every supported Python/Django combination
 
 validate: quality pii_check test ## run tests and quality checks
 
@@ -85,13 +75,13 @@ selfcheck: ## check that the Makefile is well-formed
 
 extract_translations: ## extract strings to be translated, outputting .mo files
 	rm -rf docs/_build
-	cd channel_integrations && i18n_tool extract --no-segment
+	cd src/channel_integrations && uv run i18n_tool extract --no-segment
 
 compile_translations: ## compile translation files, outputting .po files for each supported language
-	cd channel_integrations && i18n_tool generate
+	cd src/channel_integrations && uv run i18n_tool generate
 
 detect_changed_source_translations:
-	cd channel_integrations && i18n_tool changed
+	cd src/channel_integrations && uv run i18n_tool changed
 
 ifeq ($(OPENEDX_ATLAS_PULL),)
 pull_translations: ## Pull translations from Transifex
@@ -99,10 +89,9 @@ pull_translations: ## Pull translations from Transifex
 else
 # Experimental: OEP-58 Pulls translations using atlas
 pull_translations:
-	find channel_integrations/conf/locale -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
-	atlas pull $(OPENEDX_ATLAS_ARGS) translations/enterprise-integrated-channels/channel_integrations/conf/locale:channel_integrations/conf/locale
-	python manage.py compilemessages
-
+	find src/channel_integrations/conf/locale -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
+	atlas pull $(OPENEDX_ATLAS_ARGS) translations/enterprise-integrated-channels/channel_integrations/conf/locale:src/channel_integrations/conf/locale
+	uv run python manage.py compilemessages
 	@echo "Translations have been pulled via Atlas and compiled."
 endif
 
@@ -110,8 +99,7 @@ push_translations: ## push source translation files (.po) from Transifex
 	tx push -s
 
 dummy_translations: ## generate dummy translation (.po) files
-	cd channel_integrations && i18n_tool dummy
-
+	cd src/channel_integrations && uv run i18n_tool dummy
 build_dummy_translations: extract_translations dummy_translations compile_translations ## generate and compile dummy translation files
 
 validate_translations: build_dummy_translations detect_changed_source_translations ## validate translations
