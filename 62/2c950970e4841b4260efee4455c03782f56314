@@ -1,0 +1,26 @@
+requirements/ci.txt
+  h_b0106f1676121d 13,22,30,36,40
+requirements/test.txt
+  h_b0106f1676121d 30,34,59,84,190,194,218,246,331
+requirements/pip-tools.txt
+  h_b0106f1676121d 9
+requirements/quality.txt
+  h_b0106f1676121d 36,40,67,100,213,221,252,284,398
+requirements/dev.txt
+  h_b0106f1676121d 37,41,76,117,241,249,284,334,437,476,541,577
+requirements/base.txt
+  h_b0106f1676121d 17,19,38,51,129,141,153
+requirements/doc.txt
+  h_b0106f1676121d 44,48,77,104,223,231,244,276,300,321,434
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "622c950970e4841b4260efee4455c03782f56314",
+  "prompts": {},
+  "humans": {
+    "h_b0106f1676121d": {
+      "author": "Alexander Dusenbery <adusenbery@2u.com>"
+    }
+  }
+}
