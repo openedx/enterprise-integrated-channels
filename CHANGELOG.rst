@@ -13,6 +13,11 @@ Change Log
 
 Unreleased
 **********
+* Nothing
+
+0.1.69
+*******************
+* build: upgrade python dependencies.
 
 0.1.68 – 2026-08-20
 *******************
