@@ -14,6 +14,13 @@ Change Log
 Unreleased
 **********
 
+0.1.69 – 2026-08-24
+*******************
+
+* feat: Register the new ``sync_tpa_budget_group`` pipeline step which syncs the logging-in
+  learner's EnterpriseGroup membership to the Learner Credit budget group mapped to the
+  EnterpriseCustomer for this active pipeline.
+
 0.1.68 – 2026-08-20
 *******************
 
