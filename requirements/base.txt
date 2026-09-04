@@ -14,9 +14,9 @@ asn1crypto==1.5.1
     # via snowflake-connector-python
 billiard==4.2.4
     # via celery
-boto3==1.43.77
+boto3==1.43.88
     # via snowflake-connector-python
-botocore==1.43.77
+botocore==1.43.88
     # via
     #   boto3
     #   s3transfer
@@ -35,7 +35,7 @@ charset-normalizer==3.5.1
     # via
     #   requests
     #   snowflake-connector-python
-click==8.4.2
+click==8.5.0
     # via
     #   celery
     #   click-didyoumean
@@ -48,7 +48,7 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==50.0.0
+cryptography==50.0.1
     # via
     #   django-fernet-fields-v2
     #   jwcrypto
@@ -106,13 +106,13 @@ dnspython==2.8.0
     # via pymongo
 drf-jwt==1.19.2
     # via edx-drf-extensions
-edx-django-utils==8.0.1
+edx-django-utils==8.0.2
     # via
     #   -r requirements/base.in
     #   django-config-models
     #   edx-drf-extensions
     #   edx-rest-api-client
-edx-drf-extensions==10.7.0
+edx-drf-extensions==10.8.0
     # via
     #   -r requirements/base.in
     #   edx-rbac
@@ -126,7 +126,7 @@ edx-rest-api-client==7.0.0
     # via -r requirements/base.in
 edx-tincan-py35==2.0.0
     # via -r requirements/base.in
-filelock==3.32.3
+filelock==3.32.5
     # via snowflake-connector-python
 idna==3.19
     # via
@@ -138,7 +138,7 @@ jmespath==1.1.0
     #   botocore
 jsonfield==3.2.0
     # via -r requirements/base.in
-jwcrypto==1.5.8
+jwcrypto==1.6.0
     # via django-oauth-toolkit
 kombu==5.6.2
     # via celery
@@ -150,7 +150,7 @@ packaging==26.3
     # via
     #   kombu
     #   snowflake-connector-python
-platformdirs==4.11.3
+platformdirs==4.11.7
     # via snowflake-connector-python
 prompt-toolkit==3.0.53
     # via click-repl
@@ -164,7 +164,7 @@ pyjwt[crypto]==2.13.0
     #   edx-drf-extensions
     #   edx-rest-api-client
     #   snowflake-connector-python
-pymongo==4.17.0
+pymongo==4.18.0
     # via edx-opaque-keys
 pynacl==1.6.2
     # via edx-django-utils
@@ -197,7 +197,7 @@ six==1.17.0
     #   python-dateutil
 slumber==0.7.1
     # via -r requirements/base.in
-snowflake-connector-python==4.7.2
+snowflake-connector-python==4.7.3
     # via -r requirements/base.in
 sortedcontainers==2.4.0
     # via snowflake-connector-python
@@ -231,7 +231,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.8.2
+wcwidth==0.8.3
     # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
