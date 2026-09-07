@@ -14,6 +14,52 @@ Change Log
 Unreleased
 **********
 
+0.1.69 – 2026-08-24
+*******************
+
+* feat: Register the new ``sync_tpa_budget_group`` pipeline step which syncs the logging-in
+  learner's EnterpriseGroup membership to the Learner Credit budget group mapped to the
+  EnterpriseCustomer for this active pipeline.
+
+0.1.68 – 2026-08-20
+*******************
+
+* fix: gate SAP SF totalHours/creditHours behind a new dedicated ``transmit_course_hours``
+  flag (defaults off), decoupled from the unrelated ``transmit_total_hours`` field, and strip
+  them on delete too, fixing the 400 "unrecognised fields" error for non-ACG customers.
+
+0.1.67 – 2026-08-05
+*******************
+
+* feat: add ``enterprise_group_uuid`` mapping to ``TpaOrgAllowlist``, linking an allowlisted org
+  to its Learner Credit budget group
+* feat: add login-time sync (``pipeline.sync_tpa_budget_group``) that places a learner into
+  the budget group matching their org id, gated behind the ``enable_tpa_org_group_login_sync``
+  waffle switch (default off, inert until enabled per the ENT-12084 rollout plan)
+* refactor: promote org-id extraction from ``handlers.py`` into a shared
+  ``tpa_org_id_service.get_tpa_org_id``, reused by both the webhook payload builder and the new
+  login-time sync
+
+0.1.66 – 2026-08-04
+*******************
+
+* fix: add override method to omit hours fields when disabled
+
+0.1.65 – 2026-07-22
+*******************
+
+* docs: fix CHANGELOG formatting to enable pypi publish
+
+0.1.64 – 2026-07-22
+*******************
+
+* feat: make Blackboard transmission chunk size editable in Django Admin
+
+0.1.63 – 2026-07-20
+*******************
+
+* fix: implemented course hours field
+
 0.1.62 – 2026-07-07
 *******************
 
