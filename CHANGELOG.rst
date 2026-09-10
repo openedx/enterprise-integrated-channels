@@ -22,6 +22,9 @@ Unreleased
   ``libxmlsec1-dev``, and ``pkg-config`` in CI, adds ``xmlsec`` to the locked Python
   dependencies, and adds integration tests covering native bindings and end-to-end
   XML-DSig signing/verification.
+* feat: Add a standalone SAML 2.0 XML-DSig assertion generator
+  (``channel_integrations.sap_success_factors.saml.generate_saml_assertion``) for SAP
+  SuccessFactors OAuth assertion-based authentication.
 
 0.1.69 – 2026-08-24
 *******************
