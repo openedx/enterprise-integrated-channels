@@ -127,3 +127,94 @@ class TestCornerstoneEnterpriseCustomerConfiguration(unittest.TestCase):
         self.config.save()
         with raises(ValidationError):
             self.config.clean()
+
+    def test_encrypted_client_id(self):
+        """
+        Test the encrypted_client_id property getter and setter.
+        """
+        assert self.config.encrypted_client_id == ''
+
+        self.config.decrypted_client_id = 'my-client-id'
+        encrypted_value = self.config.encrypted_client_id
+        assert encrypted_value != 'my-client-id'
+        assert isinstance(encrypted_value, str)
+
+        self.config.encrypted_client_id = encrypted_value
+        assert self.config.decrypted_client_id == encrypted_value
+
+    def test_encrypted_client_secret(self):
+        """
+        Test the encrypted_client_secret property getter and setter.
+        """
+        assert self.config.encrypted_client_secret == ''
+
+        self.config.decrypted_client_secret = 'my-client-secret'
+        encrypted_value = self.config.encrypted_client_secret
+        assert encrypted_value != 'my-client-secret'
+        assert isinstance(encrypted_value, str)
+
+        self.config.encrypted_client_secret = encrypted_value
+        assert self.config.decrypted_client_secret == encrypted_value
+
+    def test_uses_oauth_completion_auth(self):
+        """
+        Test the uses_oauth_completion_auth property.
+        """
+        assert self.config.uses_oauth_completion_auth is False
+
+        self.config.decrypted_client_id = 'my-client-id'
+        assert self.config.uses_oauth_completion_auth is False
+
+        self.config.decrypted_client_secret = 'my-client-secret'
+        assert self.config.uses_oauth_completion_auth is True
+
+    def test_is_valid(self):
+        """
+        Test the is_valid property for all missing/incorrect field combinations.
+        """
+        self.config.cornerstone_base_url = ''
+        self.config.transcript_complete_api_path = ''
+        self.config.learning_assignments_api_path = ''
+        self.config.completion_scope = ''
+        missing_items, incorrect_items = self.config.is_valid
+        assert missing_items == {
+            'missing': [
+                'cornerstone_base_url',
+                'transcript_complete_api_path',
+                'learning_assignments_api_path',
+                'completion_scope',
+            ]
+        }
+        assert incorrect_items == {'incorrect': []}
+
+        self.config.cornerstone_base_url = 'not-a-valid-url'
+        self.config.display_name = 'a' * 21
+        self.config.transcript_complete_api_path = '/services/api/v1/transcripts/complete'
+        self.config.learning_assignments_api_path = '/services/api/v1/LearningAssignments'
+        self.config.completion_scope = 'transcript:update'
+        self.config.decrypted_client_id = 'my-client-id'
+        missing_items, incorrect_items = self.config.is_valid
+        assert missing_items == {'missing': []}
+        assert incorrect_items == {
+            'incorrect': ['cornerstone_base_url', 'display_name', 'decrypted_client_id/decrypted_client_secret']
+        }
+
+        self.config.decrypted_client_secret = 'my-client-secret'
+        missing_items, incorrect_items = self.config.is_valid
+        assert 'decrypted_client_id/decrypted_client_secret' not in incorrect_items['incorrect']
+
+        self.config.cornerstone_base_url = 'https://edx-one.csod.com'
+        self.config.display_name = 'edx'
+        missing_items, incorrect_items = self.config.is_valid
+        assert missing_items == {'missing': []}
+        assert incorrect_items == {'incorrect': []}
+
+    def test_str_and_repr(self):
+        """
+        Test the __str__ and __repr__ methods.
+        """
+        expected = "<CornerstoneEnterpriseCustomerConfiguration for Enterprise {}>".format(
+            self.enterprise_customer.name
+        )
+        assert str(self.config) == expected
+        assert repr(self.config) == expected

@@ -463,9 +463,9 @@ class CornerstoneLearnerDataTransmissionAuditFactory(LearnerDataTransmissionAudi
         """
 
         model = CornerstoneLearnerDataTransmissionAudit
-        django_get_or_create = ('user_id', 'course_id', )
+        django_get_or_create = ('user', 'course_id', )
 
-    user_id = factory.LazyAttribute(lambda x: FAKER.pyint())
+    user = factory.SubFactory(UserFactory)
     course_id = factory.LazyAttribute(lambda x: FAKER.slug())
     user_guid = factory.LazyAttribute(lambda x: FAKER.slug())
     session_token = factory.LazyAttribute(lambda x: FAKER.slug())

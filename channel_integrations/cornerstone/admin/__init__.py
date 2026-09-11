@@ -42,6 +42,7 @@ class CornerstoneEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin
         "enterprise_customer_name",
         "active",
         "cornerstone_base_url",
+        "oauth_configured",
     )
 
     readonly_fields = (
@@ -70,6 +71,18 @@ class CornerstoneEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin
                 being rendered with this admin form.
         """
         return obj.enterprise_customer.name
+
+    @admin.display(boolean=True, description="OAuth configured")
+    def oauth_configured(self, obj):
+        """
+        Returns: whether completions for this customer are authenticated with OAuth rather than
+        the learner's launch-time session token.
+
+        Args:
+            obj: The instance of CornerstoneEnterpriseCustomerConfiguration
+                being rendered with this admin form.
+        """
+        return obj.uses_oauth_completion_auth
 
     @admin.action(
         description="Force content metadata transmission for this Enterprise Customer"
