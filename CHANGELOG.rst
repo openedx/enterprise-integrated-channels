@@ -14,7 +14,7 @@ Change Log
 Unreleased
 **********
 
-0.1.70 – 2026-09-10
+0.1.71 – 2026-09-15
 *******************
 
 * feat: Add native XML security (``xmlsec``) build infrastructure required for SAML assertion
