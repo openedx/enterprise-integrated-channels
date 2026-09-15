@@ -9,8 +9,10 @@ from config_models.models import ConfigurationModel
 from django.conf import settings
 from django.contrib import auth
 from django.db import models
+from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from enterprise.models import EnterpriseCustomer
+from fernet_fields import EncryptedCharField
 from jsonfield import JSONField
 
 from channel_integrations.cornerstone.exporters.content_metadata import CornerstoneContentMetadataExporter
@@ -123,6 +125,75 @@ class CornerstoneEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigu
         help_text=_("The base URL used for API requests to Cornerstone, i.e. https://portalName.csod.com")
     )
 
+    decrypted_client_id = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Encrypted OAuth Client ID",
+        help_text=_(
+            "The OAuth Client ID (encrypted at rest) that the enterprise customer gave edX for requesting access "
+            "tokens used to push course completions. If this and the client secret are both configured, "
+            "completions are authenticated via OAuth rather than the learner's launch-time session token."
+        ),
+        null=True
+    )
+
+    @property
+    def encrypted_client_id(self):
+        """
+        Return encrypted client_id as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_client_id field. This method will encrypt the client_id again before sending.
+        """
+        if self.decrypted_client_id:
+            return force_str(
+                self._meta.get_field('decrypted_client_id').fernet.encrypt(
+                    force_bytes(self.decrypted_client_id)
+                )
+            )
+        return self.decrypted_client_id
+
+    @encrypted_client_id.setter
+    def encrypted_client_id(self, value):
+        """
+        Set the encrypted client_id.
+        """
+        self.decrypted_client_id = value
+
+    decrypted_client_secret = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Encrypted OAuth Client Secret",
+        help_text=_(
+            "The encrypted OAuth Client Secret provided to edX by the enterprise customer, used to obtain access "
+            "tokens for pushing course completions."
+        ),
+        null=True
+    )
+
+    @property
+    def encrypted_client_secret(self):
+        """
+        Return encrypted client_secret as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_client_secret field. This method will encrypt the client_secret again before sending.
+        """
+        if self.decrypted_client_secret:
+            return force_str(
+                self._meta.get_field('decrypted_client_secret').fernet.encrypt(
+                    force_bytes(self.decrypted_client_secret)
+                )
+            )
+        return self.decrypted_client_secret
+
+    @encrypted_client_secret.setter
+    def encrypted_client_secret(self, value):
+        """
+        Set the encrypted client_secret.
+        """
+        self.decrypted_client_secret = value
+
     session_token = models.CharField(
         max_length=255,
         blank=True,
@@ -148,8 +219,51 @@ class CornerstoneEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigu
         )
     )
 
+    transcript_complete_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/services/api/v1/transcripts/complete',
+        verbose_name="Transcript Complete API Path",
+        help_text=_(
+            "The API path used to mark a learner's transcript complete through Cornerstone's "
+            "Transcript API, used once this customer is authenticated with OAuth."
+        )
+    )
+
+    learning_assignments_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/services/api/v1/LearningAssignments',
+        verbose_name="Learning Assignments API Path",
+        help_text=_(
+            "The API path used to look up and update a learner's in-progress assignment through "
+            "Cornerstone's Learning Assignments API, used once this customer is authenticated with OAuth."
+        )
+    )
+
+    completion_scope = models.CharField(
+        max_length=255,
+        blank=True,
+        default='transcript:update learningassignment:read learningassignment:update',
+        verbose_name="OAuth Completion Scope",
+        help_text=_(
+            "The OAuth scope requested when minting an access token for pushing completions, covering "
+            "both the Transcript API and the Learning Assignments API."
+        )
+    )
+
     class Meta:
         app_label = 'cornerstone_channel'
+
+    @property
+    def uses_oauth_completion_auth(self):
+        """
+        Whether course completions for this customer should be authenticated with OAuth.
+
+        OAuth is opt-in per customer: a config with no credentials keeps using the learner's
+        launch-time session token, so existing customers are unaffected until credentials are set.
+        """
+        return bool(self.decrypted_client_id and self.decrypted_client_secret)
 
     @property
     def is_valid(self):
@@ -168,6 +282,14 @@ class CornerstoneEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfigu
             incorrect_items.get('incorrect').append('cornerstone_base_url')
         if len(self.display_name) > 20:
             incorrect_items.get('incorrect').append('display_name')
+        if bool(self.decrypted_client_id) != bool(self.decrypted_client_secret):
+            incorrect_items.get('incorrect').append('decrypted_client_id/decrypted_client_secret')
+        if not self.transcript_complete_api_path:
+            missing_items.get('missing').append('transcript_complete_api_path')
+        if not self.learning_assignments_api_path:
+            missing_items.get('missing').append('learning_assignments_api_path')
+        if not self.completion_scope:
+            missing_items.get('missing').append('completion_scope')
         return missing_items, incorrect_items
 
     def __str__(self):
