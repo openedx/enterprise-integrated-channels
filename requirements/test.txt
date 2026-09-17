@@ -229,7 +229,6 @@ lxml==6.1.3
     # via
     #   -r requirements/base.txt
     #   signxml
-    #   xmlsec
 markupsafe==3.0.3
     # via jinja2
 mock==5.2.0
@@ -424,8 +423,6 @@ wcwidth==0.8.2
     # via
     #   -r requirements/base.txt
     #   prompt-toolkit
-xmlsec==1.3.17
-    # via -r requirements/base.txt
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

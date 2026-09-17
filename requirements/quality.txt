@@ -262,7 +262,6 @@ lxml==6.1.3
     # via
     #   -r requirements/test.txt
     #   signxml
-    #   xmlsec
 markupsafe==3.0.3
     # via
     #   -r requirements/test.txt
@@ -498,8 +497,6 @@ wcwidth==0.8.2
     # via
     #   -r requirements/test.txt
     #   prompt-toolkit
-xmlsec==1.3.17
-    # via -r requirements/test.txt
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

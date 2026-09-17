@@ -297,7 +297,6 @@ lxml[html-clean]==6.1.3
     #   edx-i18n-tools
     #   lxml-html-clean
     #   signxml
-    #   xmlsec
 lxml-html-clean==0.4.5
     # via lxml
 markupsafe==3.0.3
@@ -593,8 +592,6 @@ wheel==0.48.0
     # via
     #   -r requirements/pip-tools.txt
     #   pip-tools
-xmlsec==1.3.17
-    # via -r requirements/quality.txt
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
