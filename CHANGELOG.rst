@@ -14,12 +14,12 @@ Change Log
 Unreleased
 **********
 
-0.1.70 – 2026-09-03
+0.1.71 – 2026-09-15
 *******************
 
-* feat: migrate Cornerstone learner data transmission from the launch-time completion callback to Cornerstone's
-  Transcript API, authenticated with OAuth client credentials instead of the learner's session token; opt-in per
-  customer via new encrypted ``client_id`` / ``client_secret`` config fields
+* feat: Add a standalone SAML 2.0 XML-DSig assertion generator
+  (``channel_integrations.sap_success_factors.saml.generate_saml_assertion``) for SAP
+  SuccessFactors OAuth assertion-based authentication.
 
 0.1.69 – 2026-08-24
 *******************
