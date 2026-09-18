@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.71 – 2026-09-17
+*******************
+
+* feat: extend ``SAPSuccessFactorsEnterpriseCustomerConfiguration`` with an ``auth_type`` field
+  (``legacy`` / ``modern_saml_bearer``, defaulting to ``legacy``), an encrypted-at-rest
+  ``private_key`` used to self-sign SAML bearer assertions, and tenant-specific SAML assertion /
+  OAuth token endpoint paths plus a configurable SAML assertion ``audience``, in preparation for
+  discontinuing use of the SAP OAuth IdP API
+
 0.1.70 – 2026-09-03
 *******************
 

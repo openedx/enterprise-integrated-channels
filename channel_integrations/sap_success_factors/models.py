@@ -11,7 +11,7 @@ from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from enterprise.models import EnterpriseCustomer
-from fernet_fields import EncryptedCharField
+from fernet_fields import EncryptedCharField, EncryptedTextField
 
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.models import (
@@ -30,6 +30,26 @@ from channel_integrations.sap_success_factors.transmitters.learner_data import S
 from channel_integrations.utils import convert_comma_separated_string_to_list, is_valid_url
 
 LOGGER = getLogger(__name__)
+
+
+def _encrypted_property(field_name):
+    """
+    Build a property pair that re-encrypts a Fernet-backed `field_name` for callers (e.g. the admin
+    API serializers) that need the ciphertext, since the model's `decrypted_*` field already holds
+    the plaintext once loaded from the database.
+    """
+    def getter(self):
+        value = getattr(self, field_name)
+        if value:
+            return force_str(
+                self._meta.get_field(field_name).fernet.encrypt(force_bytes(value))
+            )
+        return value
+
+    def setter(self, value):
+        setattr(self, field_name, value)
+
+    return property(getter, setter)
 
 
 class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
@@ -85,6 +105,14 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         (USER_TYPE_ADMIN, 'Admin'),
     )
 
+    AUTH_TYPE_LEGACY = 'legacy'
+    AUTH_TYPE_MODERN_SAML_BEARER = 'modern_saml_bearer'
+
+    AUTH_TYPE_CHOICES = (
+        (AUTH_TYPE_LEGACY, 'Legacy (SAP OAuth IdP API)'),
+        (AUTH_TYPE_MODERN_SAML_BEARER, 'Modern (self-signed SAML bearer assertion)'),
+    )
+
     # TODO: Remove this override when we switch to enterprise-integrated-channels completely
     enterprise_customer = models.ForeignKey(
         EnterpriseCustomer,
@@ -107,27 +135,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         null=True
     )
 
-    @property
-    def encrypted_key(self):
-        """
-        Return encrypted key as a string.
-        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
-        decrypted_key field. This method will encrypt the key again before sending.
-        """
-        if self.decrypted_key:
-            return force_str(
-                self._meta.get_field('decrypted_key').fernet.encrypt(
-                    force_bytes(self.decrypted_key)
-                )
-            )
-        return self.decrypted_key
-
-    @encrypted_key.setter
-    def encrypted_key(self, value):
-        """
-        Set the encrypted key.
-        """
-        self.decrypted_key = value
+    encrypted_key = _encrypted_property('decrypted_key')
 
     sapsf_base_url = models.CharField(
         max_length=255,
@@ -163,27 +171,66 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         null=True
     )
 
-    @property
-    def encrypted_secret(self):
-        """
-        Return encrypted secret as a string.
-        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
-        decrypted_secret field. This method will encrypt the secret again before sending.
-        """
-        if self.decrypted_secret:
-            return force_str(
-                self._meta.get_field('decrypted_secret').fernet.encrypt(
-                    force_bytes(self.decrypted_secret)
-                )
-            )
-        return self.decrypted_secret
+    encrypted_secret = _encrypted_property('decrypted_secret')
 
-    @encrypted_secret.setter
-    def encrypted_secret(self, value):
-        """
-        Set the encrypted secret.
-        """
-        self.decrypted_secret = value
+    auth_type = models.CharField(
+        max_length=32,
+        choices=AUTH_TYPE_CHOICES,
+        default=AUTH_TYPE_LEGACY,
+        verbose_name="SAP Auth Type",
+        help_text=_(
+            "How access tokens are obtained for this customer. 'Legacy' asks SAP's OAuth IdP API to mint "
+            "the SAML assertion for us; 'Modern' signs the assertion ourselves with the configured private "
+            "key. Existing customers stay on 'Legacy' until they have been migrated."
+        )
+    )
+
+    decrypted_private_key = EncryptedTextField(
+        blank=True,
+        default='',
+        verbose_name="Encrypted Private Key",
+        help_text=_(
+            "The PEM-encoded private key used to sign the SAML bearer assertion sent to this customer's "
+            "token endpoint. Only used when the auth type is 'Modern'."
+            " It will be encrypted when stored in the database."
+        ),
+        null=True
+    )
+
+    encrypted_private_key = _encrypted_property('decrypted_private_key')
+
+    saml_assertion_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/oauth/idp',
+        verbose_name="SAML Assertion API Path",
+        help_text=_(
+            "Tenant-specific path, relative to the SAP base URL, of the endpoint that issues the SAML "
+            "assertion exchanged for an access token. Overrides the global OAuth API path."
+        )
+    )
+
+    saml_assertion_audience = models.CharField(
+        max_length=255,
+        blank=True,
+        default='www.successfactors.com',
+        verbose_name="SAML Assertion Audience",
+        help_text=_(
+            "Value of the Audience restriction in the SAML bearer assertion sent to this customer's "
+            "token endpoint. Only used when the auth type is 'Modern'."
+        )
+    )
+
+    oauth_token_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/oauth/token',
+        verbose_name="OAuth Token API Path",
+        help_text=_(
+            "Tenant-specific path, relative to the SAP base URL, of the endpoint that exchanges a SAML "
+            "bearer assertion for an access token."
+        )
+    )
 
     user_type = models.CharField(
         max_length=20,
@@ -255,6 +302,13 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         app_label = 'sap_success_factors_channel'
 
     @property
+    def uses_modern_saml_bearer_auth(self):
+        """
+        Whether access tokens for this customer are obtained with a self-signed SAML bearer assertion.
+        """
+        return self.auth_type == self.AUTH_TYPE_MODERN_SAML_BEARER
+
+    @property
     def is_valid(self):
         """
         Returns whether or not the configuration is valid and ready to be activated
@@ -265,7 +319,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         missing_items = {'missing': []}
         incorrect_items = {'incorrect': []}
-        if not self.decrypted_key:
+        if not self.uses_modern_saml_bearer_auth and not self.decrypted_key:
             missing_items.get('missing').append('key')
         if not self.sapsf_base_url:
             missing_items.get('missing').append('sapsf_base_url')
@@ -273,8 +327,17 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             missing_items.get('missing').append('sapsf_company_id')
         if not self.sapsf_user_id:
             missing_items.get('missing').append('sapsf_user_id')
-        if not self.decrypted_secret:
+        if not self.uses_modern_saml_bearer_auth and not self.decrypted_secret:
             missing_items.get('missing').append('secret')
+        if self.uses_modern_saml_bearer_auth:
+            # saml_assertion_api_path is deliberately not required here: it addresses SAP's IdP
+            # endpoint, which this mode replaces by signing the assertion itself.
+            if not self.decrypted_private_key:
+                missing_items.get('missing').append('private_key')
+            if not self.saml_assertion_audience:
+                missing_items.get('missing').append('saml_assertion_audience')
+            if not self.oauth_token_api_path:
+                missing_items.get('missing').append('oauth_token_api_path')
         if not is_valid_url(self.sapsf_base_url):
             incorrect_items.get('incorrect').append('sapsf_base_url')
         if len(self.display_name) > 20:
