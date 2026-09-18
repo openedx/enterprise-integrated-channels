@@ -29,15 +29,15 @@ attrs==26.1.0
     # via
     #   -r requirements/test.txt
     #   openedx-events
-billiard==4.2.4
+billiard==4.3.0
     # via
     #   -r requirements/test.txt
     #   celery
-boto3==1.43.92
+boto3==1.43.97
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
-botocore==1.43.92
+botocore==1.43.97
     # via
     #   -r requirements/test.txt
     #   boto3
@@ -85,7 +85,7 @@ click-plugins==1.1.1.2
     # via
     #   -r requirements/test.txt
     #   celery
-click-repl==0.3.0
+click-repl==0.4.0
     # via
     #   -r requirements/test.txt
     #   celery
@@ -93,7 +93,7 @@ code-annotations==2.3.2
     # via
     #   -r requirements/test.txt
     #   edx-lint
-coverage[toml]==7.16.0
+coverage[toml]==7.16.1
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -190,7 +190,7 @@ edx-django-utils==8.0.2
     #   edx-drf-extensions
     #   edx-rest-api-client
     #   openedx-events
-edx-drf-extensions==10.8.0
+edx-drf-extensions==10.9.0
     # via
     #   -r requirements/test.txt
     #   edx-rbac
@@ -210,7 +210,7 @@ edx-tincan-py35==2.0.0
     # via -r requirements/test.txt
 factory-boy==3.3.3
     # via -r requirements/test.txt
-faker==40.38.0
+faker==40.39.0
     # via
     #   -r requirements/test.txt
     #   factory-boy
@@ -218,13 +218,13 @@ fastavro==1.12.2
     # via
     #   -r requirements/test.txt
     #   openedx-events
-filelock==3.32.6
+filelock==3.32.7
     # via
     #   -r requirements/test.txt
     #   snowflake-connector-python
 freezegun==1.5.5
     # via -r requirements/test.txt
-idna==3.19
+idna==3.20
     # via
     #   -r requirements/test.txt
     #   requests
@@ -249,7 +249,7 @@ jmespath==1.1.0
     #   botocore
 jsonfield==3.2.0
     # via -r requirements/test.txt
-jwcrypto==1.6.0
+jwcrypto==1.6.1
     # via
     #   -r requirements/test.txt
     #   django-oauth-toolkit
@@ -273,7 +273,7 @@ oauthlib==3.3.1
     #   django-oauth-toolkit
     #   requests-oauthlib
     #   social-auth-core
-openedx-atlas==0.7.0
+openedx-atlas==0.7.1
     # via -r requirements/test.txt
 openedx-events==10.5.0
     # via -r requirements/test.txt
@@ -283,7 +283,7 @@ packaging==26.3
     #   kombu
     #   pytest
     #   snowflake-connector-python
-platformdirs==4.11.8
+platformdirs==4.11.9
     # via
     #   -r requirements/test.txt
     #   pylint
@@ -315,7 +315,7 @@ pygments==2.21.0
     #   -r requirements/test.txt
     #   diff-cover
     #   pytest
-pyjwt[crypto]==2.13.0
+pyjwt[crypto]==2.14.0
     # via
     #   -r requirements/test.txt
     #   drf-jwt
@@ -418,7 +418,7 @@ slumber==0.7.1
     # via -r requirements/test.txt
 snowballstemmer==3.1.1
     # via pydocstyle
-snowflake-connector-python==4.7.3
+snowflake-connector-python==4.7.4
     # via -r requirements/test.txt
 social-auth-app-django==5.4.3
     # via
@@ -459,13 +459,14 @@ tomlkit==0.15.1
 typing-extensions==4.16.0
     # via
     #   -r requirements/test.txt
+    #   click-repl
     #   django-countries
     #   edx-opaque-keys
     #   jwcrypto
     #   pyopenssl
     #   snowflake-connector-python
     #   testfixtures
-tzdata==2026.3
+tzdata==2026.4
     # via
     #   -r requirements/test.txt
     #   kombu
@@ -475,7 +476,7 @@ tzlocal==5.4.4
     #   celery
 unicodecsv==0.14.1
     # via -r requirements/test.txt
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   -r requirements/test.txt
     #   botocore
@@ -488,7 +489,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.8.3
+wcwidth==0.8.4
     # via
     #   -r requirements/test.txt
     #   prompt-toolkit
