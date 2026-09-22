@@ -18,10 +18,12 @@ Unreleased
 *******************
 
 * feat: extend ``SAPSuccessFactorsEnterpriseCustomerConfiguration`` with an ``auth_type`` field
-  (``legacy`` / ``modern_saml_bearer``, defaulting to ``legacy``), an encrypted-at-rest
-  ``private_key`` used to self-sign SAML bearer assertions, and tenant-specific SAML assertion /
-  OAuth token endpoint paths plus a configurable SAML assertion ``audience``, in preparation for
-  discontinuing use of the SAP OAuth IdP API
+  (``sap_signed_assertion`` / ``self_signed_assertion``, defaulting to ``sap_signed_assertion``),
+  encrypted-at-rest ``private_key`` and ``private_key_passphrase`` fields used to self-sign SAML
+  bearer assertions, and a configurable SAML assertion ``audience``; adds ``saml_assertion_api_path``
+  and ``oauth_token_api_path`` to ``SAPSuccessFactorsGlobalConfiguration``; in preparation for
+  discontinuing use of the SAP OAuth IdP API. Self-signed assertion support is still under
+  development and is not yet used to authenticate any transmissions.
 
 0.1.70 – 2026-09-03
 *******************

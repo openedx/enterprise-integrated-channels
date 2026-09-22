@@ -64,6 +64,26 @@ class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
     oauth_api_path = models.CharField(max_length=255)
     search_student_api_path = models.CharField(max_length=255)
     provider_id = models.CharField(max_length=100, default='EDX')
+    saml_assertion_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/oauth/idp',
+        verbose_name="SAML Assertion API Path",
+        help_text=_(
+            "Path, relative to a customer's SAP base URL, of the endpoint that issues the SAML "
+            "assertion exchanged for an access token."
+        )
+    )
+    oauth_token_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/oauth/token',
+        verbose_name="OAuth Token API Path",
+        help_text=_(
+            "Path, relative to a customer's SAP base URL, of the endpoint that exchanges a SAML "
+            "bearer assertion for an access token."
+        )
+    )
     changed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         editable=False,
@@ -90,6 +110,14 @@ class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
         return self.__str__()
 
 
+class SAPAuthType(models.TextChoices):
+    """
+    How the SAML bearer assertion sent to a customer's token endpoint gets signed.
+    """
+    SAP_SIGNED_ASSERTION = 'sap_signed_assertion', _('SAP-signed SAML assertion (SAP IdP API + client secret)')
+    SELF_SIGNED_ASSERTION = 'self_signed_assertion', _('Self-signed SAML assertion (our private key)')
+
+
 class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguration):
     """
     The Enterprise-specific configuration we need for integrating with SuccessFactors.
@@ -103,14 +131,6 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
     USER_TYPE_CHOICES = (
         (USER_TYPE_USER, 'User'),
         (USER_TYPE_ADMIN, 'Admin'),
-    )
-
-    AUTH_TYPE_LEGACY = 'legacy'
-    AUTH_TYPE_MODERN_SAML_BEARER = 'modern_saml_bearer'
-
-    AUTH_TYPE_CHOICES = (
-        (AUTH_TYPE_LEGACY, 'Legacy (SAP OAuth IdP API)'),
-        (AUTH_TYPE_MODERN_SAML_BEARER, 'Modern (self-signed SAML bearer assertion)'),
     )
 
     # TODO: Remove this override when we switch to enterprise-integrated-channels completely
@@ -175,13 +195,15 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
 
     auth_type = models.CharField(
         max_length=32,
-        choices=AUTH_TYPE_CHOICES,
-        default=AUTH_TYPE_LEGACY,
+        choices=SAPAuthType.choices,
+        default=SAPAuthType.SAP_SIGNED_ASSERTION,
         verbose_name="SAP Auth Type",
         help_text=_(
-            "How access tokens are obtained for this customer. 'Legacy' asks SAP's OAuth IdP API to mint "
-            "the SAML assertion for us; 'Modern' signs the assertion ourselves with the configured private "
-            "key. Existing customers stay on 'Legacy' until they have been migrated."
+            "How access tokens are obtained for this customer. 'SAP-signed' asks SAP's OAuth IdP API to "
+            "mint the SAML assertion for us, authenticated with the OAuth client id/secret below; "
+            "'Self-signed' signs the assertion ourselves with the configured private key instead. "
+            "Existing customers stay on 'SAP-signed' until they have been migrated. Self-signed support "
+            "is still under development and is not yet used to authenticate any transmissions."
         )
     )
 
@@ -191,7 +213,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         verbose_name="Encrypted Private Key",
         help_text=_(
             "The PEM-encoded private key used to sign the SAML bearer assertion sent to this customer's "
-            "token endpoint. Only used when the auth type is 'Modern'."
+            "token endpoint. Only used for a self-signed SAML assertion."
             " It will be encrypted when stored in the database."
         ),
         null=True
@@ -199,16 +221,20 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
 
     encrypted_private_key = _encrypted_property('decrypted_private_key')
 
-    saml_assertion_api_path = models.CharField(
+    decrypted_private_key_passphrase = EncryptedCharField(
         max_length=255,
         blank=True,
-        default='/oauth/idp',
-        verbose_name="SAML Assertion API Path",
+        default='',
+        verbose_name="Encrypted Private Key Passphrase",
         help_text=_(
-            "Tenant-specific path, relative to the SAP base URL, of the endpoint that issues the SAML "
-            "assertion exchanged for an access token. Overrides the global OAuth API path."
-        )
+            "Passphrase protecting the private key above, if any. Leave blank if the private key is "
+            "not passphrase-protected. Only used for a self-signed SAML assertion."
+            " It will be encrypted when stored in the database."
+        ),
+        null=True
     )
+
+    encrypted_private_key_passphrase = _encrypted_property('decrypted_private_key_passphrase')
 
     saml_assertion_audience = models.CharField(
         max_length=255,
@@ -217,18 +243,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         verbose_name="SAML Assertion Audience",
         help_text=_(
             "Value of the Audience restriction in the SAML bearer assertion sent to this customer's "
-            "token endpoint. Only used when the auth type is 'Modern'."
-        )
-    )
-
-    oauth_token_api_path = models.CharField(
-        max_length=255,
-        blank=True,
-        default='/oauth/token',
-        verbose_name="OAuth Token API Path",
-        help_text=_(
-            "Tenant-specific path, relative to the SAP base URL, of the endpoint that exchanges a SAML "
-            "bearer assertion for an access token."
+            "token endpoint. Only used for a self-signed SAML assertion."
         )
     )
 
@@ -302,11 +317,11 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         app_label = 'sap_success_factors_channel'
 
     @property
-    def uses_modern_saml_bearer_auth(self):
+    def uses_self_signed_assertion(self):
         """
         Whether access tokens for this customer are obtained with a self-signed SAML bearer assertion.
         """
-        return self.auth_type == self.AUTH_TYPE_MODERN_SAML_BEARER
+        return self.auth_type == SAPAuthType.SELF_SIGNED_ASSERTION
 
     @property
     def is_valid(self):
@@ -319,7 +334,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         missing_items = {'missing': []}
         incorrect_items = {'incorrect': []}
-        if not self.uses_modern_saml_bearer_auth and not self.decrypted_key:
+        if not self.uses_self_signed_assertion and not self.decrypted_key:
             missing_items.get('missing').append('key')
         if not self.sapsf_base_url:
             missing_items.get('missing').append('sapsf_base_url')
@@ -327,16 +342,16 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             missing_items.get('missing').append('sapsf_company_id')
         if not self.sapsf_user_id:
             missing_items.get('missing').append('sapsf_user_id')
-        if not self.uses_modern_saml_bearer_auth and not self.decrypted_secret:
+        if not self.uses_self_signed_assertion and not self.decrypted_secret:
             missing_items.get('missing').append('secret')
-        if self.uses_modern_saml_bearer_auth:
+        if self.uses_self_signed_assertion:
             # saml_assertion_api_path is deliberately not required here: it addresses SAP's IdP
             # endpoint, which this mode replaces by signing the assertion itself.
             if not self.decrypted_private_key:
                 missing_items.get('missing').append('private_key')
             if not self.saml_assertion_audience:
                 missing_items.get('missing').append('saml_assertion_audience')
-            if not self.oauth_token_api_path:
+            if not SAPSuccessFactorsGlobalConfiguration.current().oauth_token_api_path:
                 missing_items.get('missing').append('oauth_token_api_path')
         if not is_valid_url(self.sapsf_base_url):
             incorrect_items.get('incorrect').append('sapsf_base_url')

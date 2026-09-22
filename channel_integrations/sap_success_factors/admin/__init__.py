@@ -3,7 +3,6 @@ Django admin integration for configuring sap_success_factors app to communicate 
 """
 
 from config_models.admin import ConfigurationModelAdmin
-from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
@@ -29,6 +28,8 @@ class SAPSuccessFactorsGlobalConfigurationAdmin(ConfigurationModelAdmin):
         "completion_status_api_path",
         "course_api_path",
         "oauth_api_path",
+        "saml_assertion_api_path",
+        "oauth_token_api_path",
         "provider_id",
         "search_student_api_path",
     )
@@ -37,49 +38,11 @@ class SAPSuccessFactorsGlobalConfigurationAdmin(ConfigurationModelAdmin):
         model = SAPSuccessFactorsGlobalConfiguration
 
 
-class SAPSuccessFactorsEnterpriseCustomerConfigurationForm(forms.ModelForm):
-    """
-    Admin form for SAPSuccessFactorsEnterpriseCustomerConfiguration.
-
-    The private key can be used to forge SAML bearer assertions for the customer, so the field is
-    write-only: the stored key is cleared from the form's initial data and never reaches the
-    rendered page, and submitting it blank keeps the stored key rather than wiping it. Rotating a
-    key therefore means pasting the new one; there is deliberately no way to clear it from here.
-    """
-    decrypted_private_key = forms.CharField(
-        required=False,
-        widget=forms.Textarea(attrs={"rows": 10}),
-        help_text=SAPSuccessFactorsEnterpriseCustomerConfiguration._meta.get_field(
-            'decrypted_private_key'
-        ).help_text,
-    )
-
-    class Meta:
-        model = SAPSuccessFactorsEnterpriseCustomerConfiguration
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # ModelForm seeds initial from the instance; drop it so the widget renders empty.
-        self.initial['decrypted_private_key'] = ''
-        if self.instance and self.instance.pk and self.instance.decrypted_private_key:
-            self.fields['decrypted_private_key'].widget.attrs['placeholder'] = (
-                '(hidden — leave blank to keep the existing key)'
-            )
-
-    def clean_decrypted_private_key(self):
-        value = self.cleaned_data.get('decrypted_private_key')
-        if not value and self.instance and self.instance.pk:
-            return self.instance.decrypted_private_key
-        return value
-
-
 @admin.register(SAPSuccessFactorsEnterpriseCustomerConfiguration)
 class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions, admin.ModelAdmin):
     """
     Django admin model for SAPSuccessFactorsEnterpriseCustomerConfiguration.
     """
-    form = SAPSuccessFactorsEnterpriseCustomerConfigurationForm
 
     fields = (
         "enterprise_customer",
@@ -91,9 +54,8 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
         "decrypted_secret",
         "auth_type",
         "decrypted_private_key",
-        "saml_assertion_api_path",
+        "decrypted_private_key_passphrase",
         "saml_assertion_audience",
-        "oauth_token_api_path",
         "sapsf_user_id",
         "user_type",
         "has_access_token",
