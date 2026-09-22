@@ -4,7 +4,11 @@ Tests for the `channel_integrations.sap_success_factors.models` models module.
 
 import unittest
 
+import ddt
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from django.db import connection
+from edx_django_utils.cache import TieredCache
 from pytest import mark
 
 from channel_integrations.sap_success_factors.models import (
@@ -13,20 +17,58 @@ from channel_integrations.sap_success_factors.models import (
 )
 from test_utils.factories import EnterpriseCustomerFactory, SAPSuccessFactorsGlobalConfigurationFactory
 
-PRIVATE_KEY = (
-    '-----BEGIN PRIVATE KEY-----\n'
-    'MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDfakeKeyMaterial\n'
-    '-----END PRIVATE KEY-----\n'
-)
+PASSPHRASE = 'a-passphrase'
+
+
+def _pem(private_key, passphrase=None):
+    """
+    Serialize ``private_key`` as a PKCS#8 PEM string, encrypted with ``passphrase`` if given.
+    """
+    encryption = (
+        serialization.BestAvailableEncryption(passphrase.encode())
+        if passphrase else serialization.NoEncryption()
+    )
+    return private_key.private_bytes(
+        serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, encryption,
+    ).decode()
+
+
+_RSA_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+PRIVATE_KEY = _pem(_RSA_KEY)
+ENCRYPTED_PRIVATE_KEY = _pem(_RSA_KEY, PASSPHRASE)
+EC_PRIVATE_KEY = _pem(ec.generate_private_key(ec.SECP256R1()))
+PUBLIC_KEY = _RSA_KEY.public_key().public_bytes(
+    serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo,
+).decode()
+
+# Named (private key, passphrase) cases, so ddt test ids don't embed the randomly generated keys.
+LOADABLE_PRIVATE_KEYS = {
+    'unprotected': (PRIVATE_KEY, ''),
+    'passphrase_protected': (ENCRYPTED_PRIVATE_KEY, PASSPHRASE),
+}
+UNLOADABLE_PRIVATE_KEYS = {
+    'not_pem': ('not a private key', ''),
+    'public_key': (PUBLIC_KEY, ''),
+    'missing_passphrase': (ENCRYPTED_PRIVATE_KEY, ''),
+    'wrong_passphrase': (ENCRYPTED_PRIVATE_KEY, 'wrong-passphrase'),
+    'unexpected_passphrase': (PRIVATE_KEY, PASSPHRASE),
+    # Cannot sign an RSA-SHA256 assertion.
+    'not_rsa': (EC_PRIVATE_KEY, ''),
+}
 
 
 @mark.django_db
+@ddt.ddt
 class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
     """
     Tests of the ``SAPSuccessFactorsEnterpriseCustomerConfiguration`` model.
     """
 
     def setUp(self):
+        # ``SAPSuccessFactorsGlobalConfiguration.current()`` is cached and outlives the test
+        # transaction, so a global config created by one test would otherwise leak into others.
+        TieredCache.dangerous_clear_all_tiers()
+        self.addCleanup(TieredCache.dangerous_clear_all_tiers)
         self.enterprise_customer = EnterpriseCustomerFactory()
         self.config = SAPSuccessFactorsEnterpriseCustomerConfiguration(
             enterprise_customer=self.enterprise_customer,
@@ -66,57 +108,46 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
 
         assert self.config.saml_assertion_audience == 'tenant.successfactors.eu'
 
-    def test_global_endpoint_path_defaults(self):
+    def test_global_token_endpoint_path_default(self):
         """
-        The SAML assertion / OAuth token endpoint paths are global, defaulting to SAP's standard paths.
+        The OAuth token endpoint path is global, defaulting to SAP's standard path.
         """
         global_config = SAPSuccessFactorsGlobalConfigurationFactory()
-        assert global_config.saml_assertion_api_path == '/oauth/idp'
         assert global_config.oauth_token_api_path == '/oauth/token'
 
-        global_config.saml_assertion_api_path = '/global/assertion'
         global_config.oauth_token_api_path = '/global/token'
         global_config.save()
         global_config.refresh_from_db()
 
-        assert global_config.saml_assertion_api_path == '/global/assertion'
         assert global_config.oauth_token_api_path == '/global/token'
 
-    def test_encrypted_private_key(self):
+    @ddt.data(
+        ('decrypted_private_key', PRIVATE_KEY),
+        ('decrypted_private_key_passphrase', PASSPHRASE),
+    )
+    @ddt.unpack
+    def test_private_key_fields_are_encrypted_at_rest(self, field_name, value):
         """
-        Test the encrypted_private_key property getter and setter.
+        The private key and its passphrase are stored encrypted in the database but read back as
+        plaintext through the ORM.
         """
-        assert self.config.encrypted_private_key == ''
-
-        self.config.decrypted_private_key = PRIVATE_KEY
-        encrypted_value = self.config.encrypted_private_key
-        assert encrypted_value != PRIVATE_KEY
-        assert isinstance(encrypted_value, str)
-
-        self.config.encrypted_private_key = encrypted_value
-        assert self.config.decrypted_private_key == encrypted_value
-
-    def test_private_key_is_encrypted_at_rest(self):
-        """
-        The private key is stored encrypted in the database but reads back as plaintext through the ORM.
-        """
-        self.config.decrypted_private_key = PRIVATE_KEY
+        setattr(self.config, field_name, value)
         self.config.save()
 
         table = SAPSuccessFactorsEnterpriseCustomerConfiguration._meta.db_table
         with connection.cursor() as cursor:
             cursor.execute(
-                f'SELECT decrypted_private_key FROM {table} WHERE id = %s',
+                f'SELECT {field_name} FROM {table} WHERE id = %s',
                 [self.config.id],
             )
             stored_value = cursor.fetchone()[0]
 
         assert stored_value
-        assert PRIVATE_KEY not in str(stored_value)
-        assert 'fakeKeyMaterial' not in str(stored_value)
+        # Neither the value nor any line of a PEM key's base64 body is stored in the clear.
+        assert all(line not in str(stored_value) for line in value.splitlines()[1:-1] or [value])
 
         self.config.refresh_from_db()
-        assert self.config.decrypted_private_key == PRIVATE_KEY
+        assert getattr(self.config, field_name) == value
 
     def test_is_valid_requires_private_key_for_self_signed_assertion(self):
         """
@@ -140,20 +171,30 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         assert 'oauth_token_api_path' in missing['missing']
         assert 'saml_assertion_audience' in missing['missing']
 
-    def test_is_valid_does_not_require_key_and_secret_for_self_signed_assertion(self):
+    def test_is_valid_does_not_require_secret_for_self_signed_assertion(self):
         """
-        The OAuth client credentials are only needed when SAP signs the assertion, which a
-        self-signed assertion replaces entirely.
+        A self-signed assertion replaces the client secret, so it is only mandatory for a SAP-signed
+        assertion.
+        """
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.decrypted_secret = ''
+
+        missing, incorrect = self.config.is_valid
+        assert not missing['missing']
+        assert not incorrect['incorrect']
+
+    def test_is_valid_requires_key_for_self_signed_assertion(self):
+        """
+        A self-signed assertion still carries the OAuth client id (as its Issuer and ``api_key``
+        attribute), so the key stays mandatory.
         """
         self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
         self.config.decrypted_private_key = PRIVATE_KEY
         self.config.decrypted_key = ''
-        self.config.decrypted_secret = ''
 
         missing, _ = self.config.is_valid
-        assert 'key' not in missing['missing']
-        assert 'secret' not in missing['missing']
-        assert not missing['missing']
+        assert missing['missing'] == ['key']
 
     def test_is_valid_requires_key_and_secret_for_sap_signed_assertion(self):
         """
@@ -171,16 +212,79 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         assert 'private_key' not in missing['missing']
         assert 'saml_assertion_audience' not in missing['missing']
 
-    def test_encrypted_private_key_passphrase(self):
+    def test_is_valid_rejects_blank_saml_assertion_audience(self):
         """
-        Test the encrypted_private_key_passphrase property getter and setter.
+        A whitespace-only audience is as unusable in a SAML assertion as an empty one.
         """
-        assert self.config.encrypted_private_key_passphrase == ''
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.saml_assertion_audience = '   '
 
-        self.config.decrypted_private_key_passphrase = 'a-passphrase'
-        encrypted_value = self.config.encrypted_private_key_passphrase
-        assert encrypted_value != 'a-passphrase'
-        assert isinstance(encrypted_value, str)
+        missing, _ = self.config.is_valid
+        assert missing['missing'] == ['saml_assertion_audience']
 
-        self.config.encrypted_private_key_passphrase = encrypted_value
-        assert self.config.decrypted_private_key_passphrase == encrypted_value
+    @ddt.data(
+        (SAPAuthType.SELF_SIGNED_ASSERTION, ['sapsf_base_url']),
+        (SAPAuthType.SAP_SIGNED_ASSERTION, []),
+    )
+    @ddt.unpack
+    def test_is_valid_requires_https_base_url_for_self_signed_assertion(self, auth_type, expected_incorrect):
+        """
+        A self-signed assertion's Recipient is the token endpoint on the base URL, which must be HTTPS.
+        """
+        self.config.auth_type = auth_type
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.sapsf_base_url = 'http://sap.example.com'
+
+        missing, incorrect = self.config.is_valid
+        assert not missing['missing']
+        assert incorrect['incorrect'] == expected_incorrect
+
+    def test_is_valid_reports_malformed_base_url_once_for_self_signed_assertion(self):
+        """
+        A base URL that is not an absolute URL at all is reported as incorrect only once.
+        """
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.sapsf_base_url = 'sap.example.com'
+
+        _, incorrect = self.config.is_valid
+        assert incorrect['incorrect'] == ['sapsf_base_url']
+
+    @ddt.data(*LOADABLE_PRIVATE_KEYS)
+    def test_is_valid_accepts_loadable_private_key(self, case):
+        """
+        An RSA private key that the configured passphrase (if any) unlocks is valid.
+        """
+        private_key, passphrase = LOADABLE_PRIVATE_KEYS[case]
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = private_key
+        self.config.decrypted_private_key_passphrase = passphrase
+
+        missing, incorrect = self.config.is_valid
+        assert not missing['missing']
+        assert not incorrect['incorrect']
+
+    @ddt.data(*UNLOADABLE_PRIVATE_KEYS)
+    def test_is_valid_rejects_unloadable_private_key(self, case):
+        """
+        A private key that cannot be loaded as an RSA key with the configured passphrase is
+        reported as incorrect, rather than failing later when an assertion is signed.
+        """
+        private_key, passphrase = UNLOADABLE_PRIVATE_KEYS[case]
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = private_key
+        self.config.decrypted_private_key_passphrase = passphrase
+
+        missing, incorrect = self.config.is_valid
+        assert not missing['missing']
+        assert incorrect['incorrect'] == ['private_key']
+
+    def test_is_valid_ignores_private_key_for_sap_signed_assertion(self):
+        """
+        The private key is only checked when it is actually used.
+        """
+        self.config.decrypted_private_key = 'not a private key'
+
+        _, incorrect = self.config.is_valid
+        assert not incorrect['incorrect']

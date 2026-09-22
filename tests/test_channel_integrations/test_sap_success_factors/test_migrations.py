@@ -15,7 +15,8 @@ MIGRATE_TO = '0007_sapsuccessfactorsenterprisecustomerconfiguration_auth_type_an
 
 class TestAuthTypeAndPrivateKeyMigration(TransactionTestCase):
     """
-    The migration adding modern auth support must leave pre-existing customer rows on legacy auth.
+    The migration adding self-signed assertion support must leave pre-existing customer rows on SAP-signed
+    assertion auth.
     """
 
     def _migrate(self, target):
@@ -31,7 +32,8 @@ class TestAuthTypeAndPrivateKeyMigration(TransactionTestCase):
 
     def tearDown(self):
         # Leave the test database at the latest migration for the rest of the suite.
-        self._migrate(MIGRATE_TO)
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes(APP_LABEL))
         super().tearDown()
 
     def test_existing_rows_get_sap_signed_assertion_defaults(self):
@@ -68,10 +70,10 @@ class TestAuthTypeAndPrivateKeyMigration(TransactionTestCase):
         assert migrated_config.sapsf_base_url == 'https://sap.example.com'
         assert migrated_config.sapsf_company_id == 'COMP1'
 
-    def test_existing_global_config_gets_endpoint_path_defaults(self):
+    def test_existing_global_config_gets_token_endpoint_path_default(self):
         """
         A global configuration row written before the migration comes out of it with the standard
-        SAML assertion / OAuth token endpoint paths.
+        OAuth token endpoint path.
         """
         old_apps = self._migrate(MIGRATE_FROM)
         old_global_config_model = old_apps.get_model(APP_LABEL, 'SAPSuccessFactorsGlobalConfiguration')
@@ -84,11 +86,10 @@ class TestAuthTypeAndPrivateKeyMigration(TransactionTestCase):
         )
 
         # The columns this migration adds do not exist yet.
-        assert not hasattr(old_global_config, 'saml_assertion_api_path')
+        assert not hasattr(old_global_config, 'oauth_token_api_path')
 
         new_apps = self._migrate(MIGRATE_TO)
         new_global_config_model = new_apps.get_model(APP_LABEL, 'SAPSuccessFactorsGlobalConfiguration')
         migrated_global_config = new_global_config_model.objects.get(pk=old_global_config.pk)
 
-        assert migrated_global_config.saml_assertion_api_path == '/oauth/idp'
         assert migrated_global_config.oauth_token_api_path == '/oauth/token'

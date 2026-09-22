@@ -28,7 +28,6 @@ class SAPSuccessFactorsGlobalConfigurationAdmin(ConfigurationModelAdmin):
         "completion_status_api_path",
         "course_api_path",
         "oauth_api_path",
-        "saml_assertion_api_path",
         "oauth_token_api_path",
         "provider_id",
         "search_student_api_path",

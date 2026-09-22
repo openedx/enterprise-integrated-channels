@@ -4,8 +4,12 @@ Database models for Enterprise Integrated Channel SAP SuccessFactors.
 
 import json
 from logging import getLogger
+from urllib.parse import urlparse
 
 from config_models.models import ConfigurationModel
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
@@ -32,26 +36,6 @@ from channel_integrations.utils import convert_comma_separated_string_to_list, i
 LOGGER = getLogger(__name__)
 
 
-def _encrypted_property(field_name):
-    """
-    Build a property pair that re-encrypts a Fernet-backed `field_name` for callers (e.g. the admin
-    API serializers) that need the ciphertext, since the model's `decrypted_*` field already holds
-    the plaintext once loaded from the database.
-    """
-    def getter(self):
-        value = getattr(self, field_name)
-        if value:
-            return force_str(
-                self._meta.get_field(field_name).fernet.encrypt(force_bytes(value))
-            )
-        return value
-
-    def setter(self, value):
-        setattr(self, field_name, value)
-
-    return property(getter, setter)
-
-
 class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
     """
     The global configuration for integrating with SuccessFactors.
@@ -64,16 +48,6 @@ class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
     oauth_api_path = models.CharField(max_length=255)
     search_student_api_path = models.CharField(max_length=255)
     provider_id = models.CharField(max_length=100, default='EDX')
-    saml_assertion_api_path = models.CharField(
-        max_length=255,
-        blank=True,
-        default='/oauth/idp',
-        verbose_name="SAML Assertion API Path",
-        help_text=_(
-            "Path, relative to a customer's SAP base URL, of the endpoint that issues the SAML "
-            "assertion exchanged for an access token."
-        )
-    )
     oauth_token_api_path = models.CharField(
         max_length=255,
         blank=True,
@@ -155,7 +129,27 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         null=True
     )
 
-    encrypted_key = _encrypted_property('decrypted_key')
+    @property
+    def encrypted_key(self):
+        """
+        Return encrypted key as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_key field. This method will encrypt the key again before sending.
+        """
+        if self.decrypted_key:
+            return force_str(
+                self._meta.get_field('decrypted_key').fernet.encrypt(
+                    force_bytes(self.decrypted_key)
+                )
+            )
+        return self.decrypted_key
+
+    @encrypted_key.setter
+    def encrypted_key(self, value):
+        """
+        Set the encrypted key.
+        """
+        self.decrypted_key = value
 
     sapsf_base_url = models.CharField(
         max_length=255,
@@ -191,7 +185,27 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         null=True
     )
 
-    encrypted_secret = _encrypted_property('decrypted_secret')
+    @property
+    def encrypted_secret(self):
+        """
+        Return encrypted secret as a string.
+        The data is encrypted in the DB at rest, but is unencrypted in the app when retrieved through the
+        decrypted_secret field. This method will encrypt the secret again before sending.
+        """
+        if self.decrypted_secret:
+            return force_str(
+                self._meta.get_field('decrypted_secret').fernet.encrypt(
+                    force_bytes(self.decrypted_secret)
+                )
+            )
+        return self.decrypted_secret
+
+    @encrypted_secret.setter
+    def encrypted_secret(self, value):
+        """
+        Set the encrypted secret.
+        """
+        self.decrypted_secret = value
 
     auth_type = models.CharField(
         max_length=32,
@@ -200,10 +214,10 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         verbose_name="SAP Auth Type",
         help_text=_(
             "How access tokens are obtained for this customer. 'SAP-signed' asks SAP's OAuth IdP API to "
-            "mint the SAML assertion for us, authenticated with the OAuth client id/secret below; "
-            "'Self-signed' signs the assertion ourselves with the configured private key instead. "
-            "Existing customers stay on 'SAP-signed' until they have been migrated. Self-signed support "
-            "is still under development and is not yet used to authenticate any transmissions."
+            "mint the SAML assertion for us, authenticated with the OAuth client id/secret; "
+            "'Self-signed' means we sign the assertion ourselves with the configured private key "
+            "instead. Self-signed support is still under development and is not yet used to authenticate any "
+            "transmissions."
         )
     )
 
@@ -219,22 +233,18 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         null=True
     )
 
-    encrypted_private_key = _encrypted_property('decrypted_private_key')
-
     decrypted_private_key_passphrase = EncryptedCharField(
         max_length=255,
         blank=True,
         default='',
         verbose_name="Encrypted Private Key Passphrase",
         help_text=_(
-            "Passphrase protecting the private key above, if any. Leave blank if the private key is "
+            "Passphrase protecting the private key, if any. Leave blank if the private key is "
             "not passphrase-protected. Only used for a self-signed SAML assertion."
             " It will be encrypted when stored in the database."
         ),
         null=True
     )
-
-    encrypted_private_key_passphrase = _encrypted_property('decrypted_private_key_passphrase')
 
     saml_assertion_audience = models.CharField(
         max_length=255,
@@ -323,6 +333,25 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         return self.auth_type == SAPAuthType.SELF_SIGNED_ASSERTION
 
+    def _private_key_is_loadable(self):
+        """
+        Whether the configured private key is a PEM-encoded RSA private key that the configured
+        passphrase (if any) unlocks, as required to sign a SAML assertion.
+        """
+        passphrase = self.decrypted_private_key_passphrase
+        try:
+            private_key = load_pem_private_key(
+                force_bytes(self.decrypted_private_key),
+                password=force_bytes(passphrase) if passphrase else None,
+                # is_valid is read on every API serialization and health check, and RSA key
+                # consistency checks take tens to hundreds of ms per key; signing still runs them.
+                unsafe_skip_rsa_key_validation=True,
+            )
+        except (TypeError, ValueError, UnsupportedAlgorithm):
+            # TypeError: a passphrase was given for an unencrypted key, or vice versa.
+            return False
+        return isinstance(private_key, rsa.RSAPrivateKey)
+
     @property
     def is_valid(self):
         """
@@ -334,7 +363,9 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         missing_items = {'missing': []}
         incorrect_items = {'incorrect': []}
-        if not self.uses_self_signed_assertion and not self.decrypted_key:
+        # The client id is needed in both modes: a self-signed assertion carries it as its Issuer.
+        # The secret only authenticates the SAP-signed flow; a self-signed assertion replaces it.
+        if not self.decrypted_key:
             missing_items.get('missing').append('key')
         if not self.sapsf_base_url:
             missing_items.get('missing').append('sapsf_base_url')
@@ -342,18 +373,26 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             missing_items.get('missing').append('sapsf_company_id')
         if not self.sapsf_user_id:
             missing_items.get('missing').append('sapsf_user_id')
-        if not self.uses_self_signed_assertion and not self.decrypted_secret:
+        if not self.decrypted_secret and not self.uses_self_signed_assertion:
             missing_items.get('missing').append('secret')
         if self.uses_self_signed_assertion:
-            # saml_assertion_api_path is deliberately not required here: it addresses SAP's IdP
-            # endpoint, which this mode replaces by signing the assertion itself.
             if not self.decrypted_private_key:
                 missing_items.get('missing').append('private_key')
-            if not self.saml_assertion_audience:
+            elif not self._private_key_is_loadable():
+                incorrect_items.get('incorrect').append('private_key')
+            if not (self.saml_assertion_audience or '').strip():
                 missing_items.get('missing').append('saml_assertion_audience')
             if not SAPSuccessFactorsGlobalConfiguration.current().oauth_token_api_path:
                 missing_items.get('missing').append('oauth_token_api_path')
         if not is_valid_url(self.sapsf_base_url):
+            incorrect_items.get('incorrect').append('sapsf_base_url')
+        elif (
+            self.uses_self_signed_assertion
+            and self.sapsf_base_url
+            and urlparse(self.sapsf_base_url).scheme != 'https'
+        ):
+            # A self-signed assertion names the token endpoint on this URL as its Recipient, which
+            # must be an HTTPS URL.
             incorrect_items.get('incorrect').append('sapsf_base_url')
         if len(self.display_name) > 20:
             incorrect_items.get('incorrect').append('display_name')
