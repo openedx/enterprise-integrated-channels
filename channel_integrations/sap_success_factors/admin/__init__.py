@@ -113,9 +113,11 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
             obj: The instance of SAPSuccessFactorsEnterpriseCustomerConfiguration
                 being rendered with this admin form.
         """
+        # Request the token the same way _create_session() does, so this reflects whether
+        # transmissions can authenticate.
+        client = SAPSuccessFactorsAPIClient(obj)
         try:
-            access_token, expires_at = SAPSuccessFactorsAPIClient.get_oauth_access_token(
-                obj.sapsf_base_url,
+            access_token, expires_at = client.get_oauth_access_token(
                 obj.decrypted_key,
                 obj.decrypted_secret,
                 obj.sapsf_company_id,
