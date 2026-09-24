@@ -14,6 +14,28 @@ Change Log
 Unreleased
 **********
 
+0.1.72 – 2026-09-24
+*******************
+
+* feat: add an ``is_ready_to_transmit`` hook to ``EnterpriseCustomerPluginConfiguration``, called by
+  every transmission entry point; the base implementation passes everything through, so no channel's
+  behaviour changes unless it overrides the hook.
+* feat: SAP SuccessFactors overrides the hook to abort transmissions and ``unlink_inactive_learners``
+  before any request when ``is_valid`` reports a problem other than ``display_name``, logging the
+  missing and invalid fields and recording blocked syncs as errored attempts.
+* fix: treat a whitespace-only ``saml_assertion_audience`` as missing for self-signed assertions.
+
+0.1.71 – 2026-09-24
+*******************
+
+* feat: extend ``SAPSuccessFactorsEnterpriseCustomerConfiguration`` with an ``auth_type`` field
+  (``sap_signed_assertion`` / ``self_signed_assertion``, defaulting to ``sap_signed_assertion``),
+  encrypted-at-rest ``decrypted_private_key`` and ``decrypted_private_key_passphrase`` fields used
+  to self-sign SAML bearer assertions, and a configurable ``saml_assertion_audience``; adds
+  ``oauth_token_api_path`` to ``SAPSuccessFactorsGlobalConfiguration``; in preparation for
+  discontinuing use of the SAP OAuth IdP API. Self-signed assertion support is still under
+  development and is not yet used to authenticate any transmissions.
+
 0.1.70 – 2026-09-03
 *******************
 
