@@ -29,14 +29,7 @@ coverage: clean ## generate and view HTML coverage report
 	$(BROWSER)htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	uv sync --group doc
-	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=$(CURDIR) SPHINXOPTS=-W uv run doc8 --ignore-path docs/_build README.rst docs
-	rm -f docs/channel_integrations.rst
-	rm -f docs/modules.rst
-	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=$(CURDIR) SPHINXOPTS=-W uv run make -e -C docs clean
-	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=$(CURDIR) SPHINXOPTS=-W uv run make -e -C docs html
-	uv run python -m build --wheel
-	uv run twine check dist/*
+	uv run tox -e docs
 	$(BROWSER)docs/_build/html/index.html
 
 compile-requirements: ## generate the uv.lock file without upgrading packages
@@ -47,14 +40,10 @@ upgrade: ## upgrade all packages in uv.lock and sync constraints from edx-lint
 	uv lock --upgrade
 
 quality: ## check coding style with pycodestyle and pylint
-	touch tests/__init__.py
-	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=./mock_apps uv run pylint src/channel_integrations tests test_utils manage.py
-	rm tests/__init__.py
-	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=./mock_apps uv run pycodestyle src/channel_integrations tests manage.py
-	$(MAKE) selfcheck
+	uv run tox -e quality
 
 pii_check: ## check for PII annotations on all Django models
-	DJANGO_SETTINGS_MODULE=test_settings PYTHONPATH=./mock_apps uv run code_annotations django_find_annotations --config_file .pii_annotations.yml --lint --report --coverage
+	uv run tox -e pii_check
 
 requirements: ## install development environment requirements
 	uv sync --group dev
