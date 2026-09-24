@@ -14,6 +14,17 @@ Change Log
 Unreleased
 **********
 
+0.1.72 – 2026-09-24
+*******************
+
+* feat: add an ``is_ready_to_transmit`` hook to ``EnterpriseCustomerPluginConfiguration``, called by
+  every transmission entry point; the base implementation passes everything through, so no channel's
+  behaviour changes unless it overrides the hook.
+* feat: SAP SuccessFactors overrides the hook to abort transmissions and ``unlink_inactive_learners``
+  before any request when ``is_valid`` reports a problem other than ``display_name``, logging the
+  missing and invalid fields and recording blocked syncs as errored attempts.
+* fix: treat a whitespace-only ``saml_assertion_audience`` as missing for self-signed assertions.
+
 0.1.71 – 2026-09-24
 *******************
 

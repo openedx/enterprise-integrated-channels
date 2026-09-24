@@ -3,6 +3,8 @@ Database models for Enterprise Integrated Channel SAP SuccessFactors.
 """
 
 import json
+from collections.abc import Callable
+from datetime import datetime
 from logging import getLogger
 from urllib.parse import urlparse
 
@@ -15,6 +17,7 @@ from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from enterprise.models import EnterpriseCustomer
+from enterprise.utils import localized_utcnow
 from fernet_fields import EncryptedCharField, EncryptedTextField
 
 from channel_integrations.exceptions import ClientError
@@ -31,7 +34,7 @@ from channel_integrations.sap_success_factors.transmitters.content_metadata impo
     SapSuccessFactorsContentMetadataTransmitter,
 )
 from channel_integrations.sap_success_factors.transmitters.learner_data import SapSuccessFactorsLearnerTransmitter
-from channel_integrations.utils import convert_comma_separated_string_to_list, is_valid_url
+from channel_integrations.utils import convert_comma_separated_string_to_list, generate_formatted_log, is_valid_url
 
 LOGGER = getLogger(__name__)
 
@@ -98,6 +101,9 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
 
     .. no_pii:
     """
+
+    # Problems reported by ``is_valid`` that do not stop SAP being reached, so do not block a sync.
+    COSMETIC_CONFIG_PROBLEMS = frozenset({'display_name'})
 
     USER_TYPE_USER = 'user'
     USER_TYPE_ADMIN = 'admin'
@@ -398,6 +404,56 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             incorrect_items.get('incorrect').append('display_name')
         return missing_items, incorrect_items
 
+    def is_ready_to_transmit(
+        self,
+        task_name: str,
+        record_attempt: Callable[[datetime, bool], None] | None = None,
+    ) -> bool:
+        """
+        Refuse to call SAP when the configuration is incomplete or invalid, and log why.
+
+        Blocks on every problem ``is_valid`` reports, whether missing or incorrect, except those in
+        ``COSMETIC_CONFIG_PROBLEMS``: an unparseable private key stops a transmission just as surely as
+        an absent one.
+
+        Args:
+            task_name: name of the calling method, used in the log line.
+            record_attempt: ``update_content_synced_at`` or ``update_learner_synced_at``, called with
+                ``(now, False)`` when the run is blocked so the sync shows as errored rather than stale.
+
+        Returns:
+            bool: whether the caller should proceed.
+        """
+        missing_items, incorrect_items = self.is_valid
+        missing_fields = [
+            field for field in missing_items['missing'] if field not in self.COSMETIC_CONFIG_PROBLEMS
+        ]
+        invalid_fields = [
+            field for field in incorrect_items['incorrect'] if field not in self.COSMETIC_CONFIG_PROBLEMS
+        ]
+        if not missing_fields and not invalid_fields:
+            return True
+
+        problems = []
+        if missing_fields:
+            problems.append(f'missing: {", ".join(missing_fields)}')
+        if invalid_fields:
+            problems.append(f'invalid: {", ".join(invalid_fields)}')
+        LOGGER.warning(
+            generate_formatted_log(
+                channel_name=self.channel_code(),
+                enterprise_customer_uuid=self.enterprise_customer.uuid,
+                plugin_configuration_id=self.id,
+                message=(
+                    f'{task_name} aborted before any request to the channel because its '
+                    f'configuration is incomplete or invalid ({"; ".join(problems)}).'
+                ),
+            )
+        )
+        if record_attempt is not None:
+            record_attempt(localized_utcnow(), False)
+        return False
+
     def __str__(self):
         """
         Return human-readable string representation.
@@ -460,6 +516,8 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         Unlink inactive SAP learners form their related enterprises
         """
+        if not self.is_ready_to_transmit('unlink_inactive_learners'):
+            return
         sap_learner_manager = self.get_learner_manger()
         try:
             sap_learner_manager.unlink_learners()

@@ -196,6 +196,30 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         missing, _ = self.config.is_valid
         assert missing['missing'] == ['key']
 
+    def test_is_valid_self_signed_requires_company_and_user_identifiers(self):
+        """
+        The assertion identifies the API user to SAP by company and user, so both must be set.
+        """
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.sapsf_company_id = ''
+        self.config.sapsf_user_id = ''
+
+        missing, _ = self.config.is_valid
+        assert 'sapsf_company_id' in missing['missing']
+        assert 'sapsf_user_id' in missing['missing']
+
+    def test_is_valid_self_signed_rejects_blank_assertion_audience(self):
+        """
+        An audience of only whitespace is as unusable as an empty one.
+        """
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.saml_assertion_audience = '   '
+
+        missing, _ = self.config.is_valid
+        assert 'saml_assertion_audience' in missing['missing']
+
     def test_is_valid_requires_key_and_secret_for_sap_signed_assertion(self):
         """
         A SAP-signed assertion still authenticates with the OAuth client credentials, so both stay
