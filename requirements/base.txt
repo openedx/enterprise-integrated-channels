@@ -50,6 +50,7 @@ click-repl==0.3.0
     # via celery
 cryptography==50.0.1
     # via
+    #   -r requirements/base.in
     #   django-fernet-fields-v2
     #   jwcrypto
     #   pyjwt

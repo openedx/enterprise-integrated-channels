@@ -28,6 +28,7 @@ class SAPSuccessFactorsGlobalConfigurationAdmin(ConfigurationModelAdmin):
         "completion_status_api_path",
         "course_api_path",
         "oauth_api_path",
+        "oauth_token_api_path",
         "provider_id",
         "search_student_api_path",
     )
@@ -41,6 +42,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
     """
     Django admin model for SAPSuccessFactorsEnterpriseCustomerConfiguration.
     """
+
     fields = (
         "enterprise_customer",
         "idp_id",
@@ -49,6 +51,10 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
         "sapsf_company_id",
         "decrypted_key",
         "decrypted_secret",
+        "auth_type",
+        "decrypted_private_key",
+        "decrypted_private_key_passphrase",
+        "saml_assertion_audience",
         "sapsf_user_id",
         "user_type",
         "has_access_token",
@@ -107,9 +113,11 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
             obj: The instance of SAPSuccessFactorsEnterpriseCustomerConfiguration
                 being rendered with this admin form.
         """
+        # Request the token the same way _create_session() does, so this reflects whether
+        # transmissions can authenticate.
+        client = SAPSuccessFactorsAPIClient(obj)
         try:
-            access_token, expires_at = SAPSuccessFactorsAPIClient.get_oauth_access_token(
-                obj.sapsf_base_url,
+            access_token, expires_at = client.get_oauth_access_token(
                 obj.decrypted_key,
                 obj.decrypted_secret,
                 obj.sapsf_company_id,
