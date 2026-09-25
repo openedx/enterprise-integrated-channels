@@ -14,6 +14,13 @@ Change Log
 Unreleased
 **********
 
+0.1.71 – 2026-09-15
+*******************
+
+* feat: Add a standalone SAML 2.0 XML-DSig assertion generator
+  (``channel_integrations.sap_success_factors.saml.generate_saml_assertion``) for SAP
+  SuccessFactors OAuth assertion-based authentication.
+
 0.1.70 – 2026-09-03
 *******************
 

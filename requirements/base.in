@@ -23,6 +23,7 @@ unicodecsv
 slumber
 edx-rbac
 edx-tincan-py35
+signxml               # Pure-Python XML-DSig signing for SAML assertions (SAP SuccessFactors)
 # Normally we don't pin anything here, but this flexible constraint helps ensure the version of
 # enterprise-integrated-channels deployed has actually been tested with this major version of
 # snowflake-connector-python.
