@@ -15,6 +15,7 @@ django-model-utils
 django-simple-history
 django-config-models
 django-fernet-fields-v2
+cryptography>=39        # Loading the PEM private key used to self-sign SAP SuccessFactors SAML assertions
 edx-drf-extensions
 edx-rest-api-client
 django-oauth-toolkit
