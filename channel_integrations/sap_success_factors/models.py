@@ -4,14 +4,18 @@ Database models for Enterprise Integrated Channel SAP SuccessFactors.
 
 import json
 from logging import getLogger
+from urllib.parse import urlparse
 
 from config_models.models import ConfigurationModel
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_lazy as _
 from enterprise.models import EnterpriseCustomer
-from fernet_fields import EncryptedCharField
+from fernet_fields import EncryptedCharField, EncryptedTextField
 
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.models import (
@@ -44,6 +48,16 @@ class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
     oauth_api_path = models.CharField(max_length=255)
     search_student_api_path = models.CharField(max_length=255)
     provider_id = models.CharField(max_length=100, default='EDX')
+    oauth_token_api_path = models.CharField(
+        max_length=255,
+        blank=True,
+        default='/oauth/token',
+        verbose_name="OAuth Token API Path",
+        help_text=_(
+            "Path, relative to a customer's SAP base URL, of the endpoint that exchanges a SAML "
+            "bearer assertion for an access token."
+        )
+    )
     changed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         editable=False,
@@ -68,6 +82,14 @@ class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
         Return uniquely identifying string representation.
         """
         return self.__str__()
+
+
+class SAPAuthType(models.TextChoices):
+    """
+    How the SAML bearer assertion sent to a customer's token endpoint gets signed.
+    """
+    SAP_SIGNED_ASSERTION = 'sap_signed_assertion', _('SAP-signed SAML assertion (SAP IdP API + client secret)')
+    SELF_SIGNED_ASSERTION = 'self_signed_assertion', _('Self-signed SAML assertion (our private key)')
 
 
 class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginConfiguration):
@@ -185,6 +207,56 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         self.decrypted_secret = value
 
+    auth_type = models.CharField(
+        max_length=32,
+        choices=SAPAuthType.choices,
+        default=SAPAuthType.SAP_SIGNED_ASSERTION,
+        verbose_name="SAP Auth Type",
+        help_text=_(
+            "How access tokens are obtained for this customer. 'SAP-signed' asks SAP's OAuth IdP API to "
+            "mint the SAML assertion for us, authenticated with the OAuth client id/secret; "
+            "'Self-signed' means we sign the assertion ourselves with the configured private key "
+            "instead. Self-signed support is still under development and is not yet used to authenticate any "
+            "transmissions."
+        )
+    )
+
+    decrypted_private_key = EncryptedTextField(
+        blank=True,
+        default='',
+        verbose_name="Encrypted Private Key",
+        help_text=_(
+            "The PEM-encoded private key used to sign the SAML bearer assertion sent to this customer's "
+            "token endpoint. Only used for a self-signed SAML assertion."
+            " It will be encrypted when stored in the database."
+        ),
+        null=True
+    )
+
+    decrypted_private_key_passphrase = EncryptedCharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Encrypted Private Key Passphrase",
+        help_text=_(
+            "Passphrase protecting the private key, if any. Leave blank if the private key is "
+            "not passphrase-protected. Only used for a self-signed SAML assertion."
+            " It will be encrypted when stored in the database."
+        ),
+        null=True
+    )
+
+    saml_assertion_audience = models.CharField(
+        max_length=255,
+        blank=True,
+        default='www.successfactors.com',
+        verbose_name="SAML Assertion Audience",
+        help_text=_(
+            "Value of the Audience restriction in the SAML bearer assertion sent to this customer's "
+            "token endpoint. Only used for a self-signed SAML assertion."
+        )
+    )
+
     user_type = models.CharField(
         max_length=20,
         choices=USER_TYPE_CHOICES,
@@ -255,6 +327,32 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         app_label = 'sap_success_factors_channel'
 
     @property
+    def uses_self_signed_assertion(self):
+        """
+        Whether access tokens for this customer are obtained with a self-signed SAML bearer assertion.
+        """
+        return self.auth_type == SAPAuthType.SELF_SIGNED_ASSERTION
+
+    def _private_key_is_loadable(self):
+        """
+        Whether the configured private key is a PEM-encoded RSA private key that the configured
+        passphrase (if any) unlocks, as required to sign a SAML assertion.
+        """
+        passphrase = self.decrypted_private_key_passphrase
+        try:
+            private_key = load_pem_private_key(
+                force_bytes(self.decrypted_private_key),
+                password=force_bytes(passphrase) if passphrase else None,
+                # is_valid is read on every API serialization and health check, and RSA key
+                # consistency checks take tens to hundreds of ms per key; signing still runs them.
+                unsafe_skip_rsa_key_validation=True,
+            )
+        except (TypeError, ValueError, UnsupportedAlgorithm):
+            # TypeError: a passphrase was given for an unencrypted key, or vice versa.
+            return False
+        return isinstance(private_key, rsa.RSAPrivateKey)
+
+    @property
     def is_valid(self):
         """
         Returns whether or not the configuration is valid and ready to be activated
@@ -265,6 +363,8 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         missing_items = {'missing': []}
         incorrect_items = {'incorrect': []}
+        # The client id is needed in both modes: a self-signed assertion carries it as its Issuer.
+        # The secret only authenticates the SAP-signed flow; a self-signed assertion replaces it.
         if not self.decrypted_key:
             missing_items.get('missing').append('key')
         if not self.sapsf_base_url:
@@ -273,9 +373,26 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             missing_items.get('missing').append('sapsf_company_id')
         if not self.sapsf_user_id:
             missing_items.get('missing').append('sapsf_user_id')
-        if not self.decrypted_secret:
+        if not self.decrypted_secret and not self.uses_self_signed_assertion:
             missing_items.get('missing').append('secret')
+        if self.uses_self_signed_assertion:
+            if not self.decrypted_private_key:
+                missing_items.get('missing').append('private_key')
+            elif not self._private_key_is_loadable():
+                incorrect_items.get('incorrect').append('private_key')
+            if not (self.saml_assertion_audience or '').strip():
+                missing_items.get('missing').append('saml_assertion_audience')
+            if not SAPSuccessFactorsGlobalConfiguration.current().oauth_token_api_path:
+                missing_items.get('missing').append('oauth_token_api_path')
         if not is_valid_url(self.sapsf_base_url):
+            incorrect_items.get('incorrect').append('sapsf_base_url')
+        elif (
+            self.uses_self_signed_assertion
+            and self.sapsf_base_url
+            and urlparse(self.sapsf_base_url).scheme != 'https'
+        ):
+            # A self-signed assertion names the token endpoint on this URL as its Recipient, which
+            # must be an HTTPS URL.
             incorrect_items.get('incorrect').append('sapsf_base_url')
         if len(self.display_name) > 20:
             incorrect_items.get('incorrect').append('display_name')
