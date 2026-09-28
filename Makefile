@@ -29,7 +29,7 @@ coverage: clean ## generate and view HTML coverage report
 	$(BROWSER)htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	uv run tox -e docs
+	tox -e docs
 	$(BROWSER)docs/_build/html/index.html
 
 compile-requirements: ## generate the uv.lock file without upgrading packages
@@ -40,19 +40,19 @@ upgrade: ## upgrade all packages in uv.lock and sync constraints from edx-lint
 	uv lock --upgrade
 
 quality: ## check coding style with pycodestyle and pylint
-	uv run tox -e quality
+	tox -e quality
 
 pii_check: ## check for PII annotations on all Django models
-	uv run tox -e pii_check
+	tox -e pii_check
 
 requirements: ## install development environment requirements
 	uv sync --group dev
 
 test: clean ## run tests in the current virtualenvs
-	PYTHONPATH=./:./mock_apps uv run pytest
+	PYTHONPATH=./:./mock_apps pytest
 
 diff_cover: test ## find diff lines that need test coverage
-	uv run diff-cover coverage.xml
+	diff-cover coverage.xml
 test-all: quality pii_check test docs ## run tests on every supported Python/Django combination
 
 validate: quality pii_check test ## run tests and quality checks
@@ -64,13 +64,13 @@ selfcheck: ## check that the Makefile is well-formed
 
 extract_translations: ## extract strings to be translated, outputting .mo files
 	rm -rf docs/_build
-	cd src/channel_integrations && uv run i18n_tool extract --no-segment
+	cd src/channel_integrations && i18n_tool extract --no-segment
 
 compile_translations: ## compile translation files, outputting .po files for each supported language
-	cd src/channel_integrations && uv run i18n_tool generate
+	cd src/channel_integrations && i18n_tool generate
 
 detect_changed_source_translations:
-	cd src/channel_integrations && uv run i18n_tool changed
+	cd src/channel_integrations && i18n_tool changed
 
 ifeq ($(OPENEDX_ATLAS_PULL),)
 pull_translations: ## Pull translations from Transifex
@@ -80,7 +80,7 @@ else
 pull_translations:
 	find src/channel_integrations/conf/locale -mindepth 1 -maxdepth 1 -type d -exec rm -r {} \;
 	atlas pull $(OPENEDX_ATLAS_ARGS) translations/enterprise-integrated-channels/channel_integrations/conf/locale:src/channel_integrations/conf/locale
-	uv run python manage.py compilemessages
+	python manage.py compilemessages
 	@echo "Translations have been pulled via Atlas and compiled."
 endif
 
@@ -88,7 +88,7 @@ push_translations: ## push source translation files (.po) from Transifex
 	tx push -s
 
 dummy_translations: ## generate dummy translation (.po) files
-	cd src/channel_integrations && uv run i18n_tool dummy
+	cd src/channel_integrations && i18n_tool dummy
 build_dummy_translations: extract_translations dummy_translations compile_translations ## generate and compile dummy translation files
 
 validate_translations: build_dummy_translations detect_changed_source_translations ## validate translations
