@@ -28,6 +28,7 @@ class SAPSuccessFactorsGlobalConfigurationAdmin(ConfigurationModelAdmin):
         "completion_status_api_path",
         "course_api_path",
         "oauth_api_path",
+        "oauth_token_api_path",
         "provider_id",
         "search_student_api_path",
     )
@@ -41,6 +42,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
     """
     Django admin model for SAPSuccessFactorsEnterpriseCustomerConfiguration.
     """
+
     fields = (
         "enterprise_customer",
         "idp_id",
@@ -49,6 +51,10 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
         "sapsf_company_id",
         "decrypted_key",
         "decrypted_secret",
+        "auth_type",
+        "decrypted_private_key",
+        "decrypted_private_key_passphrase",
+        "saml_assertion_audience",
         "sapsf_user_id",
         "user_type",
         "has_access_token",
