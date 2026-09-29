@@ -49,6 +49,7 @@ dependencies = [
     "slumber",
     "edx-rbac",
     "edx-tincan-py35",
+    "signxml",
     # Normally we don't pin anything here, but this flexible constraint helps ensure the version of
     # enterprise-integrated-channels deployed has actually been tested with this major version of
     # snowflake-connector-python.
@@ -107,6 +108,7 @@ ci = [
 ]
 dev = [
     {include-group = "quality"},
+    {include-group = "doc"},
     {include-group = "ci"},
     "edx-i18n-tools",
 ]

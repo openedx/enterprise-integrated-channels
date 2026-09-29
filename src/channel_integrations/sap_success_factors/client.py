@@ -74,6 +74,9 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             HTTPError: If we received a failure response code from SAP SuccessFactors.
             ClientError: If an unexpected response format was received that we could not parse.
         """
+        # TODO(ENT-12305): for self-signed assertion auth, build the assertion with
+        # channel_integrations.sap_success_factors.saml.generate_saml_assertion instead of
+        # requesting one from SAP's IdP endpoint.
         SAPSuccessFactorsGlobalConfiguration = apps.get_model(
             'sap_success_factors_channel',
             'SAPSuccessFactorsGlobalConfiguration'

@@ -1116,6 +1116,7 @@ dependencies = [
     { name = "openedx-atlas" },
     { name = "pytz" },
     { name = "requests" },
+    { name = "signxml" },
     { name = "slumber" },
     { name = "snowflake-connector-python" },
     { name = "unicodecsv" },
@@ -1127,11 +1128,13 @@ ci = [
     { name = "tox-uv" },
 ]
 dev = [
+    { name = "build" },
     { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
     { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
     { name = "ddt" },
     { name = "diff-cover" },
     { name = "django-countries" },
+    { name = "doc8" },
     { name = "edx-i18n-tools" },
     { name = "edx-lint" },
     { name = "factory-boy" },
@@ -1146,9 +1149,12 @@ dev = [
     { name = "pytest-django" },
     { name = "responses" },
     { name = "social-auth-app-django" },
+    { name = "sphinx" },
+    { name = "sphinx-book-theme" },
     { name = "testfixtures" },
     { name = "tox" },
     { name = "tox-uv" },
+    { name = "twine" },
 ]
 doc = [
     { name = "build" },
@@ -1284,6 +1290,7 @@ requires-dist = [
     { name = "openedx-atlas" },
     { name = "pytz" },
     { name = "requests" },
+    { name = "signxml" },
     { name = "slumber" },
     { name = "snowflake-connector-python", specifier = ">=4.0.0,<5.0.0" },
     { name = "unicodecsv" },
@@ -1295,10 +1302,12 @@ ci = [
     { name = "tox-uv" },
 ]
 dev = [
+    { name = "build" },
     { name = "code-annotations" },
     { name = "ddt", specifier = "<1.4.0" },
     { name = "diff-cover" },
     { name = "django-countries" },
+    { name = "doc8" },
     { name = "edx-i18n-tools" },
     { name = "edx-lint" },
     { name = "factory-boy" },
@@ -1312,9 +1321,12 @@ dev = [
     { name = "pytest-django" },
     { name = "responses" },
     { name = "social-auth-app-django" },
+    { name = "sphinx" },
+    { name = "sphinx-book-theme" },
     { name = "testfixtures" },
     { name = "tox" },
     { name = "tox-uv" },
+    { name = "twine" },
 ]
 doc = [
     { name = "build" },
@@ -2686,6 +2698,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/34/26/f5d29e25ffdb535afef2d35cdb55b325298f96debd670da4c325e08d70f4/setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef", size = 1154254, upload-time = "2026-07-04T15:31:22.699Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/40/e1e72872c6354b306daef1703549e8e83b4d43cfea356311bf722a043752/setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3", size = 1008090, upload-time = "2026-07-04T15:31:20.885Z" },
+]
+
+[[package]]
+name = "signxml"
+version = "5.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "cryptography" },
+    { name = "lxml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/48/82fb75feed6fd29af5cc26ff6b8d05845c7e4620a13c18e4c9c0f7940d09/signxml-5.1.0.tar.gz", hash = "sha256:9b5fb208b59e843a87f36fd9fc3c8ccbb46e11b1ffab037d4b177ece33b5fd18", size = 1623299, upload-time = "2026-07-05T02:03:03.41Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/50/20/16b2e170786aa6140344d3aac887fbd266717421ab4a79c0020df0e19726/signxml-5.1.0-py3-none-any.whl", hash = "sha256:f9d815164e35c8451295fc532d5292d2b10202a85a845c17c802fb15da8783c6", size = 62628, upload-time = "2026-07-05T02:03:01.556Z" },
 ]
 
 [[package]]

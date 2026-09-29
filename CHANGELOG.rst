@@ -14,6 +14,24 @@ Change Log
 Unreleased
 **********
 
+0.1.72 – 2026-09-25
+*******************
+
+* feat: extend ``SAPSuccessFactorsEnterpriseCustomerConfiguration`` with an ``auth_type`` field
+  (``sap_signed_assertion`` / ``self_signed_assertion``, defaulting to ``sap_signed_assertion``),
+  encrypted-at-rest ``decrypted_private_key`` and ``decrypted_private_key_passphrase`` fields used
+  to self-sign SAML bearer assertions, and a configurable ``saml_assertion_audience``; adds
+  ``oauth_token_api_path`` to ``SAPSuccessFactorsGlobalConfiguration``; in preparation for
+  discontinuing use of the SAP OAuth IdP API. Self-signed assertion support is still under
+  development and is not yet used to authenticate any transmissions.
+
+0.1.71 – 2026-09-15
+*******************
+
+* feat: Add a standalone SAML 2.0 XML-DSig assertion generator
+  (``channel_integrations.sap_success_factors.saml.generate_saml_assertion``) for SAP
+  SuccessFactors OAuth assertion-based authentication.
+
 0.1.70 – 2026-09-03
 *******************
 
