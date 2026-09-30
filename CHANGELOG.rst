@@ -14,6 +14,18 @@ Change Log
 Unreleased
 **********
 
+0.1.76 – 2026-10-05
+*******************
+
+* feat(sap): authenticate self-signed configs with a SAML bearer assertion (ENT-12305)
+
+  * SAP SuccessFactors configs with ``auth_type`` ``self_signed_assertion``
+    now get access tokens by exchanging a locally signed SAML bearer
+    assertion at ``oauth_token_api_path``. For both auth types, a malformed
+    token response now fails with a 502 instead of counting as a success.
+    The client session also refreshes its token before it expires, to avoid
+    requests failing because their token expired in flight.
+
 0.1.75 – 2026-10-05
 *******************
 
