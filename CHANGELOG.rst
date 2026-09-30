@@ -14,6 +14,17 @@ Change Log
 Unreleased
 **********
 
+0.1.76 – 2026-10-02
+*******************
+
+* feat: SAP SuccessFactors configurations with ``auth_type`` ``self_signed_assertion`` now
+  authenticate with a SAML bearer assertion signed locally with the configured private key and
+  exchanged at ``oauth_token_api_path``, instead of the SAP IdP client-credentials flow. The
+  assertion is redacted before the request is stored in the API log. SAP-signed configurations are
+  unchanged, apart from the shared session now being refreshed shortly before its token expires. The
+  admin "Has Access Token?" check follows the same auth path, so it no longer reports failure for
+  self-signed configurations.
+
 0.1.74 – 2026-10-01
 *******************
 
