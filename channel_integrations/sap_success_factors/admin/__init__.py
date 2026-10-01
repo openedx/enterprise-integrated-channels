@@ -107,21 +107,27 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
         """
         Confirms the presence and validity of the access token for the SAP SuccessFactors client instance
 
-        Returns: a bool value indicating the presence of the access token
+        Returns: True/False once a token request has been attempted, or None for an unsaved obj
+            (e.g. the admin Add form) -- there's no config id yet to log the request against.
 
         Args:
             obj: The instance of SAPSuccessFactorsEnterpriseCustomerConfiguration
                 being rendered with this admin form.
         """
+        if obj.pk is None:
+            return None
+        # Request the token the same way _create_session() does, so this reflects whether
+        # transmissions can authenticate.
+        client = SAPSuccessFactorsAPIClient(obj)
         try:
-            access_token, expires_at = SAPSuccessFactorsAPIClient.get_oauth_access_token(
-                obj.sapsf_base_url,
-                obj.decrypted_key,
-                obj.decrypted_secret,
-                obj.sapsf_company_id,
-                obj.sapsf_user_id,
-                obj.user_type,
-                obj.enterprise_customer.uuid
+            access_token, expires_at = client.get_oauth_access_token(
+                client_id=obj.decrypted_key,
+                client_secret=obj.decrypted_secret,
+                company_id=obj.sapsf_company_id,
+                user_id=obj.sapsf_user_id,
+                user_type=obj.user_type,
+                customer_uuid=obj.enterprise_customer.uuid,
+                timeout=client.SESSION_TIMEOUT,
             )
         except (RequestException, ClientError):
             return False

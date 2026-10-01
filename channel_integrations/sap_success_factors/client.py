@@ -56,7 +56,9 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             "channel_integration", "IntegratedChannelAPIRequestLogs"
         )
 
-    def get_oauth_access_token(self, client_id, client_secret, company_id, user_id, user_type, customer_uuid):
+    def get_oauth_access_token(
+        self, client_id, client_secret, company_id, user_id, user_type, customer_uuid, timeout=None,
+    ):
         """
         Retrieves OAuth 2.0 access token using the client credentials grant.
 
@@ -67,6 +69,7 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             user_id (str): SAP user ID
             user_type (str): type of SAP user (admin or user)
             customer_uuid (str): Enterprise Customer UUID
+            timeout (float): seconds to wait for SAP to respond; ``None`` waits indefinitely.
 
         Returns:
             tuple: Tuple containing access token string and expiration datetime.
@@ -100,7 +103,8 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             complete_url,
             json=serialized_data,
             auth=(client_id, client_secret),
-            headers={'content-type': CONTENT_TYPE_APP_JSON}
+            headers={'content-type': CONTENT_TYPE_APP_JSON},
+            timeout=timeout,
         )
         duration_seconds = time.time() - start_time
         stringify_and_store_api_record(
