@@ -5,6 +5,7 @@ import datetime
 import unittest
 from unittest import mock
 
+import ddt
 import pytz
 from pytest import mark
 
@@ -303,3 +304,98 @@ class TestIntegratedChannelAPIRequestLogs(unittest.TestCase, EnterpriseMockMixin
             status_code=self.status_code
         )
         assert expected_string == repr(request_log)
+
+
+@mark.django_db
+@ddt.ddt
+class TestIsReadyToTransmitHook(unittest.TestCase):
+    """
+    Tests that the transmission entry points consult ``is_ready_to_transmit`` before doing any work.
+    """
+
+    def setUp(self):
+        self.config = factories.Degreed2EnterpriseCustomerConfigurationFactory()
+        self.user = factories.UserFactory()
+        super().setUp()
+
+    def test_default_hook_lets_an_incomplete_configuration_transmit(self):
+        """
+        A channel that does not override the hook keeps transmitting, whatever ``is_valid`` reports.
+        """
+        self.config.decrypted_client_id = ''
+        missing, _ = self.config.is_valid
+        assert 'decrypted_client_id' in missing['missing']
+        assert self.config.is_ready_to_transmit('transmit_content_metadata') is True
+
+        with mock.patch.object(self.config, 'get_content_metadata_exporter') as exporter, \
+                mock.patch.object(self.config, 'get_content_metadata_transmitter') as transmitter:
+            self.config.transmit_content_metadata(self.user)
+
+        exporter.assert_called_once_with(self.user)
+        transmitter.assert_called_once()
+
+    @ddt.data(
+        {
+            'entry_point': 'transmit_content_metadata',
+            'takes_user': True,
+            'exporter_getter': 'get_content_metadata_exporter',
+            'record_attempt': 'update_content_synced_at',
+        },
+        {
+            'entry_point': 'transmit_learner_data',
+            'takes_user': True,
+            'exporter_getter': 'get_learner_data_exporter',
+            'record_attempt': 'update_learner_synced_at',
+        },
+        {
+            'entry_point': 'transmit_single_learner_data',
+            'takes_user': False,
+            'exporter_getter': 'get_learner_data_exporter',
+            'record_attempt': 'update_learner_synced_at',
+        },
+        {
+            'entry_point': 'transmit_subsection_learner_data',
+            'takes_user': True,
+            'exporter_getter': 'get_learner_data_exporter',
+            'record_attempt': 'update_learner_synced_at',
+        },
+        {
+            'entry_point': 'transmit_single_subsection_learner_data',
+            'takes_user': False,
+            'exporter_getter': 'get_learner_data_exporter',
+            'record_attempt': 'update_learner_synced_at',
+        },
+        # Deduplication is not a sync cycle, so a blocked run has no sync timestamps to record.
+        {
+            'entry_point': 'cleanup_duplicate_assignment_records',
+            'takes_user': True,
+            'exporter_getter': 'get_learner_data_exporter',
+            'record_attempt': None,
+        },
+    )
+    @ddt.unpack
+    def test_entry_point_is_gated_by_the_hook(self, entry_point, takes_user, exporter_getter, record_attempt):
+        """
+        An entry point exports when the hook allows it, and when the hook refuses, stops before exporting
+        and records the blocked run itself (when the entry point is a sync cycle).
+        """
+        args = (self.user,) if takes_user else ()
+
+        for ready in (True, False):
+            with self.subTest(ready=ready), \
+                    mock.patch.object(self.config, 'is_ready_to_transmit', return_value=ready) as hook, \
+                    mock.patch.object(self.config, exporter_getter) as exporter, \
+                    mock.patch.object(self.config, 'get_content_metadata_transmitter'), \
+                    mock.patch.object(self.config, 'get_learner_data_transmitter'), \
+                    mock.patch.object(self.config, 'update_content_synced_at') as update_content_synced_at, \
+                    mock.patch.object(self.config, 'update_learner_synced_at') as update_learner_synced_at:
+                getattr(self.config, entry_point)(*args)
+
+                assert hook.call_args.args == (entry_point,)
+                assert exporter.called is ready
+
+                if record_attempt is None or ready:
+                    update_content_synced_at.assert_not_called()
+                    update_learner_synced_at.assert_not_called()
+                else:
+                    getattr(self.config, record_attempt).assert_called_once_with(mock.ANY, False)

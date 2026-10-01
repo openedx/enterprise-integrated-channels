@@ -14,6 +14,14 @@ Change Log
 Unreleased
 **********
 
+0.1.73 – 2026-10-01
+*******************
+
+* feat: Skip SAP syncs on invalid config (ENT-12302)
+
+  * When a SAP customer has an invalid config (i.e. does not pass basic
+    local-only `is_valid()` check), skip actually attempting to send data.
+
 0.1.72 – 2026-09-25
 *******************
 

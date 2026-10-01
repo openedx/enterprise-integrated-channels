@@ -3,19 +3,21 @@ Tests for the `channel_integrations.sap_success_factors.models` models module.
 """
 
 import unittest
+from unittest import mock
 
 import ddt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from django.db import connection
 from edx_django_utils.cache import TieredCache
+from enterprise.utils import localized_utcnow
 from pytest import mark
 
 from channel_integrations.sap_success_factors.models import (
     SAPAuthType,
     SAPSuccessFactorsEnterpriseCustomerConfiguration,
 )
-from test_utils.factories import EnterpriseCustomerFactory, SAPSuccessFactorsGlobalConfigurationFactory
+from test_utils.factories import EnterpriseCustomerFactory, SAPSuccessFactorsGlobalConfigurationFactory, UserFactory
 
 PASSPHRASE = 'a-passphrase'
 
@@ -289,3 +291,148 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
 
         _, incorrect = self.config.is_valid
         assert not incorrect['incorrect']
+
+    def test_is_ready_to_transmit_with_a_complete_configuration(self):
+        """
+        A complete configuration proceeds without logging.
+        """
+        with mock.patch('channel_integrations.sap_success_factors.models.LOGGER') as logger:
+            assert self.config.is_ready_to_transmit('transmit_content_metadata') is True
+
+        logger.warning.assert_not_called()
+
+    def test_is_ready_to_transmit_ignores_an_overlong_display_name(self):
+        """
+        ``display_name`` is cosmetic, so reporting it must not take a working integration offline.
+        """
+        self.config.display_name = 'a-display-name-well-over-twenty-characters'
+
+        _, incorrect = self.config.is_valid
+        assert incorrect['incorrect'] == ['display_name']
+        assert self.config.is_ready_to_transmit('transmit_content_metadata') is True
+
+    def test_is_ready_to_transmit_passes_self_signed_assertion_with_secret(self):
+        """
+        A complete self-signed configuration, client secret included, proceeds.
+        """
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+
+        assert self.config.is_ready_to_transmit('transmit_content_metadata') is True
+
+    @ddt.data(
+        {'changes': {'decrypted_key': ''}, 'expected_problems': 'missing: key'},
+        {'changes': {'decrypted_secret': ''}, 'expected_problems': 'missing: secret'},
+        {'changes': {'sapsf_base_url': 'not a url at all'}, 'expected_problems': 'invalid: sapsf_base_url'},
+        {
+            'changes': {'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'decrypted_private_key': 'not a key'},
+            'expected_problems': 'invalid: private_key',
+        },
+        {
+            'changes': {
+                'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION,
+                'decrypted_private_key': 'not a key',
+                'saml_assertion_audience': '',
+            },
+            'expected_problems': 'missing: saml_assertion_audience; invalid: private_key',
+        },
+    )
+    @ddt.unpack
+    def test_is_ready_to_transmit_blocks_an_unusable_configuration(self, changes, expected_problems):
+        """
+        Any missing or invalid field other than ``display_name`` blocks the run, and is logged with
+        missing and invalid fields kept apart.
+        """
+        for field_name, value in changes.items():
+            setattr(self.config, field_name, value)
+
+        with mock.patch('channel_integrations.sap_success_factors.models.LOGGER') as logger:
+            assert self.config.is_ready_to_transmit('transmit_content_metadata') is False
+
+        logged_message = logger.warning.call_args.args[0]
+        assert 'transmit_content_metadata aborted' in logged_message
+        assert f'({expected_problems})' in logged_message
+
+    @ddt.data(
+        {
+            'entry_point': 'transmit_content_metadata',
+            'exporter_getter': 'get_content_metadata_exporter',
+            'errored_field': 'last_content_sync_errored_at',
+            'untouched_field': 'last_learner_sync_errored_at',
+        },
+        {
+            'entry_point': 'transmit_learner_data',
+            'exporter_getter': 'get_learner_data_exporter',
+            'errored_field': 'last_learner_sync_errored_at',
+            'untouched_field': 'last_content_sync_errored_at',
+        },
+    )
+    @ddt.unpack
+    def test_blocked_sync_is_recorded_as_errored(self, entry_point, exporter_getter, errored_field, untouched_field):
+        """
+        A blocked sync shows as erroring now, rather than as a stale timestamp from its last real run.
+        """
+        self.config.decrypted_secret = ''
+        before = localized_utcnow()
+
+        with mock.patch.object(self.config, exporter_getter) as exporter:
+            getattr(self.config, entry_point)(UserFactory())
+
+        exporter.assert_not_called()
+        self.config.refresh_from_db()
+        assert self.config.last_sync_attempted_at >= before
+        assert getattr(self.config, errored_field) >= before
+        assert getattr(self.config, untouched_field) is None
+
+    @ddt.data(
+        {
+            'toggle': 'disable_learner_data_transmissions',
+            'entry_point': 'transmit_learner_data',
+            'exporter_getter': 'get_learner_data_exporter',
+            'errored_field': 'last_learner_sync_errored_at',
+        },
+        {
+            'toggle': 'dry_run_mode_enabled',
+            'entry_point': 'transmit_content_metadata',
+            'exporter_getter': 'get_content_metadata_exporter',
+            'errored_field': 'last_content_sync_errored_at',
+        },
+    )
+    @ddt.unpack
+    def test_gate_runs_ahead_of_transmitter_toggles(self, toggle, entry_point, exporter_getter, errored_field):
+        """
+        Both toggles are honoured inside the transmitters, so an unusable configuration is blocked and
+        recorded as errored even when one of them is set.
+        """
+        setattr(self.config, toggle, True)
+        self.config.decrypted_secret = ''
+
+        with mock.patch.object(self.config, exporter_getter) as exporter:
+            getattr(self.config, entry_point)(UserFactory())
+
+        exporter.assert_not_called()
+        self.config.refresh_from_db()
+        assert getattr(self.config, errored_field) is not None
+
+    def test_unlink_inactive_learners_runs_with_a_complete_configuration(self):
+        """
+        A complete configuration still unlinks inactive learners.
+        """
+        with mock.patch.object(self.config, 'get_learner_manger') as learner_manager:
+            self.config.unlink_inactive_learners()
+
+        learner_manager.return_value.unlink_learners.assert_called_once_with()
+
+    def test_unlink_inactive_learners_is_gated(self):
+        """
+        Unlinking queries SAP, so an unusable configuration does no work, and leaves the sync timestamps
+        alone because unlinking is not a sync cycle.
+        """
+        self.config.decrypted_secret = ''
+
+        with mock.patch.object(self.config, 'get_learner_manger') as learner_manager:
+            self.config.unlink_inactive_learners()
+
+        learner_manager.assert_not_called()
+        self.config.refresh_from_db()
+        assert self.config.last_sync_attempted_at is None
