@@ -401,10 +401,27 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         return ContentMetadataTransmitter(self)
 
+    def is_ready_to_transmit(self, task_name: str) -> bool:  # pylint: disable=unused-argument
+        """
+        Hook for a channel to refuse a transmission before any request leaves the worker.
+
+        Passes everything through, so channels keep their existing behaviour until they override it.
+
+        Args:
+            task_name: name of the calling method, for the override's log line.
+
+        Returns:
+            bool: whether the caller should proceed.
+        """
+        return True
+
     def transmit_learner_data(self, user, **kwargs):
         """
         Iterate over each learner data record and transmit it to the integrated channel.
         """
+        if not self.is_ready_to_transmit('transmit_learner_data'):
+            self.update_learner_synced_at(localized_utcnow(), False)
+            return
         exporter = self.get_learner_data_exporter(user)
         transmitter = self.get_learner_data_transmitter()
         transmitter.transmit(exporter, **kwargs)
@@ -413,6 +430,9 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         Iterate over single learner data record and transmit it to the integrated channel.
         """
+        if not self.is_ready_to_transmit('transmit_single_learner_data'):
+            self.update_learner_synced_at(localized_utcnow(), False)
+            return
         exporter = self.get_learner_data_exporter(self.channel_worker_user)
         transmitter = self.get_learner_data_transmitter()
         transmitter.transmit(exporter, **kwargs)
@@ -421,6 +441,9 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         Transmit content metadata to integrated channel.
         """
+        if not self.is_ready_to_transmit('transmit_content_metadata'):
+            self.update_content_synced_at(localized_utcnow(), False)
+            return
         exporter = self.get_content_metadata_exporter(user)
         transmitter = self.get_content_metadata_transmitter()
         transmitter.transmit(*exporter.export())
@@ -429,6 +452,9 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         Transmit a single subsection learner data record to the integrated channel.
         """
+        if not self.is_ready_to_transmit('transmit_single_subsection_learner_data'):
+            self.update_learner_synced_at(localized_utcnow(), False)
+            return
         exporter = self.get_learner_data_exporter(self.channel_worker_user)
         transmitter = self.get_learner_data_transmitter()
         transmitter.single_learner_assessment_grade_transmit(exporter, **kwargs)
@@ -437,6 +463,9 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         Iterate over each assessment learner data record and transmit them to the integrated channel.
         """
+        if not self.is_ready_to_transmit('transmit_subsection_learner_data'):
+            self.update_learner_synced_at(localized_utcnow(), False)
+            return
         exporter = self.get_learner_data_exporter(user)
         transmitter = self.get_learner_data_transmitter()
         transmitter.assessment_level_transmit(exporter)
@@ -445,6 +474,8 @@ class EnterpriseCustomerPluginConfiguration(SoftDeletionModel):
         """
         Remove duplicated assessments transmitted through the integrated channel.
         """
+        if not self.is_ready_to_transmit('cleanup_duplicate_assignment_records'):
+            return
         exporter = self.get_learner_data_exporter(user)
         transmitter = self.get_learner_data_transmitter()
         transmitter.deduplicate_assignment_records_transmit(exporter)
