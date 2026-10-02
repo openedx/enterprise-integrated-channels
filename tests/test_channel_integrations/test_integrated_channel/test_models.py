@@ -2,6 +2,7 @@
 Tests for the integrated channel models.
 """
 import datetime
+import json
 import unittest
 from unittest import mock
 
@@ -304,6 +305,40 @@ class TestIntegratedChannelAPIRequestLogs(unittest.TestCase, EnterpriseMockMixin
             status_code=self.status_code
         )
         assert expected_string == repr(request_log)
+
+    def test_persisted_records_redact_credentials(self):
+        """
+        API logs, API response records and learner audits never store private keys, assertions or tokens.
+        """
+        private_key = '-----BEGIN PRIVATE KEY-----\nsynthetic-private-key\n-----END PRIVATE KEY-----'
+        assertion = '<saml:Assertion ID="_test">synthetic-saml-assertion</saml:Assertion>'
+        payload = json.dumps({
+            'private_key': private_key,
+            'assertion': assertion,
+            'headers': {'Authorization': 'Bearer synthetic-auth-token'},
+        })
+        text = f'private_key=synthetic-private-key Authorization: Bearer synthetic-auth-token {assertion}'
+
+        IntegratedChannelAPIRequestLogs.store_api_call(
+            enterprise_customer=self.enterprise_customer,
+            enterprise_customer_configuration_id=self.enterprise_customer_configuration_id,
+            endpoint=self.endpoint,
+            payload=payload,
+            time_taken=self.time_taken,
+            status_code=self.status_code,
+            response_body=text,
+            channel_name='SAP',
+        )
+        log = IntegratedChannelAPIRequestLogs.objects.latest('id')
+        record = ApiResponseRecord.objects.create(status_code=401, body=text)
+        audit = factories.GenericLearnerDataTransmissionAuditFactory(error_message=text)
+
+        for stored_object in (log, record, audit):
+            stored_object.refresh_from_db()
+        for stored in (log.payload, log.response_body, record.body, audit.error_message):
+            assert '[REDACTED]' in stored
+            for secret in ('synthetic-private-key', 'synthetic-saml-assertion', 'synthetic-auth-token'):
+                assert secret not in stored
 
 
 @mark.django_db

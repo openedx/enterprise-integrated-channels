@@ -27,7 +27,11 @@ from django.utils.translation import gettext_lazy as _
 from enterprise.utils import parse_datetime_handle_invalid, parse_lms_api_datetime
 
 from channel_integrations.catalog_service_utils import get_course_run_for_enrollment
-from channel_integrations.integrated_channel.structured_logging import StructuredLogMessage, is_json_logging_enabled
+from channel_integrations.integrated_channel.structured_logging import (
+    StructuredLogMessage,
+    is_json_logging_enabled,
+    redact_credentials,
+)
 
 UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=pytz.UTC)
 UNIX_MIN_DATE_STRING = '1970-01-01T00:00:00Z'
@@ -326,7 +330,7 @@ def generate_formatted_log(
         f'integrated_channel_enterprise_customer_uuid={enterprise_customer_uuid}, '\
         f'integrated_channel_lms_user={lms_user_id}, '\
         f'integrated_channel_course_key={course_or_course_run_key}, '\
-        f'integrated_channel_plugin_configuration_id={plugin_configuration_id}, {message}'
+        f'integrated_channel_plugin_configuration_id={plugin_configuration_id}, {redact_credentials(message)}'
 
 
 def log_exception(enterprise_configuration, msg, course_or_course_run_key=None):
@@ -644,7 +648,6 @@ def stringify_and_store_api_record(
                     f"enterprise_customer={enterprise_customer}"
                     f"enterprise_customer_configuration_id={enterprise_customer_configuration_id}"
                     f"channel name={channel_name}"
-                    f"data={data}"
                 )
         # Store stringified data in the database
         try:
@@ -664,6 +667,5 @@ def stringify_and_store_api_record(
                 f"enterprise_customer={enterprise_customer}"
                 f"enterprise_customer_configuration_id={enterprise_customer_configuration_id}"
                 f"channel name={channel_name}"
-                f"data={data}"
             )
     return data
