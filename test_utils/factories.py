@@ -11,6 +11,8 @@ from django.contrib.sites.models import Site
 
 import factory
 from faker import Factory as FakerFactory
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from oauth2_provider.models import get_application_model
 
 from consent.models import DataSharingConsent
@@ -48,6 +50,7 @@ from channel_integrations.integrated_channel.models import (
 )
 from channel_integrations.moodle.models import MoodleEnterpriseCustomerConfiguration
 from channel_integrations.sap_success_factors.models import (
+    SAPAuthType,
     SAPSuccessFactorsEnterpriseCustomerConfiguration,
     SAPSuccessFactorsGlobalConfiguration,
     SapSuccessFactorsLearnerDataTransmissionAudit,
@@ -57,6 +60,16 @@ from channel_integrations.xapi.models import XAPILearnerDataTransmissionAudit, X
 FAKER = FakerFactory.create()
 User = auth.get_user_model()
 Application = get_application_model()
+
+
+def _generate_test_private_key_pem():
+    """Generate a disposable RSA key for self-signed SAP configuration factories."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    return key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode('utf-8')
 
 
 # pylint: disable=no-member
@@ -396,6 +409,17 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationFactory(GenericEnterpriseC
         """
 
         model = SAPSuccessFactorsEnterpriseCustomerConfiguration
+
+    class Params:
+        self_signed = factory.Trait(
+            auth_type=SAPAuthType.SELF_SIGNED_ASSERTION,
+            decrypted_key='synthetic-self-signed-client-id',
+            decrypted_secret='',
+            decrypted_private_key=factory.LazyFunction(_generate_test_private_key_pem),
+            decrypted_private_key_passphrase='',
+            saml_assertion_audience='www.successfactors.com',
+            sapsf_base_url='https://sap.example.test/',
+        )
 
     sapsf_base_url = factory.LazyAttribute(lambda x: FAKER.url())
     sapsf_company_id = factory.LazyAttribute(lambda x: FAKER.company())

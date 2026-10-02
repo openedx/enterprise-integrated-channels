@@ -32,6 +32,21 @@ ENROLLMENT_ID_PATTERN = re.compile(r'integrated_channel_enterprise_enrollment_id
 REMOTE_USER_ID_PATTERN = re.compile(r'integrated_channel_remote_user_id=([^,\s]+)')
 ERROR_STATUS_PATTERN = re.compile(r'Error status code:\s*(\d+)')
 ERROR_MESSAGE_PATTERN = re.compile(r'Error message:\s*(.*?)(?:\s+Error status code:|$)')
+PRIVATE_KEY_PEM_PATTERN = re.compile(
+    r'-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?-----END [A-Z0-9 ]*PRIVATE KEY-----', re.DOTALL
+)
+SAML_ASSERTION_XML_PATTERN = re.compile(
+    r'<(?:[\w.-]+:)?Assertion\b[^>]*>.*?</(?:[\w.-]+:)?Assertion\s*>', re.IGNORECASE | re.DOTALL
+)
+AUTHORIZATION_VALUE_PATTERN = re.compile(
+    r'(authorization\s*[:=]\s*)(?:bearer|basic)\s+[^\s,;"}]+', re.IGNORECASE
+)
+SENSITIVE_ASSIGNMENT_PATTERN = re.compile(
+    r'(["\']?(?:authorization|(?:decrypted[_-]?)?private[_-]?key(?:[_-]?passphrase)?|'
+    r'saml[_-]?assertion|assertion|access[_-]?token|refresh[_-]?token|bearer[_-]?token)["\']?\s*[:=]\s*)'
+    r'("(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[^,\s&}\]]+)',
+    re.IGNORECASE,
+)
 
 AUTHENTICATION_PATTERNS = (
     'authentication',
@@ -279,11 +294,52 @@ def extract_message_fields(message):
 
 def sanitize_message(message):
     """
-    Remove raw serialized payloads from the human-readable log message.
+    Remove raw payloads and credential material from integrated-channel logs.
     """
     if message is None:
         return None
-    return PAYLOAD_PATTERN.sub('integrated_channel_serialized_payload_base64=<omitted>', str(message))
+    message = str(message)
+    try:
+        parsed = json.loads(message)
+    except (TypeError, ValueError):
+        parsed = None
+    if parsed is not None:
+        sanitized = _sanitize_log_value(parsed)
+        if sanitized != parsed:
+            message = json.dumps(sanitized)
+        return PAYLOAD_PATTERN.sub(
+            'integrated_channel_serialized_payload_base64=<omitted>', message
+        )
+
+    message = PRIVATE_KEY_PEM_PATTERN.sub('[REDACTED]', message)
+    message = SAML_ASSERTION_XML_PATTERN.sub('[REDACTED]', message)
+    message = AUTHORIZATION_VALUE_PATTERN.sub(r'\1[REDACTED]', message)
+    message = SENSITIVE_ASSIGNMENT_PATTERN.sub(r'\1[REDACTED]', message)
+    return PAYLOAD_PATTERN.sub('integrated_channel_serialized_payload_base64=<omitted>', message)
+
+
+def _sanitize_log_value(value):
+    """Recursively redact sensitive JSON values before an API body is logged."""
+    if isinstance(value, dict):
+        sanitized = {}
+        for key, item in value.items():
+            normalized_key = re.sub(r'[^a-z0-9]', '', str(key).lower())
+            if (
+                'authorization' in normalized_key
+                or 'privatekey' in normalized_key
+                or normalized_key.endswith('assertion')
+                or 'serializedpayloadbase64' in normalized_key
+                or normalized_key in {'accesstoken', 'refreshtoken', 'bearertoken'}
+            ):
+                sanitized[key] = '[REDACTED]'
+            else:
+                sanitized[key] = _sanitize_log_value(item)
+        return sanitized
+    if isinstance(value, list):
+        return [_sanitize_log_value(item) for item in value]
+    if isinstance(value, str):
+        return sanitize_message(value)
+    return value
 
 
 class StructuredLogMessage:
@@ -311,11 +367,14 @@ class StructuredLogMessage:
         """
         Return the existing flat key/value log format.
         """
-        return f'integrated_channel={self.channel_name}, ' \
-            f'integrated_channel_enterprise_customer_uuid={self.enterprise_customer_uuid}, ' \
-            f'integrated_channel_lms_user={self.lms_user_id}, ' \
-            f'integrated_channel_course_key={self.course_or_course_run_key}, ' \
-            f'integrated_channel_plugin_configuration_id={self.plugin_configuration_id}, {self.message}'
+        return (
+            f'integrated_channel={self.channel_name}, '
+            f'integrated_channel_enterprise_customer_uuid={self.enterprise_customer_uuid}, '
+            f'integrated_channel_lms_user={self.lms_user_id}, '
+            f'integrated_channel_course_key={self.course_or_course_run_key}, '
+            f'integrated_channel_plugin_configuration_id={self.plugin_configuration_id}, '
+            f'{sanitize_message(self.message)}'
+        )
 
     def structured_fields(self):
         """
@@ -353,7 +412,7 @@ class JsonChannelFormatter(logging.Formatter):
 
     def format(self, record):
         if not is_json_logging_enabled():
-            return super().format(record)
+            return sanitize_message(super().format(record))
 
         return json.dumps(build_datadog_log_record(record), sort_keys=True)
 
@@ -405,6 +464,9 @@ def build_datadog_log_record(record):
         'logger.name': record.name,
     }
     log_record.update(fields)
+    for key, value in tuple(log_record.items()):
+        if isinstance(value, str):
+            log_record[key] = sanitize_message(value)
     return log_record
 
 

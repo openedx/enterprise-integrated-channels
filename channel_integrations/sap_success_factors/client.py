@@ -2,12 +2,13 @@
 Client for connecting to SAP SuccessFactors.
 """
 
+import base64
 import datetime
 import json
 import logging
 import time
 from http import HTTPStatus
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 from django.apps import apps
@@ -16,6 +17,7 @@ from requests.exceptions import ConnectionError, Timeout  # pylint: disable=rede
 
 from channel_integrations.exceptions import ClientError
 from channel_integrations.integrated_channel.client import IntegratedChannelApiClient
+from channel_integrations.sap_success_factors.saml import SAMLAssertionGenerationError, generate_saml_assertion
 from channel_integrations.utils import generate_formatted_log, stringify_and_store_api_record
 
 LOGGER = logging.getLogger(__name__)
@@ -77,9 +79,6 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             HTTPError: If we received a failure response code from SAP SuccessFactors.
             ClientError: If an unexpected response format was received that we could not parse.
         """
-        # TODO(ENT-12305): for self-signed assertion auth, build the assertion with
-        # channel_integrations.sap_success_factors.saml.generate_saml_assertion instead of
-        # requesting one from SAP's IdP endpoint.
         SAPSuccessFactorsGlobalConfiguration = apps.get_model(
             'sap_success_factors_channel',
             'SAPSuccessFactorsGlobalConfiguration'
@@ -135,6 +134,97 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             )
             raise ClientError(response, response.status_code) from error
 
+    def get_saml_bearer_access_token(self, user_id):
+        """Exchange a locally signed SAML assertion for a SAP bearer token."""
+        token_path = (self.global_sap_config.oauth_token_api_path or '').strip()
+        parsed_path = urlparse(token_path)
+        base_url = self.enterprise_configuration.sapsf_base_url
+        token_url = urljoin(base_url, token_path)
+        parsed_base = urlparse(base_url)
+        parsed_token_url = urlparse(token_url)
+        if (
+            not parsed_path.path
+            or parsed_path.scheme
+            or parsed_path.netloc
+            or parsed_path.query
+            or parsed_path.fragment
+            or parsed_token_url.scheme != 'https'
+            or parsed_token_url.netloc != parsed_base.netloc
+        ):
+            raise ClientError(
+                'SAP OAuth token path must be relative to the HTTPS SAP base URL.',
+                HTTPStatus.INTERNAL_SERVER_ERROR.value,
+            )
+
+        try:
+            assertion = generate_saml_assertion(
+                client_id=self.enterprise_configuration.decrypted_key,
+                user_id=str(user_id),
+                audience=self.enterprise_configuration.saml_assertion_audience,
+                token_url=token_url,
+                private_key_pem=self.enterprise_configuration.decrypted_private_key,
+                private_key_passphrase=self.enterprise_configuration.decrypted_private_key_passphrase,
+            )
+        except SAMLAssertionGenerationError as error:
+            raise ClientError(str(error), HTTPStatus.INTERNAL_SERVER_ERROR.value) from error
+
+        token_data = {
+            'client_id': self.enterprise_configuration.decrypted_key,
+            'company_id': self.enterprise_configuration.sapsf_company_id,
+            'grant_type': 'urn:ietf:params:oauth:grant-type:saml2-bearer',
+            'assertion': base64.b64encode(assertion.encode('utf-8')).decode('ascii'),
+        }
+        started_at = time.time()
+        response = requests.post(
+            token_url,
+            data=token_data,
+            timeout=self.SESSION_TIMEOUT,
+            allow_redirects=False,
+        )
+        stringify_and_store_api_record(
+            enterprise_customer=self.enterprise_configuration.enterprise_customer,
+            enterprise_customer_configuration_id=self.enterprise_configuration.id,
+            endpoint=token_url,
+            data=token_data,
+            time_taken=time.time() - started_at,
+            status_code=response.status_code,
+            response_body=response.text,
+            channel_name=self.enterprise_configuration.channel_code(),
+        )
+        if not 200 <= response.status_code < 300:
+            raise ClientError(response, response.status_code)
+
+        try:
+            data = response.json()
+            access_token = data['access_token']
+            expires_in = data['expires_in']
+            if (
+                not isinstance(access_token, str)
+                or not access_token.strip()
+                or isinstance(expires_in, bool)
+                or not isinstance(expires_in, (int, float))
+                or expires_in <= 0
+            ):
+                raise ValueError('Invalid token response fields.')
+            expires_at = datetime.datetime.utcfromtimestamp(expires_in + int(time.time()))
+            return access_token, expires_at
+        except (KeyError, TypeError, ValueError, OverflowError, OSError) as error:
+            raise ClientError(response, HTTPStatus.BAD_GATEWAY.value) from error
+
+    def get_access_token(self, user_id, user_type, timeout=None):
+        """Acquire a bearer token using the configured SAP authentication mode."""
+        if self.enterprise_configuration.uses_self_signed_assertion:
+            return self.get_saml_bearer_access_token(user_id)
+        return self.get_oauth_access_token(
+            self.enterprise_configuration.decrypted_key,
+            self.enterprise_configuration.decrypted_secret,
+            self.enterprise_configuration.sapsf_company_id,
+            user_id,
+            user_type,
+            self.enterprise_configuration.enterprise_customer.uuid,
+            timeout=timeout,
+        )
+
     def _create_session(self):
         """
         Instantiate a new session object for use in connecting with SAP SuccessFactors
@@ -145,13 +235,9 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
             if self.session:
                 self.session.close()
 
-            oauth_access_token, expires_at = self.get_oauth_access_token(
-                self.enterprise_configuration.decrypted_key,
-                self.enterprise_configuration.decrypted_secret,
-                self.enterprise_configuration.sapsf_company_id,
+            oauth_access_token, expires_at = self.get_access_token(
                 self.enterprise_configuration.sapsf_user_id,
                 self.enterprise_configuration.user_type,
-                self.enterprise_configuration.enterprise_customer.uuid
             )
             session = requests.Session()
             session.timeout = self.SESSION_TIMEOUT
@@ -305,17 +391,9 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
 
         Raises: ClientError if error status code >=400 from SAPSF
         """
-        SAPSuccessFactorsEnterpriseCustomerConfiguration = apps.get_model(
-            'sap_success_factors_channel',
-            'SAPSuccessFactorsEnterpriseCustomerConfiguration'
-        )
-        oauth_access_token, _ = self.get_oauth_access_token(
-            self.enterprise_configuration.decrypted_key,
-            self.enterprise_configuration.decrypted_secret,
-            self.enterprise_configuration.sapsf_company_id,
+        oauth_access_token, _ = self.get_access_token(
             sap_user_id,
-            SAPSuccessFactorsEnterpriseCustomerConfiguration.USER_TYPE_USER,
-            self.enterprise_configuration.enterprise_customer.uuid
+            self.enterprise_configuration.USER_TYPE_USER,
         )
         start_time = time.time()
         response = requests.post(

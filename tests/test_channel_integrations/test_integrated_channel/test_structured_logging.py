@@ -175,6 +175,33 @@ class TestStructuredLogging(unittest.TestCase):
         assert categorize_error(message='OAuth token expired') == 'authentication'
         assert categorize_error(message='rate limit exceeded') == 'rate_limit'
 
+    def test_sanitize_message_redacts_credentials_and_saml_assertions(self):
+        private_key = '-----BEGIN PRIVATE KEY-----\nsynthetic-private-key\n-----END PRIVATE KEY-----'
+        assertion = '<saml:Assertion ID="_test">synthetic-saml-assertion</saml:Assertion>'
+        message = json.dumps({
+            'private_key': private_key,
+            'assertion': assertion,
+            'headers': {'Authorization': 'Bearer synthetic-auth-token'},
+            'access_token': 'synthetic-oauth-token',
+        })
+
+        sanitized = sanitize_message(message)
+
+        assert private_key not in sanitized
+        assert assertion not in sanitized
+        assert 'synthetic-private-key' not in sanitized
+        assert 'synthetic-saml-assertion' not in sanitized
+        assert 'synthetic-auth-token' not in sanitized
+        assert 'synthetic-oauth-token' not in sanitized
+
+        plain_message = sanitize_message(
+            f'Authorization: Bearer synthetic-auth-token private_key={private_key} {assertion}'
+        )
+        assert 'synthetic-auth-token' not in plain_message
+        assert 'synthetic-private-key' not in plain_message
+        assert 'synthetic-saml-assertion' not in plain_message
+        assert 'synthetic-oauth-token' not in sanitize_message('access_token=synthetic-oauth-token')
+
     def test_helper_edge_cases(self):
         raw_payload = {'b': 2, 'a': 1}
 

@@ -2,6 +2,7 @@
 Tests for the integrated channel models.
 """
 import datetime
+import json
 import unittest
 from unittest import mock
 
@@ -304,6 +305,51 @@ class TestIntegratedChannelAPIRequestLogs(unittest.TestCase, EnterpriseMockMixin
             status_code=self.status_code
         )
         assert expected_string == repr(request_log)
+
+    def test_store_api_call_redacts_sensitive_payload_and_response(self):
+        private_key = '-----BEGIN PRIVATE KEY-----\nsynthetic-private-key\n-----END PRIVATE KEY-----'
+        assertion = '<saml:Assertion ID="_test">synthetic-saml-assertion</saml:Assertion>'
+        payload = json.dumps({
+            'private_key': private_key,
+            'assertion': assertion,
+            'headers': {'Authorization': 'Bearer synthetic-auth-token'},
+        })
+        response_body = f'Authorization: Bearer response-auth-token {assertion}'
+
+        IntegratedChannelAPIRequestLogs.store_api_call(
+            enterprise_customer=self.enterprise_customer,
+            enterprise_customer_configuration_id=self.enterprise_customer_configuration_id,
+            endpoint=self.endpoint,
+            payload=payload,
+            time_taken=self.time_taken,
+            status_code=self.status_code,
+            response_body=response_body,
+            channel_name='SAP',
+        )
+
+        record = IntegratedChannelAPIRequestLogs.objects.latest('id')
+        for secret in (private_key, assertion, 'synthetic-auth-token', 'response-auth-token'):
+            assert secret not in record.payload
+            assert secret not in record.response_body
+
+    def test_api_response_record_redacts_sensitive_body(self):
+        body = (
+            'Authorization: Bearer synthetic-auth-token '
+            '<saml:Assertion ID="_test">synthetic-saml-assertion</saml:Assertion>'
+        )
+
+        record = ApiResponseRecord.objects.create(status_code=401, body=body)
+
+        assert 'synthetic-auth-token' not in record.body
+        assert 'synthetic-saml-assertion' not in record.body
+
+    def test_learner_audit_redacts_sensitive_error_message(self):
+        error_message = 'private_key=synthetic-private-key Authorization: Bearer synthetic-auth-token'
+
+        audit = factories.GenericLearnerDataTransmissionAuditFactory(error_message=error_message)
+
+        assert 'synthetic-private-key' not in audit.error_message
+        assert 'synthetic-auth-token' not in audit.error_message
 
 
 @mark.django_db

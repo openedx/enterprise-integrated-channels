@@ -550,7 +550,6 @@ def stringify_and_store_api_record(
                     f"enterprise_customer={enterprise_customer}"
                     f"enterprise_customer_configuration_id={enterprise_customer_configuration_id}"
                     f"channel name={channel_name}"
-                    f"data={data}"
                 )
         # Store stringified data in the database
         try:
@@ -570,6 +569,5 @@ def stringify_and_store_api_record(
                 f"enterprise_customer={enterprise_customer}"
                 f"enterprise_customer_configuration_id={enterprise_customer_configuration_id}"
                 f"channel name={channel_name}"
-                f"data={data}"
             )
     return data

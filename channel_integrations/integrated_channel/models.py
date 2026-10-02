@@ -24,6 +24,7 @@ from model_utils.models import TimeStampedModel
 
 from channel_integrations.integrated_channel.exporters.content_metadata import ContentMetadataExporter
 from channel_integrations.integrated_channel.exporters.learner_data import LearnerExporter
+from channel_integrations.integrated_channel.structured_logging import sanitize_message
 from channel_integrations.integrated_channel.transmitters.content_metadata import ContentMetadataTransmitter
 from channel_integrations.integrated_channel.transmitters.learner_data import LearnerTransmitter
 from channel_integrations.utils import channel_code_to_app_label, convert_comma_separated_string_to_list
@@ -531,6 +532,10 @@ class ApiResponseRecord(TimeStampedModel):
         null=True
     )
 
+    def save(self, *args, **kwargs):
+        self.body = sanitize_message(self.body)
+        return super().save(*args, **kwargs)
+
 
 class LearnerDataTransmissionAudit(TimeStampedModel):
     """
@@ -577,6 +582,10 @@ class LearnerDataTransmissionAudit(TimeStampedModel):
     class Meta:
         abstract = True
         app_label = 'channel_integration'
+
+    def save(self, *args, **kwargs):
+        self.error_message = sanitize_message(self.error_message)
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -1029,6 +1038,8 @@ class IntegratedChannelAPIRequestLogs(TimeStampedModel):
         """
         Creates new record in IntegratedChannelAPIRequestLogs table.
         """
+        payload = sanitize_message(payload)
+        response_body = sanitize_message(response_body)
         try:
             record = cls(
                 enterprise_customer=enterprise_customer,
