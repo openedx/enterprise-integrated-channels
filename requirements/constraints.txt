@@ -27,3 +27,10 @@ djangorestframework<3.18
 # supports pip up to 26.1), which breaks `make upgrade`. Remove this once a
 # newer pip-tools release restores pip 26.2+ compatibility.
 pip<26.2
+
+# filelock 4.0+ is incompatible with snowflake-connector-python's filelock<4 pin
+# (see requirements/base.in), which caused requirements/ci.txt (via tox/virtualenv,
+# uncapped) to diverge from requirements/quality.txt (via snowflake-connector-python,
+# capped <4) once both get pulled into dev.txt, breaking `make upgrade`. Remove once
+# snowflake-connector-python supports filelock>=4.
+filelock<4
