@@ -15,11 +15,15 @@ from urllib.parse import urlparse
 
 import pytz
 import requests
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.html import strip_tags
+from django.utils.translation import gettext_lazy as _
 from enterprise.utils import parse_datetime_handle_invalid, parse_lms_api_datetime
 
 from channel_integrations.catalog_service_utils import get_course_run_for_enrollment
@@ -425,6 +429,96 @@ def is_valid_url(url):
         return all([result.scheme, result.netloc])
     except ValueError:
         return False
+
+
+MIN_RSA_KEY_SIZE_BITS = 2048
+MAX_PRIVATE_KEY_PEM_LENGTH = 16384
+
+
+class NotAcceptableRSAKeyError(ValueError):
+    """A parsed key that isn't RSA, or is weaker than the minimum size -- distinct from a plain
+    ``ValueError`` (a PEM/passphrase parse failure) so callers can tell them apart."""
+
+
+def load_rsa_private_key(private_key, passphrase=None, skip_rsa_validation=False):
+    """
+    Parse ``private_key`` (PEM, ``str``) as an RSA private key, decrypting with ``passphrase`` if
+    given. Raises ``ValueError`` if unparseable, ``NotAcceptableRSAKeyError`` if not RSA or weak.
+
+    ``skip_rsa_validation`` skips cryptography's slower RSA consistency checks.
+    """
+    key = serialization.load_pem_private_key(
+        private_key.encode('utf-8'),
+        password=passphrase.encode('utf-8') if passphrase else None,
+        unsafe_skip_rsa_key_validation=skip_rsa_validation,
+    )
+    if not isinstance(key, rsa.RSAPrivateKey):
+        raise NotAcceptableRSAKeyError(_('Not an RSA private key.'))
+    if key.key_size < MIN_RSA_KEY_SIZE_BITS:
+        raise NotAcceptableRSAKeyError(_('RSA key must be at least %(bits)d bits.') % {'bits': MIN_RSA_KEY_SIZE_BITS})
+    return key
+
+
+def is_valid_pem_private_key(private_key, passphrase=None, skip_rsa_validation=False):
+    """
+    Whether ``private_key`` is a PEM-encoded RSA private key that ``passphrase`` (if any) unlocks.
+    Defaults to full validation; pass ``skip_rsa_validation=True`` for a high-frequency re-check
+    of an already-stored, already-validated key.
+    """
+    if not private_key:
+        return False
+    try:
+        load_rsa_private_key(private_key, passphrase, skip_rsa_validation=skip_rsa_validation)
+    except (ValueError, TypeError, UnsupportedAlgorithm):
+        # Deliberately not logging the exception: its message can echo key bytes.
+        return False
+    return True
+
+
+def describe_private_key_error(private_key, passphrase=None):
+    """
+    A human-facing reason ``private_key``/``passphrase`` don't produce a usable RSA key, assuming
+    ``is_valid_pem_private_key(private_key, passphrase)`` is already ``False``. Probes parse,
+    then encryption, then passphrase, so the final format/size check wins over a merely
+    unnecessary leftover passphrase.
+
+    Returns a ``(model_field, message)`` pair -- the field is ``"decrypted_private_key_passphrase"``
+    only when the passphrase itself is the problem -- so callers don't classify locale-dependent
+    message text.
+    """
+    try:
+        load_rsa_private_key(private_key, None, skip_rsa_validation=True)
+        is_encrypted = False
+    except TypeError:
+        is_encrypted = True
+    except NotAcceptableRSAKeyError:
+        is_encrypted = False
+    except (ValueError, UnsupportedAlgorithm):
+        # Never parsed, so nothing is known about encryption; don't guess.
+        return "decrypted_private_key", _("Must be a PEM-encoded RSA private key.")
+
+    if is_encrypted and not passphrase:
+        return "decrypted_private_key_passphrase", _("A passphrase is required to unlock this private key.")
+    if is_encrypted:
+        try:
+            # Raw parse, skipping RSA validation: isolates "wrong passphrase" from "key decrypts
+            # fine but is weak/non-RSA/corrupted", which the full check below still catches.
+            serialization.load_pem_private_key(
+                private_key.encode('utf-8'), password=passphrase.encode('utf-8'),
+                unsafe_skip_rsa_key_validation=True,
+            )
+        except (ValueError, TypeError, UnsupportedAlgorithm):
+            return "decrypted_private_key_passphrase", _("Incorrect passphrase for this private key.")
+
+    try:
+        load_rsa_private_key(private_key, passphrase if is_encrypted else None, skip_rsa_validation=False)
+    except NotAcceptableRSAKeyError as exc:
+        return "decrypted_private_key", str(exc)
+    except (ValueError, TypeError, UnsupportedAlgorithm):
+        pass
+    if not is_encrypted and passphrase:
+        return "decrypted_private_key", _("This private key doesn't use a passphrase.")
+    return "decrypted_private_key", _("Must be a PEM-encoded RSA private key.")
 
 
 def batch_by_pk(ModelClass, extra_filter=Q(), batch_size=10000):
