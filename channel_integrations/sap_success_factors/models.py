@@ -2,14 +2,12 @@
 Database models for Enterprise Integrated Channel SAP SuccessFactors.
 """
 
+import copy
 import json
 from logging import getLogger
 from urllib.parse import urlparse
 
 from config_models.models import ConfigurationModel
-from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.conf import settings
 from django.db import models
 from django.utils.encoding import force_bytes, force_str
@@ -31,7 +29,13 @@ from channel_integrations.sap_success_factors.transmitters.content_metadata impo
     SapSuccessFactorsContentMetadataTransmitter,
 )
 from channel_integrations.sap_success_factors.transmitters.learner_data import SapSuccessFactorsLearnerTransmitter
-from channel_integrations.utils import convert_comma_separated_string_to_list, generate_formatted_log, is_valid_url
+from channel_integrations.utils import (
+    convert_comma_separated_string_to_list,
+    describe_private_key_error,
+    generate_formatted_log,
+    is_valid_pem_private_key,
+    is_valid_url,
+)
 
 LOGGER = getLogger(__name__)
 
@@ -335,22 +339,63 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
 
     def _private_key_is_loadable(self):
         """
-        Whether the configured private key is a PEM-encoded RSA private key that the configured
-        passphrase (if any) unlocks, as required to sign a SAML assertion.
+        Whether the stored key is a usable PEM-encoded RSA private key. Skips the slower RSA
+        consistency checks: this runs on every ``is_valid`` check, and the key was already
+        fully validated when submitted.
         """
-        passphrase = self.decrypted_private_key_passphrase
-        try:
-            private_key = load_pem_private_key(
-                force_bytes(self.decrypted_private_key),
-                password=force_bytes(passphrase) if passphrase else None,
-                # is_valid is read on every API serialization and health check, and RSA key
-                # consistency checks take tens to hundreds of ms per key; signing still runs them.
-                unsafe_skip_rsa_key_validation=True,
+        return is_valid_pem_private_key(
+            self.decrypted_private_key, self.decrypted_private_key_passphrase, skip_rsa_validation=True
+        )
+
+    @staticmethod
+    def _set_private_key_error(errors, private_key, private_key_passphrase):
+        """Files a passphrase-specific message under ``private_key_passphrase``, not ``private_key``."""
+        field, message = describe_private_key_error(private_key, private_key_passphrase)
+        errors[field] = message
+
+    def get_credential_errors(
+        self, auth_type, private_key, private_key_passphrase, saml_assertion_audience, sapsf_base_url
+    ):
+        """
+        Validate proposed credential values against ``is_valid``'s policy without saving them.
+        Returns a dict of field name -> error message, empty if nothing's wrong.
+        """
+        candidate = copy.copy(self)  # Shallow: is_valid only reads scalar fields.
+        candidate.auth_type = auth_type
+        candidate.decrypted_private_key = private_key
+        candidate.decrypted_private_key_passphrase = private_key_passphrase
+        candidate.saml_assertion_audience = saml_assertion_audience
+        candidate.sapsf_base_url = sapsf_base_url
+        missing_items, incorrect_items = candidate.is_valid
+
+        # A stored/submitted value differing only by trailing whitespace or None-vs-'' isn't a
+        # real change; skip re-validating a key that was already validated when first submitted.
+        key_unchanged = (
+            (private_key or '').strip() == (self.decrypted_private_key or '').strip()
+            and (private_key_passphrase or '') == (self.decrypted_private_key_passphrase or '')
+        )
+        errors = {}
+        if 'private_key' in missing_items['missing']:
+            errors['private_key'] = _("A private key is required when the auth type is self-signed.")
+        elif 'private_key' in incorrect_items['incorrect']:
+            self._set_private_key_error(errors, private_key, private_key_passphrase)
+        elif private_key and not key_unchanged and not is_valid_pem_private_key(
+            private_key, private_key_passphrase, skip_rsa_validation=False
+        ):
+            # Unchanged key is skipped: already validated when first submitted.
+            self._set_private_key_error(errors, private_key, private_key_passphrase)
+        if 'saml_assertion_audience' in missing_items['missing']:
+            errors['saml_assertion_audience'] = _(
+                "A SAML assertion audience is required when the auth type is self-signed."
             )
-        except (TypeError, ValueError, UnsupportedAlgorithm):
-            # TypeError: a passphrase was given for an unencrypted key, or vice versa.
-            return False
-        return isinstance(private_key, rsa.RSAPrivateKey)
+        # is_valid flags a blank or non-HTTPS base URL for any auth type; only block saving it
+        # for self-signed, where the token endpoint on this URL also signs as the SAML recipient.
+        if candidate.uses_self_signed_assertion:
+            if 'sapsf_base_url' in missing_items['missing']:
+                errors['sapsf_base_url'] = _("A SAP base URL is required when the auth type is self-signed.")
+            elif 'sapsf_base_url' in incorrect_items['incorrect']:
+                errors['sapsf_base_url'] = _("Must be an absolute HTTPS URL when the auth type is self-signed.")
+        return errors
 
     @property
     def is_valid(self):

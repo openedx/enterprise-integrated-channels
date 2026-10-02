@@ -3,6 +3,7 @@ Django admin integration for configuring sap_success_factors app to communicate 
 """
 
 from config_models.admin import ConfigurationModelAdmin
+from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
@@ -17,6 +18,49 @@ from channel_integrations.sap_success_factors.models import (
     SAPSuccessFactorsGlobalConfiguration,
     SapSuccessFactorsLearnerDataTransmissionAudit,
 )
+
+
+class SAPSuccessFactorsEnterpriseCustomerConfigurationForm(forms.ModelForm):
+    """
+    Django admin form for SAPSuccessFactorsEnterpriseCustomerConfiguration.
+    """
+    class Meta:
+        model = SAPSuccessFactorsEnterpriseCustomerConfiguration
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Decryption needs the exact passphrase bytes; the default CharField strips whitespace.
+        # The field is absent for a view-only (no change permission) request, which excludes
+        # every field from the form -- nothing to patch in that case.
+        passphrase_field = self.fields.get("decrypted_private_key_passphrase")
+        if passphrase_field is not None:
+            passphrase_field.strip = False
+
+    def _cleaned_or_blank(self, cleaned_data, field_name):
+        """A field with its own error is absent from cleaned_data, not blank -- substitute
+        blank so the credential check still runs and doesn't hide a different field's error."""
+        return "" if self.has_error(field_name) else cleaned_data.get(field_name)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        candidate = self.instance if self.instance.pk else SAPSuccessFactorsEnterpriseCustomerConfiguration()
+        errors = candidate.get_credential_errors(
+            auth_type=self._cleaned_or_blank(cleaned_data, "auth_type"),
+            private_key=self._cleaned_or_blank(cleaned_data, "decrypted_private_key"),
+            private_key_passphrase=self._cleaned_or_blank(cleaned_data, "decrypted_private_key_passphrase"),
+            saml_assertion_audience=self._cleaned_or_blank(cleaned_data, "saml_assertion_audience"),
+            sapsf_base_url=self._cleaned_or_blank(cleaned_data, "sapsf_base_url"),
+        )
+        field_names = {
+            "private_key": "decrypted_private_key",
+            "private_key_passphrase": "decrypted_private_key_passphrase",
+            "saml_assertion_audience": "saml_assertion_audience",
+            "sapsf_base_url": "sapsf_base_url",
+        }
+        for error_key, message in errors.items():
+            self.add_error(field_names.get(error_key), message)
+        return cleaned_data
 
 
 @admin.register(SAPSuccessFactorsGlobalConfiguration)
@@ -42,6 +86,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
     """
     Django admin model for SAPSuccessFactorsEnterpriseCustomerConfiguration.
     """
+    form = SAPSuccessFactorsEnterpriseCustomerConfigurationForm
 
     fields = (
         "enterprise_customer",
@@ -85,6 +130,9 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
     list_filter = ("active",)
     search_fields = ("enterprise_customer__name",)
     change_actions = ("force_content_metadata_transmission",)
+
+    class Media:
+        js = ("sap_success_factors/admin/toggle_auth_type_fields.js",)
 
     class Meta:
         model = SAPSuccessFactorsEnterpriseCustomerConfiguration

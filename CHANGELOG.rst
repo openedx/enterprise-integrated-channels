@@ -14,6 +14,27 @@ Change Log
 Unreleased
 **********
 
+0.1.75 – 2026-10-02
+*******************
+
+* feat: expose ``auth_type`` and a write-only ``private_key``/``private_key_passphrase`` on
+  ``SAPSuccessFactorsConfigSerializer``. Omit a field to leave it unchanged, or submit it blank
+  to clear it (same convention as ``MoodleConfigSerializer``); ``private_key`` is capped at
+  16384 characters and ``private_key_passphrase`` at 255. A self-signed configuration now also
+  requires a SAML assertion audience and an HTTPS ``sapsf_base_url`` before it can be saved, and
+  RSA keys must be at least 2048 bits (also enforced in ``saml.py`` when signing). An unchanged
+  stored key isn't re-validated on save.
+* feat: the admin's private key, passphrase, and audience fields render the same way as the
+  existing ``decrypted_key``/``decrypted_secret`` credentials (per #206), and share the same
+  validation as the API via a new ``get_credential_errors`` model method.
+* feat: consolidate the RSA private key PEM check that ``SAPSuccessFactorsEnterpriseCustomerConfiguration``,
+  the SAML assertion generator, and the API serializer/admin each implemented separately into one
+  shared ``channel_integrations.utils.load_rsa_private_key``.
+* behavior change: the new 2048-bit minimum applies to ``is_valid`` for already-stored keys too,
+  not just newly-submitted ones. Combined with #207's sync gate, a self-signed configuration
+  whose stored key is under 2048 bits will stop transmitting once this ships, with no save or
+  edit required to trigger it.
+
 0.1.74 – 2026-10-01
 *******************
 
