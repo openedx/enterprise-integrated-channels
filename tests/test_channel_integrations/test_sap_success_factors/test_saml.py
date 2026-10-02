@@ -170,6 +170,10 @@ class TestGenerateSAMLAssertion(unittest.TestCase):
             self._generate_saml_assertion(private_key_pem='not-a-valid-pem-key')
 
     def test_non_rsa_private_key_raises_invalid_private_key_error(self):
+        """
+        A non-RSA key surfaces ``NotAcceptableRSAKeyError``'s own safe, specific message, not the
+        generic PEM/passphrase parse-failure one.
+        """
         ec_key = ec.generate_private_key(ec.SECP256R1())
         ec_key_pem = ec_key.private_bytes(
             encoding=serialization.Encoding.PEM,
@@ -177,8 +181,25 @@ class TestGenerateSAMLAssertion(unittest.TestCase):
             encryption_algorithm=serialization.NoEncryption(),
         ).decode('utf-8')
 
-        with self.assertRaises(InvalidPrivateKeyError):
+        with self.assertRaises(InvalidPrivateKeyError) as exc_info:
             self._generate_saml_assertion(private_key_pem=ec_key_pem)
+        self.assertEqual(str(exc_info.exception), 'Not an RSA private key.')
+
+    def test_weak_private_key_raises_invalid_private_key_error(self):
+        """
+        An under-2048-bit RSA key surfaces ``NotAcceptableRSAKeyError``'s own safe, specific
+        message, not the generic PEM/passphrase parse-failure one.
+        """
+        weak_key = rsa.generate_private_key(public_exponent=65537, key_size=1024)
+        weak_key_pem = weak_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        ).decode('utf-8')
+
+        with self.assertRaises(InvalidPrivateKeyError) as exc_info:
+            self._generate_saml_assertion(private_key_pem=weak_key_pem)
+        self.assertEqual(str(exc_info.exception), 'RSA key must be at least 2048 bits.')
 
     def test_tampered_assertion_fails_signature_verification(self):
         assertion_xml = self._generate_saml_assertion()

@@ -39,6 +39,10 @@ _RSA_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 PRIVATE_KEY = _pem(_RSA_KEY)
 ENCRYPTED_PRIVATE_KEY = _pem(_RSA_KEY, PASSPHRASE)
 EC_PRIVATE_KEY = _pem(ec.generate_private_key(ec.SECP256R1()))
+ENCRYPTED_EC_PRIVATE_KEY = _pem(ec.generate_private_key(ec.SECP256R1()), PASSPHRASE)
+_WEAK_RSA_KEY = rsa.generate_private_key(public_exponent=65537, key_size=1024)
+WEAK_PRIVATE_KEY = _pem(_WEAK_RSA_KEY)
+ENCRYPTED_WEAK_PRIVATE_KEY = _pem(_WEAK_RSA_KEY, PASSPHRASE)
 PUBLIC_KEY = _RSA_KEY.public_key().public_bytes(
     serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo,
 ).decode()
@@ -268,6 +272,9 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         {'private_key': PRIVATE_KEY, 'passphrase': PASSPHRASE},
         # rejects a non-RSA key, which cannot sign an RSA-SHA256 assertion.
         {'private_key': EC_PRIVATE_KEY, 'passphrase': ''},
+        # rejects an under-2048-bit key, even one already stored and otherwise loadable -- the
+        # path is_ready_to_transmit (via is_valid) re-checks on every sync, not just on submit.
+        {'private_key': WEAK_PRIVATE_KEY, 'passphrase': ''},
     )
     @ddt.unpack
     def test_is_valid_rejects_unloadable_private_key(self, private_key, passphrase):
@@ -326,6 +333,12 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         {'changes': {'sapsf_base_url': 'not a url at all'}, 'expected_problems': 'invalid: sapsf_base_url'},
         {
             'changes': {'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'decrypted_private_key': 'not a key'},
+            'expected_problems': 'invalid: private_key',
+        },
+        {
+            # A stored key under 2048 bits blocks syncs too, not just a malformed one -- the
+            # 2048-bit floor applies on every re-check, not only when the key is first submitted.
+            'changes': {'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'decrypted_private_key': WEAK_PRIVATE_KEY},
             'expected_problems': 'invalid: private_key',
         },
         {
@@ -436,3 +449,214 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         learner_manager.assert_not_called()
         self.config.refresh_from_db()
         assert self.config.last_sync_attempted_at is None
+
+
+@mark.django_db
+@ddt.ddt
+class TestGetCredentialErrors(unittest.TestCase):
+    """
+    Tests of ``SAPSuccessFactorsEnterpriseCustomerConfiguration.get_credential_errors``.
+    """
+
+    def setUp(self):
+        TieredCache.dangerous_clear_all_tiers()
+        self.addCleanup(TieredCache.dangerous_clear_all_tiers)
+        self.enterprise_customer = EnterpriseCustomerFactory()
+        self.config = SAPSuccessFactorsEnterpriseCustomerConfiguration(
+            enterprise_customer=self.enterprise_customer,
+            active=True,
+            sapsf_base_url='https://sap.example.com',
+            sapsf_company_id='COMP1',
+            sapsf_user_id='user-1',
+            decrypted_key='a-key',
+            decrypted_secret='a-secret',
+        )
+        self.config.save()
+        super().setUp()
+
+    @ddt.data(
+        # self-signed, no key.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': '',
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'A private key is required when the auth type is self-signed.'},
+        },
+        # self-signed, no audience.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': '',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {
+                'saml_assertion_audience': 'A SAML assertion audience is required when the auth type is self-signed.',
+            },
+        },
+        # self-signed, schemeless URL.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'sap.example.com',
+            'expected_errors': {
+                'sapsf_base_url': 'Must be an absolute HTTPS URL when the auth type is self-signed.',
+            },
+        },
+        # self-signed, blank URL -- is_valid_url('') is True, so this must be caught separately.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': '',
+            'expected_errors': {
+                'sapsf_base_url': 'A SAP base URL is required when the auth type is self-signed.',
+            },
+        },
+        # self-signed, everything valid.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com', 'expected_errors': {},
+        },
+        # SAP-signed, schemeless URL is informational only -- must not block the save.
+        {
+            'auth_type': SAPAuthType.SAP_SIGNED_ASSERTION, 'private_key': '',
+            'private_key_passphrase': '', 'saml_assertion_audience': '',
+            'sapsf_base_url': 'sap.example.com', 'expected_errors': {},
+        },
+        # self-signed, wrong passphrase on an otherwise valid encrypted key.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': ENCRYPTED_PRIVATE_KEY,
+            'private_key_passphrase': 'wrong-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key_passphrase': 'Incorrect passphrase for this private key.'},
+        },
+        # self-signed, missing passphrase for an encrypted key.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': ENCRYPTED_PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key_passphrase': 'A passphrase is required to unlock this private key.'},
+        },
+        # garbage key with a leftover passphrase must not be blamed on the passphrase.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': 'garbage text',
+            'private_key_passphrase': 'stored-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'Must be a PEM-encoded RSA private key.'},
+        },
+        # truncated PEM with a leftover passphrase: same as above.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION,
+            'private_key': '-----BEGIN RSA PRIVATE KEY-----\nMIIEow==',
+            'private_key_passphrase': 'stored-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'Must be a PEM-encoded RSA private key.'},
+        },
+        # a public key pasted by mistake, with a leftover passphrase: same as above.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PUBLIC_KEY,
+            'private_key_passphrase': 'stored-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'Must be a PEM-encoded RSA private key.'},
+        },
+        # weak unencrypted key with a leftover passphrase: key size wins over the passphrase.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': WEAK_PRIVATE_KEY,
+            'private_key_passphrase': 'stored-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'RSA key must be at least 2048 bits.'},
+        },
+        # weak encrypted key with the correct passphrase: key size wins over the passphrase.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': ENCRYPTED_WEAK_PRIVATE_KEY,
+            'private_key_passphrase': PASSPHRASE, 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'RSA key must be at least 2048 bits.'},
+        },
+        # encrypted EC key with the correct passphrase: not-RSA wins over the passphrase.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': ENCRYPTED_EC_PRIVATE_KEY,
+            'private_key_passphrase': PASSPHRASE, 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'Not an RSA private key.'},
+        },
+        # encrypted EC key with the wrong passphrase: the passphrase problem surfaces first --
+        # fixing it would then reveal the key isn't RSA either, but one error at a time.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': ENCRYPTED_EC_PRIVATE_KEY,
+            'private_key_passphrase': 'wrong-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key_passphrase': 'Incorrect passphrase for this private key.'},
+        },
+        # unencrypted key with an unnecessary leftover passphrase.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': 'leftover-passphrase', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': "This private key doesn't use a passphrase."},
+        },
+        # weak unencrypted key, no passphrase involved at all.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': WEAK_PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'RSA key must be at least 2048 bits.'},
+        },
+        # SAP-signed, newly submitted malformed key is still rejected.
+        {
+            'auth_type': SAPAuthType.SAP_SIGNED_ASSERTION, 'private_key': 'not-a-pem-key',
+            'private_key_passphrase': '', 'saml_assertion_audience': '',
+            'sapsf_base_url': 'https://sap.example.com',
+            'expected_errors': {'private_key': 'Must be a PEM-encoded RSA private key.'},
+        },
+    )
+    @ddt.unpack
+    def test_get_credential_errors(
+        self, auth_type, private_key, private_key_passphrase, saml_assertion_audience, sapsf_base_url,
+        expected_errors,
+    ):
+        errors = self.config.get_credential_errors(
+            auth_type=auth_type,
+            private_key=private_key,
+            private_key_passphrase=private_key_passphrase,
+            saml_assertion_audience=saml_assertion_audience,
+            sapsf_base_url=sapsf_base_url,
+        )
+        assert errors == expected_errors
+
+    def test_sap_signed_unchanged_malformed_stored_key_is_not_re_validated(self):
+        """
+        Regression: re-validating an unchanged leftover key on every save of a non-self-signed
+        candidate would block every future save of a config whose key predates a validation rule
+        (e.g. one saved before the 2048-bit minimum existed) -- not just the save that introduced
+        it. An unchanged key/passphrase is skipped regardless of auth_type; only a newly submitted
+        one is checked.
+        """
+        self.config.decrypted_private_key = 'not-a-pem-key'
+        self.config.save()
+
+        errors = self.config.get_credential_errors(
+            auth_type=SAPAuthType.SAP_SIGNED_ASSERTION,
+            private_key='not-a-pem-key',
+            private_key_passphrase='',
+            saml_assertion_audience='',
+            sapsf_base_url='https://sap.example.com',
+        )
+        assert not errors
+
+    def test_self_signed_unchanged_valid_key_skips_redundant_full_validation(self):
+        """
+        An unchanged, already-valid self-signed key/passphrase must not trip up the full
+        validation path -- it was already validated in full when first submitted.
+        """
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.saml_assertion_audience = 'www.successfactors.com'
+        self.config.save()
+
+        errors = self.config.get_credential_errors(
+            auth_type=SAPAuthType.SELF_SIGNED_ASSERTION,
+            private_key=PRIVATE_KEY,
+            private_key_passphrase='',
+            saml_assertion_audience='www.successfactors.com',
+            sapsf_base_url='https://sap.example.com',
+        )
+        assert not errors
