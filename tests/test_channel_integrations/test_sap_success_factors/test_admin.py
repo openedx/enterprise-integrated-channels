@@ -93,18 +93,14 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(TestCase):
         with patch(
             "channel_integrations.sap_success_factors.admin.SAPSuccessFactorsAPIClient"
         ) as mock_client_class:
-            mock_client_class.return_value.get_oauth_access_token.return_value = ("a-token", expires_at)
+            mock_client_class.return_value.get_access_token.return_value = ("a-token", expires_at)
             result = self.admin_instance.has_access_token(self.sap_config)
 
         assert result is True
         mock_client_class.assert_called_once_with(self.sap_config)
-        mock_client_class.return_value.get_oauth_access_token.assert_called_once_with(
-            client_id=self.sap_config.decrypted_key,
-            client_secret=self.sap_config.decrypted_secret,
-            company_id=self.sap_config.sapsf_company_id,
-            user_id=self.sap_config.sapsf_user_id,
-            user_type=self.sap_config.user_type,
-            customer_uuid=self.sap_config.enterprise_customer.uuid,
+        mock_client_class.return_value.get_access_token.assert_called_once_with(
+            self.sap_config.sapsf_user_id,
+            self.sap_config.user_type,
             timeout=mock_client_class.return_value.SESSION_TIMEOUT,
         )
 
@@ -115,7 +111,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(TestCase):
         with patch(
             "channel_integrations.sap_success_factors.admin.SAPSuccessFactorsAPIClient"
         ) as mock_client_class:
-            mock_client_class.return_value.get_oauth_access_token.side_effect = RequestException("boom")
+            mock_client_class.return_value.get_access_token.side_effect = RequestException("boom")
             result = self.admin_instance.has_access_token(self.sap_config)
 
         assert result is False
@@ -127,7 +123,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(TestCase):
         with patch(
             "channel_integrations.sap_success_factors.admin.SAPSuccessFactorsAPIClient"
         ) as mock_client_class:
-            mock_client_class.return_value.get_oauth_access_token.side_effect = ClientError("bad response", 500)
+            mock_client_class.return_value.get_access_token.side_effect = ClientError("bad response", 500)
             result = self.admin_instance.has_access_token(self.sap_config)
 
         assert result is False
@@ -135,11 +131,14 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(TestCase):
     @ddt.data(SAPAuthType.SAP_SIGNED_ASSERTION, SAPAuthType.SELF_SIGNED_ASSERTION)
     def test_has_access_token_does_not_raise_attribute_error(self, auth_type):
         """
-        Regression test: exercises the real client (only the network call is mocked) for both
-        auth types, to confirm has_access_token no longer raises AttributeError.
+        Regression test: exercises the real client (only the network call, and for self-signed the
+        assertion signing, are mocked) for both auth types, to confirm has_access_token no longer
+        raises AttributeError and that the configured timeout reaches the HTTP call.
         """
         self.sap_config.auth_type = auth_type
-        with patch("channel_integrations.sap_success_factors.client.requests.post") as mock_post:
+        with patch("channel_integrations.sap_success_factors.client.requests.post") as mock_post, patch(
+            "channel_integrations.sap_success_factors.client.generate_saml_assertion", return_value="<assertion/>"
+        ):
             mock_post.side_effect = RequestException("network unreachable")
             result = self.admin_instance.has_access_token(self.sap_config)
 
