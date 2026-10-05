@@ -31,7 +31,7 @@ from channel_integrations.sap_success_factors.transmitters.content_metadata impo
     SapSuccessFactorsContentMetadataTransmitter,
 )
 from channel_integrations.sap_success_factors.transmitters.learner_data import SapSuccessFactorsLearnerTransmitter
-from channel_integrations.utils import convert_comma_separated_string_to_list, is_valid_url
+from channel_integrations.utils import convert_comma_separated_string_to_list, generate_formatted_log, is_valid_url
 
 LOGGER = getLogger(__name__)
 
@@ -396,6 +396,44 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             incorrect_items.get('incorrect').append('display_name')
         return missing_items, incorrect_items
 
+    def is_ready_to_transmit(self, task_name: str) -> bool:
+        """
+        Refuse to call SAP when the configuration is incomplete or invalid, and log why.
+
+        Blocks on every problem ``is_valid`` reports, whether missing or incorrect, except an overlong
+        ``display_name``: an unparseable private key stops a transmission just as surely as an absent one.
+
+        Args:
+            task_name: name of the calling method, used in the log line.
+
+        Returns:
+            bool: whether the caller should proceed.
+        """
+        missing_items, incorrect_items = self.is_valid
+        missing_fields = missing_items['missing']
+        # display_name is only a label; an overlong one doesn't stop SAP being reached.
+        invalid_fields = [field for field in incorrect_items['incorrect'] if field != 'display_name']
+        if not missing_fields and not invalid_fields:
+            return True
+
+        problems = []
+        if missing_fields:
+            problems.append(f'missing: {", ".join(missing_fields)}')
+        if invalid_fields:
+            problems.append(f'invalid: {", ".join(invalid_fields)}')
+        LOGGER.warning(
+            generate_formatted_log(
+                channel_name=self.channel_code(),
+                enterprise_customer_uuid=self.enterprise_customer.uuid,
+                plugin_configuration_id=self.id,
+                message=(
+                    f'{task_name} aborted before any request to the channel because its '
+                    f'configuration is incomplete or invalid ({"; ".join(problems)}).'
+                ),
+            )
+        )
+        return False
+
     def __str__(self):
         """
         Return human-readable string representation.
@@ -458,6 +496,8 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         """
         Unlink inactive SAP learners form their related enterprises
         """
+        if not self.is_ready_to_transmit('unlink_inactive_learners'):
+            return
         sap_learner_manager = self.get_learner_manger()
         try:
             sap_learner_manager.unlink_learners()
