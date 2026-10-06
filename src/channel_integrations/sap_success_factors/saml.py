@@ -11,9 +11,11 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
 import signxml
-from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.asymmetric import rsa
 from lxml import etree
+
+from channel_integrations.utils import NotAcceptableRSAKeyError, load_rsa_private_key
 
 SAML_ASSERTION_NAMESPACE = 'urn:oasis:names:tc:SAML:2.0:assertion'
 XMLDSIG_NAMESPACE = 'http://www.w3.org/2000/09/xmldsig#'
@@ -85,21 +87,14 @@ def _load_rsa_private_key(
     Returns the parsed key after verifying that the PEM contains an RSA private key.
     """
     try:
-        passphrase_bytes = private_key_passphrase.encode('utf-8') if private_key_passphrase else None
-        key = serialization.load_pem_private_key(
-            private_key_pem.encode('utf-8'),
-            password=passphrase_bytes,
-        )
-    except (TypeError, ValueError) as exc:
-        # The underlying error can quote fragments of the key/passphrase input, so it is
-        # deliberately not included in the raised message; the original exception is still
-        # available via `__cause__` for logging.
-        raise InvalidPrivateKeyError('Failed to load RSA private key: invalid PEM data or passphrase.') from exc
-
-    if not isinstance(key, rsa.RSAPrivateKey):
-        raise InvalidPrivateKeyError('Provided key is not an RSA private key.')
-
-    return key
+        return load_rsa_private_key(private_key_pem, private_key_passphrase)
+    except NotAcceptableRSAKeyError as exc:
+        raise InvalidPrivateKeyError(str(exc)) from exc
+    except (TypeError, ValueError, UnsupportedAlgorithm) as exc:
+        # Not exc's message: it can quote fragments of the key/passphrase.
+        raise InvalidPrivateKeyError(
+            'Failed to load RSA private key: invalid PEM data or passphrase.'
+        ) from exc
 
 
 def _build_saml_assertion(

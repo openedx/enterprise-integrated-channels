@@ -10,10 +10,13 @@ from unittest import mock
 from unittest.mock import MagicMock, PropertyMock
 
 import ddt
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from pytest import raises
 
 from enterprise.utils import parse_lms_api_datetime
 from channel_integrations import utils
+from test_utils import generate_test_private_key_pem
 
 ent_enrollment = namedtuple('enterprise_enrollment', ['is_audit_enrollment'])
 
@@ -382,3 +385,37 @@ class TestIntegratedChannelsUtils(unittest.TestCase):
             "Customer", 123, "/endpoint", data_list, 1.23, 200, "response", 'integrated_channel_name'
         )
         assert stringified_list == json.dumps(data_list)
+
+    @ddt.data(
+        # blank/falsy input is missing, not malformed.
+        {'private_key': '', 'passphrase': None, 'expected': False},
+        {'private_key': None, 'passphrase': None, 'expected': False},
+        # unparseable string.
+        {'private_key': 'not a real key', 'passphrase': None, 'expected': False},
+        # a genuine PEM-encoded RSA key.
+        {'private_key': generate_test_private_key_pem(), 'passphrase': None, 'expected': True},
+        # a passphrase-protected key, with and without its passphrase.
+        {
+            'private_key': generate_test_private_key_pem(passphrase='correct-horse'),
+            'passphrase': 'correct-horse', 'expected': True,
+        },
+        {
+            'private_key': generate_test_private_key_pem(passphrase='correct-horse'),
+            'passphrase': None, 'expected': False,
+        },
+        {
+            'private_key': generate_test_private_key_pem(passphrase='correct-horse'),
+            'passphrase': 'wrong-passphrase', 'expected': False,
+        },
+        # syntactically valid but non-RSA (EC) key.
+        {
+            'private_key': ec.generate_private_key(ec.SECP256R1()).private_bytes(
+                serialization.Encoding.PEM, serialization.PrivateFormat.TraditionalOpenSSL,
+                serialization.NoEncryption(),
+            ).decode('utf-8'),
+            'passphrase': None, 'expected': False,
+        },
+    )
+    @ddt.unpack
+    def test_is_valid_pem_private_key(self, private_key, passphrase, expected):
+        assert utils.is_valid_pem_private_key(private_key, passphrase) is expected

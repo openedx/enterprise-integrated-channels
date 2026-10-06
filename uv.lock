@@ -1098,6 +1098,7 @@ name = "enterprise-integrated-channels"
 source = { editable = "." }
 dependencies = [
     { name = "celery" },
+    { name = "cryptography" },
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
     { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
     { name = "django-config-models" },
@@ -1273,6 +1274,7 @@ test-django52 = [
 [package.metadata]
 requires-dist = [
     { name = "celery" },
+    { name = "cryptography" },
     { name = "django", specifier = ">=4.2" },
     { name = "django-config-models" },
     { name = "django-fernet-fields-v2" },

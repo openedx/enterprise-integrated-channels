@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.75 – 2026-10-05
+*******************
+
+* feat(sap): expose auth_type and private key in serializer/admin (ENT-12303)
+
+  * Exposes SAP SuccessFactors self-signed SAML assertion credentials
+    (auth_type, private key, passphrase) through the REST API serializer and
+    django admin.
+
 0.1.74 – 2026-10-01
 *******************
 
