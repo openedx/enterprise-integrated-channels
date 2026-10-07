@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import sys
+import time
 import unittest
 from unittest import mock
 
@@ -28,9 +29,11 @@ from channel_integrations.integrated_channel.structured_logging import (
     level_to_status,
     normalize_numeric_value,
     normalize_value,
+    redact_credentials,
     sanitize_message,
 )
 from channel_integrations.utils import generate_formatted_log
+from test_utils import generate_test_private_key_pem
 
 
 @ddt.ddt
@@ -48,6 +51,11 @@ class TestStructuredLogging(unittest.TestCase):
             'integrated_channel_lms_user=3, '\
             'integrated_channel_course_key=4, '\
             'integrated_channel_plugin_configuration_id=6, 5'
+
+        log_str = generate_formatted_log(1, 2, 3, 4, 'Authorization: Bearer synthetic-auth-token', 6)
+
+        assert 'synthetic-auth-token' not in log_str
+        assert log_str.endswith('integrated_channel_plugin_configuration_id=6, [REDACTED]')
 
     @override_settings(INTEGRATED_CHANNELS_JSON_LOGGING=True)
     def test_generate_formatted_log_returns_structured_message_when_enabled(self):
@@ -68,6 +76,10 @@ class TestStructuredLogging(unittest.TestCase):
             'integrated_channel_course_key=HarvardX+LBTechX1, '
             'integrated_channel_plugin_configuration_id=None, transmit_single_learner_data started.'
         )
+
+        secret_msg = generate_formatted_log(channel_name='CSOD', message='Authorization: Bearer synthetic-auth-token')
+
+        assert str(secret_msg).endswith('integrated_channel_plugin_configuration_id=None, [REDACTED]')
 
     @override_settings(INTEGRATED_CHANNELS_JSON_LOGGING=True)
     @mock.patch('channel_integrations.integrated_channel.structured_logging.get_datadog_trace_id')
@@ -131,7 +143,7 @@ class TestStructuredLogging(unittest.TestCase):
         record = None
 
         try:
-            raise ClientError('refresh_token not found', 400)
+            raise ClientError('refresh_token not found Authorization: Bearer synthetic-auth-token', 400)
         except ClientError:
             record = logging.LogRecord(
                 name='channel_integrations.integrated_channel.transmitters.learner_data',
@@ -148,10 +160,11 @@ class TestStructuredLogging(unittest.TestCase):
         assert data['status'] == 'error'
         assert data['integrated_channel.user_id'] == 57164631
         assert data['error.kind'] == 'ClientError'
-        assert data['error.message'] == 'refresh_token not found'
+        assert data['error.message'] == 'refresh_token not found [REDACTED]'
         assert data['http.status_code'] == 400
         assert data['error.category'] == 'authentication'
         assert 'Traceback' in data['error.stack']
+        assert 'synthetic-auth-token' not in data['error.stack']
 
     @ddt.data(
         (401, 'CSOD Unauthorized Exception:Check your credentials.', 'authentication'),
@@ -174,6 +187,116 @@ class TestStructuredLogging(unittest.TestCase):
         assert categorize_error(status_code=418, message='unexpected client response') == 'validation'
         assert categorize_error(message='OAuth token expired') == 'authentication'
         assert categorize_error(message='rate limit exceeded') == 'rate_limit'
+
+    def test_sanitize_message_redacts_credentials_and_saml_assertions(self):
+        private_key = '-----BEGIN PRIVATE KEY-----\nsynthetic-private-key\n-----END PRIVATE KEY-----'
+        assertion = '<saml:Assertion ID="_test">synthetic-saml-assertion</saml:Assertion>'
+        message = json.dumps({
+            'private_key': private_key,
+            'assertion': assertion,
+            'headers': {'Authorization': 'Bearer synthetic-auth-token'},
+            'access_token': 'synthetic-oauth-token',
+        })
+
+        sanitized = sanitize_message(message)
+
+        assert private_key not in sanitized
+        assert assertion not in sanitized
+        assert 'synthetic-private-key' not in sanitized
+        assert 'synthetic-saml-assertion' not in sanitized
+        assert 'synthetic-auth-token' not in sanitized
+        assert 'synthetic-oauth-token' not in sanitized
+        real_private_key = generate_test_private_key_pem()
+        assert sanitize_message(real_private_key).strip() == '[REDACTED]'
+        assert sanitize_message(json.dumps([{'access_token': 'synthetic-oauth-token'}])) == (
+            '[{"access_token": "[REDACTED]"}]'
+        )
+
+        plain_message = sanitize_message(
+            f'Authorization: Bearer synthetic-auth-token private_key={private_key} {assertion}'
+        )
+        assert 'synthetic-auth-token' not in plain_message
+        assert 'synthetic-private-key' not in plain_message
+        assert 'synthetic-saml-assertion' not in plain_message
+        assert 'synthetic-oauth-token' not in sanitize_message('access_token=synthetic-oauth-token')
+
+        # Redaction is stable when a message passes through more than one logging layer.
+        header = sanitize_message('Authorization: Bearer synthetic-auth-token')
+        assert header == '[REDACTED]'
+        assert sanitize_message(header) == header
+
+        assert sanitize_message('{"client_secret": "s1", "password": "s2"}') == (
+            '{"client_secret": "[REDACTED]", "password": "[REDACTED]"}'
+        )
+        assert 's1' not in sanitize_message('client_secret=s1&password=s2')
+
+        # Pathologically nested JSON falls back to pattern redaction instead of raising.
+        assert sanitize_message('[' * 100000 + 'Authorization: Bearer synthetic-auth-token') == (
+            '[' * 100000 + '[REDACTED]'
+        )
+
+        # A truncated body must not leak the part of a key or assertion that did arrive.
+        assert 'synthetic-private-key' not in sanitize_message(
+            '-----BEGIN PRIVATE KEY-----\nsynthetic-private-key'
+        )
+        assert 'synthetic-saml-assertion' not in sanitize_message(
+            '<saml:Assertion ID="_test">synthetic-saml-assertion'
+        )
+
+    @ddt.data(
+        ('Authorization: Token synthetic-secret', '[REDACTED]'),
+        ('Authorization: JWT synthetic-secret', '[REDACTED]'),
+        ("{'Authorization': 'Basic synthetic-secret'}", "{'[REDACTED]'}"),
+        ('{"Authorization": "Token synthetic-secret"}', '{"Authorization": "[REDACTED]"}'),
+        (
+            'Request Headers: {"Authorization": "JWT synthetic-secret"}',
+            'Request Headers: {"[REDACTED]"}',
+        ),
+        ('[{"access_token": "synthetic-secret"}]', '[{"access_token": "[REDACTED]"}]'),
+        ('{"token": "synthetic-secret"}', '{"token": "[REDACTED]"}'),
+        ('{"id_token": "synthetic-secret"}', '{"id_token": "[REDACTED]"}'),
+        ('token=synthetic-secret', '[REDACTED]'),
+        ('id_token=synthetic-secret', '[REDACTED]'),
+        ('failed with Bearer synthetic-secret', 'failed with [REDACTED]'),
+        ('{\\"client_secret\\": \\"synthetic-secret\\"}', None),
+        (
+            '{"name": "\u00c9conomie", "password": "synthetic-secret"}',
+            '{"name": "\u00c9conomie", "password": "[REDACTED]"}',
+        ),
+    )
+    @ddt.unpack
+    def test_redact_credentials_variants(self, message, expected):
+        redacted = redact_credentials(message)
+        assert 'synthetic-secret' not in redacted
+        if expected:
+            assert redacted == expected
+
+    @ddt.data(
+        'Invalid assertion: signature expired',
+        'password: must contain 8 characters',
+        'Error message: token not found',
+        'SAP error: missing <Assertion element; request id 77 status 400',
+    )
+    def test_redact_credentials_preserves_normal_text(self, message):
+        assert redact_credentials(message) == message
+
+    def test_redact_credentials_handles_long_saml_opening_tag(self):
+        extra_namespaces = ' '.join(f'xmlns:ns{index}="urn:test:{index}"' for index in range(60))
+        opening_tag = '<saml:Assertion xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ' + extra_namespaces + '>'
+        assert len(opening_tag) > 1000
+        assertion = f'{opening_tag}<saml:Issuer>client</saml:Issuer></saml:Assertion>'
+        assert redact_credentials(assertion) == '[REDACTED]'
+
+    def test_redact_credentials_is_linear_on_unterminated_assertion_tags(self):
+        message = '<Assertion ' * 20000
+        started = time.monotonic()
+        redact_credentials(message)
+        assert time.monotonic() - started < 2
+
+    def test_flat_logs_keep_serialized_payload_and_sanitize_message_omits_it(self):
+        message = 'integrated_channel_serialized_payload_base64=abc123'
+        assert redact_credentials(message) == message
+        assert sanitize_message(message) == 'integrated_channel_serialized_payload_base64=<omitted>'
 
     def test_helper_edge_cases(self):
         raw_payload = {'b': 2, 'a': 1}
@@ -320,12 +443,12 @@ class TestStructuredLogging(unittest.TestCase):
             level=logging.INFO,
             pathname=__file__,
             lineno=1,
-            msg='plain message',
+            msg='plain message Authorization: Bearer synthetic-auth-token',
             args=(),
             exc_info=None,
         )
 
-        assert JsonChannelFormatter().format(record) == 'plain message'
+        assert JsonChannelFormatter().format(record) == 'plain message [REDACTED]'
 
     @override_settings(INTEGRATED_CHANNELS_JSON_LOGGING=True)
     @mock.patch('channel_integrations.integrated_channel.structured_logging.get_datadog_trace_id')

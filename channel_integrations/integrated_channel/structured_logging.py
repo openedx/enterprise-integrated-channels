@@ -32,6 +32,40 @@ ENROLLMENT_ID_PATTERN = re.compile(r'integrated_channel_enterprise_enrollment_id
 REMOTE_USER_ID_PATTERN = re.compile(r'integrated_channel_remote_user_id=([^,\s]+)')
 ERROR_STATUS_PATTERN = re.compile(r'Error status code:\s*(\d+)')
 ERROR_MESSAGE_PATTERN = re.compile(r'Error message:\s*(.*?)(?:\s+Error status code:|$)')
+# e.g.: "-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----"
+PRIVATE_KEY_PEM_PATTERN = re.compile(
+    r'-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|\Z)', re.DOTALL
+)
+# e.g.: "<saml2:Assertion x=y>...</saml2:Assertion>"
+SAML_ASSERTION_XML_PATTERN = re.compile(
+    r'<(?:[\w.-]+:)?Assertion\b[^<>]*>.*?(?:</(?:[\w.-]+:)?Assertion\s*>|\Z)', re.IGNORECASE | re.DOTALL
+)
+# e.g.: "Authorization: Bearer <token>"
+AUTHORIZATION_HEADER_PATTERN = re.compile(
+    r'authorization["\']?\s*[:=]\s*["\']?(?:[a-z]+\s+)?[^\s,;"\'}]+', re.IGNORECASE
+)
+# e.g.: "Bearer <token>"
+BEARER_TOKEN_PATTERN = re.compile(r'\bbearer\s+[\w.~+/=-]{8,}', re.IGNORECASE)
+# e.g.: "client_secret=<secret>", "'password': '<secret>'"
+SENSITIVE_ASSIGNMENT_PATTERN = re.compile(
+    r'(?<![A-Za-z0-9])(?:(?:decrypted[_-]?)?private[_-]?key(?:[_-]?passphrase)?|'
+    r'(?:saml[_-]?)?assertion|(?:access|refresh|bearer|id)?[_-]?token|'
+    r'client[_-]?secret|password)(?:\\?["\']\s*[:=]\s*|[:=])'
+    r'(?:"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[^,\s&}\]]+)',
+    re.IGNORECASE,
+)
+ALL_CREDENTIAL_PATTERNS = (
+    PRIVATE_KEY_PEM_PATTERN,
+    SAML_ASSERTION_XML_PATTERN,
+    AUTHORIZATION_HEADER_PATTERN,
+    BEARER_TOKEN_PATTERN,
+    SENSITIVE_ASSIGNMENT_PATTERN,
+)
+
+# e.g.: "access_token", "Authorization", "PRIVATE KEY"
+SENSITIVE_MARKER_PATTERN = re.compile(
+    r'authorization|bearer|private[\s_-]?key|assertion|token|secret|password', re.IGNORECASE
+)
 
 AUTHENTICATION_PATTERNS = (
     'authentication',
@@ -279,11 +313,63 @@ def extract_message_fields(message):
 
 def sanitize_message(message):
     """
-    Remove raw serialized payloads from the human-readable log message.
+    Remove raw serialized payloads and credential material from the human-readable log message.
+    """
+    message = redact_credentials(message)
+    if message is None:
+        return None
+    return PAYLOAD_PATTERN.sub('integrated_channel_serialized_payload_base64=<omitted>', message)
+
+
+def redact_credentials(message):
+    """
+    Mask private keys, SAML assertions, authorization headers, tokens, client secrets and passwords.
     """
     if message is None:
         return None
-    return PAYLOAD_PATTERN.sub('integrated_channel_serialized_payload_base64=<omitted>', str(message))
+    message = str(message)
+    if not SENSITIVE_MARKER_PATTERN.search(message):
+        return message
+    try:
+        parsed = json.loads(message)
+        sanitized = _sanitize_log_value(parsed)
+        if sanitized != parsed:
+            message = json.dumps(sanitized, ensure_ascii=False)
+        return message
+    except (ValueError, RecursionError):
+        # Not JSON, or too deeply nested to walk: fall back to pattern redaction.
+        pass
+
+    for pattern in ALL_CREDENTIAL_PATTERNS:
+        message = pattern.sub('[REDACTED]', message)
+    return message
+
+
+def _looks_like_secret_name(key: str) -> bool:
+    """Return True if a JSON key names a credential whose value should be redacted."""
+    normalized_key = re.sub(r'[^a-z0-9]', '', str(key).lower())
+    return (
+        'authorization' in normalized_key
+        or 'privatekey' in normalized_key
+        or normalized_key.endswith('assertion')
+        or normalized_key in {
+            'token', 'idtoken', 'accesstoken', 'refreshtoken', 'bearertoken', 'clientsecret', 'password'
+        }
+    )
+
+
+def _sanitize_log_value(value):
+    """Recursively redact sensitive JSON values before an API body is logged."""
+    if isinstance(value, dict):
+        return {
+            key: '[REDACTED]' if _looks_like_secret_name(key) else _sanitize_log_value(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_sanitize_log_value(item) for item in value]
+    if isinstance(value, str):
+        return redact_credentials(value)
+    return value
 
 
 class StructuredLogMessage:
@@ -311,11 +397,14 @@ class StructuredLogMessage:
         """
         Return the existing flat key/value log format.
         """
-        return f'integrated_channel={self.channel_name}, ' \
-            f'integrated_channel_enterprise_customer_uuid={self.enterprise_customer_uuid}, ' \
-            f'integrated_channel_lms_user={self.lms_user_id}, ' \
-            f'integrated_channel_course_key={self.course_or_course_run_key}, ' \
-            f'integrated_channel_plugin_configuration_id={self.plugin_configuration_id}, {self.message}'
+        return (
+            f'integrated_channel={self.channel_name}, '
+            f'integrated_channel_enterprise_customer_uuid={self.enterprise_customer_uuid}, '
+            f'integrated_channel_lms_user={self.lms_user_id}, '
+            f'integrated_channel_course_key={self.course_or_course_run_key}, '
+            f'integrated_channel_plugin_configuration_id={self.plugin_configuration_id}, '
+            f'{redact_credentials(self.message)}'
+        )
 
     def structured_fields(self):
         """
@@ -353,7 +442,7 @@ class JsonChannelFormatter(logging.Formatter):
 
     def format(self, record):
         if not is_json_logging_enabled():
-            return super().format(record)
+            return redact_credentials(super().format(record))
 
         return json.dumps(build_datadog_log_record(record), sort_keys=True)
 
@@ -405,6 +494,9 @@ def build_datadog_log_record(record):
         'logger.name': record.name,
     }
     log_record.update(fields)
+    for key, value in tuple(log_record.items()):
+        if isinstance(value, str):
+            log_record[key] = sanitize_message(value)
     return log_record
 
 

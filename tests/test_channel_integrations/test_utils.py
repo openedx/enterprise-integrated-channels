@@ -419,3 +419,26 @@ class TestIntegratedChannelsUtils(unittest.TestCase):
     @ddt.unpack
     def test_is_valid_pem_private_key(self, private_key, passphrase, expected):
         assert utils.is_valid_pem_private_key(private_key, passphrase) is expected
+
+    @mock.patch("channel_integrations.utils.integrated_channel_request_log_model")
+    def test_stringify_and_store_api_record_errors_do_not_log_request_data(
+        self, mock_integrated_channel_request_log_model
+    ):
+        secret_data = {"assertion": "synthetic-saml-assertion"}
+
+        mock_integrated_channel_request_log_model.return_value.store_api_call.side_effect = Exception("db down")
+        with self.assertLogs(utils.LOGGER, level="ERROR") as logs:
+            utils.stringify_and_store_api_record(
+                "Customer", 123, "/endpoint", secret_data, 1.23, 200, "response", "integrated_channel_name"
+            )
+        assert "db down" in logs.output[0]
+        assert "synthetic-saml-assertion" not in logs.output[0]
+
+        mock_integrated_channel_request_log_model.return_value.store_api_call.side_effect = None
+        with mock.patch.object(utils, "json", dumps=mock.Mock(side_effect=TypeError("not serializable"))):
+            with self.assertLogs(utils.LOGGER, level="ERROR") as logs:
+                utils.stringify_and_store_api_record(
+                    "Customer", 123, "/endpoint", secret_data, 1.23, 200, "response", "integrated_channel_name"
+                )
+        assert "not serializable" in logs.output[0]
+        assert "synthetic-saml-assertion" not in logs.output[0]

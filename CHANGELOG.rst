@@ -14,6 +14,15 @@ Change Log
 Unreleased
 **********
 
+0.1.77 – 2026-10-05
+*******************
+
+* feat(sap): redact credentials from integrated-channel logs and API records (ENT-12306)
+
+  * Integrated-channel log messages and stored API request, response, and
+    transmission-audit records now redact private keys, SAML assertions,
+    ``Authorization`` headers, and token, client-secret, and password values.
+
 0.1.76 – 2026-10-05
 *******************
 
