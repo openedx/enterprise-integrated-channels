@@ -1,8 +1,7 @@
 """
 Generate self-signed SAML assertions for SAP SuccessFactors OAuth bearer authentication.
 
-Not yet called anywhere: ENT-12305 will use this from
-``SAPSuccessFactorsAPIClient.get_oauth_access_token`` for customers configured for
+Used by ``SAPSuccessFactorsAPIClient.get_saml_bearer_access_token`` for customers configured for
 self-signed assertion auth.
 """
 

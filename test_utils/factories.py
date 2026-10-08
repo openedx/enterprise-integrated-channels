@@ -48,6 +48,7 @@ from channel_integrations.integrated_channel.models import (
 )
 from channel_integrations.moodle.models import MoodleEnterpriseCustomerConfiguration
 from channel_integrations.sap_success_factors.models import (
+    SAPAuthType,
     SAPSuccessFactorsEnterpriseCustomerConfiguration,
     SAPSuccessFactorsGlobalConfiguration,
     SapSuccessFactorsLearnerDataTransmissionAudit,
@@ -396,6 +397,16 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationFactory(GenericEnterpriseC
         """
 
         model = SAPSuccessFactorsEnterpriseCustomerConfiguration
+
+    class Params:
+        self_signed = factory.Trait(
+            auth_type=SAPAuthType.SELF_SIGNED_ASSERTION,
+            decrypted_key='synthetic-self-signed-client-id',
+            decrypted_secret='',
+            decrypted_private_key_passphrase='',
+            saml_assertion_audience='www.successfactors.com',
+            sapsf_base_url='https://sap.example.test/',
+        )
 
     sapsf_base_url = factory.LazyAttribute(lambda x: FAKER.url())
     sapsf_company_id = factory.LazyAttribute(lambda x: FAKER.company())

@@ -162,14 +162,8 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
         # transmissions can authenticate.
         client = SAPSuccessFactorsAPIClient(obj)
         try:
-            access_token, expires_at = client.get_oauth_access_token(
-                client_id=obj.decrypted_key,
-                client_secret=obj.decrypted_secret,
-                company_id=obj.sapsf_company_id,
-                user_id=obj.sapsf_user_id,
-                user_type=obj.user_type,
-                customer_uuid=obj.enterprise_customer.uuid,
-                timeout=client.SESSION_TIMEOUT,
+            access_token, expires_at = client.get_access_token(
+                obj.sapsf_user_id, obj.user_type, timeout=client.SESSION_TIMEOUT
             )
         except (RequestException, ClientError):
             return False
