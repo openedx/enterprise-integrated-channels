@@ -57,7 +57,7 @@ INSTALLED_APPS = (
 )
 
 LOCALE_PATHS = [
-    root('channel_integrations', 'conf', 'locale'),
+    root('src', 'channel_integrations', 'conf', 'locale'),
 ]
 
 ROOT_URLCONF = 'channel_integrations.urls'
