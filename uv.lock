@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -168,7 +168,7 @@ name = "build"
 version = "1.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "os_name == 'nt' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "colorama", marker = "os_name == 'nt'" },
     { name = "packaging" },
     { name = "pyproject-hooks" },
 ]
@@ -208,11 +208,11 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.6.17"
+version = "2026.10.19"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c9/c7/424b75da314c1045981bd9777432fad05a9e0c69daa4ed7e308bbaffe405/certifi-2026.6.17.tar.gz", hash = "sha256:024c88eeec92ca068db80f02b8b07c9cef7b9fe261d1d535abfd5abd6f6af432", size = 134594, upload-time = "2026-06-17T10:31:07.894Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/bd/1436c50cc46699de0230fbaacc1d1de7bfec413176099949e9d5112e88f2/certifi-2026.10.19.tar.gz", hash = "sha256:035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae", size = 137598, upload-time = "2026-10-20T02:24:16.604Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/2f/c5464532e965badff2f4c4c1a3a83f5697f0d7c407ed0cda44aaa99bb451/certifi-2026.6.17-py3-none-any.whl", hash = "sha256:2227dcbaafe0d2f59279d1762ddddc37783ed4354594f194ffc31d20f41fc3db", size = 133289, upload-time = "2026-06-17T10:31:06.348Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/51/29046e48f693c54e5b7412216d447a1d8362c9653148d98c02cdf65fa733/certifi-2026.10.19-py3-none-any.whl", hash = "sha256:42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b", size = 136464, upload-time = "2026-10-20T02:24:15.072Z" },
 ]
 
 [[package]]
@@ -220,7 +220,7 @@ name = "cffi"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycparser", marker = "implementation_name != 'PyPy' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "pycparser", marker = "implementation_name != 'PyPy'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/57/5f/ff100cae70ebe9d8df1c01a00e510e45d9adb5c1fdda84791b199141de97/cffi-2.1.0.tar.gz", hash = "sha256:efc1cdd798b1aaf39b4610bba7aad28c9bea9b910f25c784ccf9ec1fa719d1f9", size = 531036, upload-time = "2026-07-06T21:34:30.382Z" }
 wheels = [
@@ -429,7 +429,7 @@ name = "click"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz", hash = "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6", size = 338000, upload-time = "2026-06-24T17:45:15.148Z" }
 wheels = [
@@ -493,11 +493,11 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "click", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "jinja2", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "python-slugify", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "pyyaml", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "stevedore", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "click" },
+    { name = "jinja2" },
+    { name = "python-slugify" },
+    { name = "pyyaml" },
+    { name = "stevedore" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/da/55/af2756d125d1a5ddb5bc142335f77011892c5e6f775741a96a21ff9d20f1/code_annotations-2.3.2.tar.gz", hash = "sha256:a6717673013a57f7b297ec510975b127cbe5a8112482e76c9d5ce814d2408ea0", size = 44691, upload-time = "2026-03-02T20:49:23.009Z" }
 wheels = [
@@ -512,11 +512,11 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "click", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "jinja2", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "python-slugify", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "pyyaml", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "stevedore", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "click" },
+    { name = "jinja2" },
+    { name = "python-slugify" },
+    { name = "pyyaml" },
+    { name = "stevedore" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/98/cd/73b009a7790d67d218c7caf5f1030f37f6f4863383c3dee47f44eac7a568/code_annotations-3.0.0.tar.gz", hash = "sha256:7ce2e883ab5c62b27fd3e490658f9ccbd632910422b80280d659b851483b0200", size = 44676, upload-time = "2026-03-13T16:36:41.47Z" }
 wheels = [
@@ -618,7 +618,7 @@ wheels = [
 
 [package.optional-dependencies]
 toml = [
-    { name = "tomli", marker = "python_full_version <= '3.11' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "tomli", marker = "python_full_version <= '3.11'" },
 ]
 
 [[package]]
@@ -626,7 +626,7 @@ name = "cryptography"
 version = "49.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cffi", marker = "platform_python_implementation != 'PyPy' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "cffi", marker = "platform_python_implementation != 'PyPy'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1f/99/d1c90d6041656cc6ee229dc99cd67fd0cd5aec3c5f7d72fffc27cc750054/cryptography-49.0.0.tar.gz", hash = "sha256:f89660a348f4f78a92366240a61404e337586ef7f5909a2fef59ca88ef505493", size = 854345, upload-time = "2026-06-12T20:02:30.512Z" }
 wheels = [
@@ -755,8 +755,8 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "asgiref", marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "sqlparse", marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "asgiref", marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
+    { name = "sqlparse", marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "tzdata", marker = "(sys_platform == 'win32' and extra != 'group-30-enterprise-integrated-channels-test-django42') or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a9/26/889449d521ae508b26de715954faecd8bcf3f740affb81b2d146a83b42a5/django-5.2.16.tar.gz", hash = "sha256:59ea02020c3136fce14bef0bbece21a10a4febef5eed1c51c22ae468efa22200", size = 10890894, upload-time = "2026-07-07T13:52:17.005Z" }
@@ -770,7 +770,7 @@ version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "djangorestframework" },
     { name = "edx-django-utils" },
 ]
@@ -798,7 +798,7 @@ version = "0.7.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/34/1d/c56588f67130aeef8828e47535e8551337d2ae02f91f1414da61bc5e49fb/django-crum-0.7.9.tar.gz", hash = "sha256:65e9bc0f070a663fafc4d9e357f45fd4e6f01838b20a9e2fb7670f5706754288", size = 5168, upload-time = "2020-11-10T17:15:35.124Z" }
 wheels = [
@@ -812,7 +812,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/bd/e5/aeb7c9f763d879006d33814b457677fa141ad6def17e57d8273df527ab4b/django_fernet_fields_v2-0.9.tar.gz", hash = "sha256:998476968be1ded3eabb4fa51b27ceddcae295c8227c304f117a3348ece8cbda", size = 7525, upload-time = "2023-08-15T13:44:17.787Z" }
 wheels = [
@@ -825,7 +825,7 @@ version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/81/60/5e232c32a2c977cc1af8c70a38ef436598bc649ad89c2c4568454edde2c9/django_model_utils-5.0.0.tar.gz", hash = "sha256:041cdd6230d2fbf6cd943e1969318bce762272077f4ecd333ab2263924b4e5eb", size = 80559, upload-time = "2024-09-04T11:35:22.858Z" }
 wheels = [
@@ -838,7 +838,7 @@ version = "3.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "jwcrypto" },
     { name = "oauthlib" },
     { name = "requests" },
@@ -863,7 +863,7 @@ version = "3.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7d/75/658d2e0ba3f51c0774cc7c71d2879e3260880d441406bba4bab64d70a4de/django_simple_history-3.12.0.tar.gz", hash = "sha256:4cc363c6c806834f32c9d19c9db2d97165f379f41e581c39fb7dbac9e4c20c11", size = 235106, upload-time = "2026-06-22T13:16:23.766Z" }
 wheels = [
@@ -876,7 +876,7 @@ version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/e1/6f533da0d4ac89f427dfd9410e39bfc14ae3a23335ecd549d76be4b2a834/django_waffle-5.0.0.tar.gz", hash = "sha256:62f9d00eedf68dafb82657beab56e601bddedc1ea1ccfef91d83df8658708509", size = 37761, upload-time = "2025-06-12T07:38:54.895Z" }
 wheels = [
@@ -889,7 +889,7 @@ version = "3.17.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ca/d7/c016e69fac19ff8afdc89db9d31d9ae43ae031e4d1993b20aca179b8301a/djangorestframework-3.17.1.tar.gz", hash = "sha256:a6def5f447fe78ff853bff1d47a3c59bf38f5434b031780b351b0c73a62db1a5", size = 905742, upload-time = "2026-03-24T16:58:33.705Z" }
 wheels = [
@@ -935,7 +935,7 @@ version = "1.19.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "djangorestframework" },
     { name = "pyjwt", extra = ["crypto"] },
 ]
@@ -964,7 +964,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "django-crum" },
     { name = "django-waffle" },
     { name = "psutil" },
@@ -982,7 +982,7 @@ version = "10.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "django-waffle" },
     { name = "djangorestframework" },
     { name = "drf-jwt" },
@@ -1003,7 +1003,7 @@ version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "lxml", extra = ["html-clean"] },
     { name = "path" },
     { name = "polib" },
@@ -1021,8 +1021,8 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "click-log" },
-    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pylint" },
     { name = "pylint-celery" },
     { name = "pylint-django" },
@@ -1054,7 +1054,7 @@ version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "django-crum" },
     { name = "django-model-utils" },
     { name = "edx-drf-extensions" },
@@ -1096,11 +1096,12 @@ wheels = [
 [[package]]
 name = "enterprise-integrated-channels"
 source = { editable = "." }
+default-groups = []
 dependencies = [
     { name = "celery" },
     { name = "cryptography" },
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "django-config-models" },
     { name = "django-fernet-fields-v2" },
     { name = "django-model-utils" },
@@ -1130,8 +1131,8 @@ ci = [
 ]
 dev = [
     { name = "build" },
-    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "ddt" },
     { name = "diff-cover" },
     { name = "django-countries" },
@@ -1142,8 +1143,8 @@ dev = [
     { name = "freezegun" },
     { name = "isort" },
     { name = "mock" },
-    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pycodestyle" },
     { name = "pydocstyle" },
     { name = "pytest-cov" },
@@ -1159,8 +1160,8 @@ dev = [
 ]
 doc = [
     { name = "build" },
-    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "ddt" },
     { name = "diff-cover" },
     { name = "django-countries" },
@@ -1168,8 +1169,8 @@ doc = [
     { name = "factory-boy" },
     { name = "freezegun" },
     { name = "mock" },
-    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest-cov" },
     { name = "pytest-django" },
     { name = "responses" },
@@ -1180,8 +1181,8 @@ doc = [
     { name = "twine" },
 ]
 quality = [
-    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "ddt" },
     { name = "diff-cover" },
     { name = "django-countries" },
@@ -1190,8 +1191,8 @@ quality = [
     { name = "freezegun" },
     { name = "isort" },
     { name = "mock" },
-    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pycodestyle" },
     { name = "pydocstyle" },
     { name = "pytest-cov" },
@@ -1201,16 +1202,16 @@ quality = [
     { name = "testfixtures" },
 ]
 test = [
-    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "ddt" },
     { name = "diff-cover" },
     { name = "django-countries" },
     { name = "factory-boy" },
     { name = "freezegun" },
     { name = "mock" },
-    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest-cov" },
     { name = "pytest-django" },
     { name = "responses" },
@@ -1218,16 +1219,16 @@ test = [
     { name = "testfixtures" },
 ]
 test-base = [
-    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "code-annotations", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "code-annotations", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "ddt" },
     { name = "diff-cover" },
     { name = "django-countries" },
     { name = "factory-boy" },
     { name = "freezegun" },
     { name = "mock" },
-    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "openedx-events", version = "10.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "openedx-events", version = "11.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pytest-cov" },
     { name = "pytest-django" },
     { name = "responses" },
@@ -1449,7 +1450,7 @@ name = "faker"
 version = "40.28.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "tzdata", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cc/2d/3ead106cef42eab305e15f9c089dcc68a40387d5ce04af18585af4ebbb44/faker-40.28.1.tar.gz", hash = "sha256:2a63fb51abab8790636d4030a094cf942404cbccc9c288d1cad70e2e3e9ecd58", size = 2022717, upload-time = "2026-07-01T22:23:43.763Z" }
 wheels = [
@@ -1558,7 +1559,7 @@ name = "importlib-metadata"
 version = "9.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "zipp" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a9/01/15bb152d77b21318514a96f43af312635eb2500c96b55398d020c93d86ea/importlib_metadata-9.0.0.tar.gz", hash = "sha256:a4f57ab599e6a2e3016d7595cfd72eb4661a5106e787a95bcc90c7105b831efc", size = 56405, upload-time = "2026-03-20T06:42:56.999Z" }
 wheels = [
@@ -1600,7 +1601,7 @@ name = "jaraco-context"
 version = "6.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "backports-tarfile", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "backports-tarfile", marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/af/50/4763cd07e722bb6285316d390a164bc7e479db9d90daa769f22578f698b4/jaraco_context-6.1.2.tar.gz", hash = "sha256:f1a6c9d391e661cc5b8d39861ff077a7dc24dc23833ccee564b234b81c82dfe3", size = 16801, upload-time = "2026-03-20T22:13:33.922Z" }
 wheels = [
@@ -1655,7 +1656,7 @@ version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fa/e9/537e105246dba81d898853dbbe17eb3edd23d47a35074b99fd4add6f1662/jsonfield-3.2.0.tar.gz", hash = "sha256:ca53871bc3308ae4f4cddc3b4f99ed5c6fc6abb1832fbfb499bc6da566c70e4a", size = 17156, upload-time = "2025-07-04T23:06:24.883Z" }
 wheels = [
@@ -1680,13 +1681,13 @@ name = "keyring"
 version = "25.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "importlib-metadata", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "importlib-metadata", marker = "python_full_version < '3.12'" },
     { name = "jaraco-classes" },
     { name = "jaraco-context" },
     { name = "jaraco-functools" },
-    { name = "jeepney", marker = "sys_platform == 'linux' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "pywin32-ctypes", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "secretstorage", marker = "sys_platform == 'linux' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "jeepney", marker = "sys_platform == 'linux'" },
+    { name = "pywin32-ctypes", marker = "sys_platform == 'win32'" },
+    { name = "secretstorage", marker = "sys_platform == 'linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/43/4b/674af6ef2f97d56f0ab5153bf0bfa28ccb6c3ed4d1babf4305449668807b/keyring-25.7.0.tar.gz", hash = "sha256:fe01bd85eb3f8fb3dd0405defdeac9a5b4f6f0439edbb3149577f244a2e8245b", size = 63516, upload-time = "2025-11-16T16:26:09.482Z" }
 wheels = [
@@ -2009,14 +2010,14 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "attrs", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and extra == 'group-30-enterprise-integrated-channels-test-django42') or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and extra != 'group-30-enterprise-integrated-channels-test-django42') or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "edx-ccx-keys", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "edx-django-utils", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "edx-opaque-keys", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "fastavro", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "setuptools", marker = "python_full_version < '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "attrs" },
+    { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
+    { name = "edx-ccx-keys" },
+    { name = "edx-django-utils" },
+    { name = "edx-opaque-keys" },
+    { name = "fastavro" },
+    { name = "setuptools" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0d/78/d11309c8a1c30d25ca8938688d29bb76fc0af508f9bb75396b3df2a1b5af/openedx_events-10.5.0.tar.gz", hash = "sha256:a31b1f0019204d826305b8ea311a040a16759e838194654df165ea866044b7a1", size = 77097, upload-time = "2025-08-21T04:12:28.708Z" }
 wheels = [
@@ -2031,14 +2032,14 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "attrs", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.12' and extra == 'group-30-enterprise-integrated-channels-test-django42') or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.12' and extra != 'group-30-enterprise-integrated-channels-test-django42') or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "edx-ccx-keys", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "edx-django-utils", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "edx-opaque-keys", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "fastavro", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
-    { name = "setuptools", marker = "python_full_version >= '3.12' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "attrs" },
+    { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
+    { name = "edx-ccx-keys" },
+    { name = "edx-django-utils" },
+    { name = "edx-opaque-keys" },
+    { name = "fastavro" },
+    { name = "setuptools" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7c/8f/cc77bf1748e6c16125b04c47586b46fb43cac66f836780c73029db3393f8/openedx_events-11.2.0.tar.gz", hash = "sha256:b3216aeb959c3429c0091fa40ff8045322a0569a8cf36fa8910458f92923e472", size = 83833, upload-time = "2026-04-22T17:29:25.777Z" }
 wheels = [
@@ -2207,7 +2208,7 @@ version = "4.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astroid" },
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "dill" },
     { name = "isort" },
     { name = "mccabe" },
@@ -2320,7 +2321,7 @@ name = "pynacl"
 version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cffi", marker = "platform_python_implementation != 'PyPy' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "cffi", marker = "platform_python_implementation != 'PyPy'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d9/9a/4019b524b03a13438637b11538c82781a5eda427394380381af8f04f467a/pynacl-1.6.2.tar.gz", hash = "sha256:018494d6d696ae03c7e656e5e74cdfd8ea1326962cc401bcf018f1ed8436811c", size = 3511692, upload-time = "2026-01-01T17:48:10.851Z" }
 wheels = [
@@ -2356,7 +2357,7 @@ version = "26.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/74/b7/da07bae88f5a9506b4def6f2f4903cf4c3b8831e560dba8fa18ca08f758f/pyopenssl-26.3.0.tar.gz", hash = "sha256:589de7fae1c9ea670d18422ed00fc04da787bbde8e1454aea872aa57b49ad341", size = 182024, upload-time = "2026-06-12T20:28:07.458Z" }
 wheels = [
@@ -2389,7 +2390,7 @@ name = "pytest"
 version = "9.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "iniconfig" },
     { name = "packaging" },
     { name = "pluggy" },
@@ -2796,7 +2797,7 @@ version = "5.4.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django", version = "4.2.30", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django42'" },
-    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-30-enterprise-integrated-channels-test-django52' or extra != 'group-30-enterprise-integrated-channels-test-django42'" },
+    { name = "django", version = "5.2.16", source = { registry = "https://pypi.org/simple" }, marker = "extra != 'group-30-enterprise-integrated-channels-test-django42' or extra == 'group-30-enterprise-integrated-channels-test-django52'" },
     { name = "social-auth-core" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/2a/07/bb2465e4116d4761b028bd07b99087009caa81c1511c886d74c4ccece3a2/social_auth_app_django-5.4.3.tar.gz", hash = "sha256:d1f4286d5ca1e512c9b2f686e7ecb2a0128148f1a33d853b69dc07b58508362e", size = 24860, upload-time = "2025-02-13T13:07:34.557Z" }
@@ -2847,7 +2848,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alabaster" },
     { name = "babel" },
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "docutils" },
     { name = "imagesize" },
     { name = "jinja2" },
@@ -2958,7 +2959,7 @@ name = "testfixtures"
 version = "12.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/11/4d/b1c5fae372cd46b7bc1ec1dbca6efecaef8fe1e4edad203cc6e36cd5eafd/testfixtures-12.3.0.tar.gz", hash = "sha256:d807ceb9bdd6ea7cc0663370dd5568339056b35dc15c26effd1ae267e323acf1", size = 201458, upload-time = "2026-07-08T21:32:04.42Z" }
 wheels = [
@@ -3098,7 +3099,7 @@ version = "6.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "id" },
-    { name = "keyring", marker = "(platform_machine != 'ppc64le' and platform_machine != 's390x') or (platform_machine == 'ppc64le' and extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52') or (platform_machine == 's390x' and extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "keyring", marker = "platform_machine != 'ppc64le' and platform_machine != 's390x'" },
     { name = "packaging" },
     { name = "readme-renderer" },
     { name = "requests" },
@@ -3135,7 +3136,7 @@ name = "tzlocal"
 version = "5.4.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "tzdata", marker = "sys_platform == 'win32' or (extra == 'group-30-enterprise-integrated-channels-test-django42' and extra == 'group-30-enterprise-integrated-channels-test-django52')" },
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/81/5b/879b2f932adfa7a053c360d50bc896c977fa6426109185f7c12ebdd0cb9d/tzlocal-5.4.4.tar.gz", hash = "sha256:8dbb8660838688a7b6ba4fed31d18dedf842afb4d47ca050d6d891c2c15f3be4", size = 31170, upload-time = "2026-06-29T08:03:40.026Z" }
 wheels = [
