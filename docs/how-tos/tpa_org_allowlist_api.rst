@@ -9,7 +9,14 @@ deny the attempt.
 Endpoints
 *********
 
-All endpoints are under ``/channel_integrations/api/v1/tpa-org-allowlist/``.
+All endpoints are served by the LMS under ``/channel_integrations/api/v1/tpa-org-allowlist/``.
+In production that is ``https://courses.edx.org/channel_integrations/api/v1/tpa-org-allowlist/``.
+The trailing slash is optional on every endpoint.
+
+.. important::
+   Call the LMS host directly. ``api.edx.org`` is a separate AWS API Gateway that does not
+   route this API: requests sent there fail with ``403`` and
+   ``Invalid key=value pair (missing equal-sign) in Authorization header``.
 
 .. list-table::
    :widths: 10 40 50
@@ -27,6 +34,9 @@ All endpoints are under ``/channel_integrations/api/v1/tpa-org-allowlist/``.
    * - ``GET``
      - ``/tpa-org-allowlist/<id>/``
      - Retrieve a single allowlist entry
+   * - ``PATCH``
+     - ``/tpa-org-allowlist/<id>/``
+     - Update ``enterprise_group_uuid`` or ``demo_account`` on an entry
    * - ``DELETE``
      - ``/tpa-org-allowlist/<id>/``
      - Remove an org ID from the allowlist
@@ -64,14 +74,14 @@ into the right budget group at login.
 Validate an org (``GET /tpa-org-allowlist/validate/``)
 =======================================================
 
-The enterprise scope is derived automatically from the caller's credentials — the
-service user's token encodes which enterprise it belongs to, so no ``enterprise_customer``
-parameter is needed:
+The enterprise scope is derived from the caller's ``tpa_org_allowlist_admin`` role
+assignment, so a service user scoped to one enterprise doesn't need to pass
+``enterprise_customer``:
 
 .. code-block:: bash
 
    GET /channel_integrations/api/v1/tpa-org-allowlist/validate/?tpa_org_id=11111111-2222-3333-4444-555555555555
-   Authorization: Bearer <service-user-token>
+   Authorization: JWT <service-user-access-token>
 
 Returns ``200 {"detail": "Authorised."}`` if the org is in the allowlist, or
 ``404 {"detail": "Not found."}`` if it is not.
@@ -88,23 +98,33 @@ explicitly — the API cannot infer a single enterprise from an unrestricted tok
 Authentication and permissions
 *******************************
 
-All endpoints require a valid JWT (``Authorization: Bearer <token>``). Beyond
-authentication, callers also need the ``tpa_org_allowlist_admin`` role.
+Every request needs a JWT access token sent with the ``JWT`` prefix:
 
-This is a dedicated role — separate from the general ``enterprise_admin`` role — so
-that it can be granted narrowly. The role is checked in two ways:
+.. code-block:: text
 
-- **Implicit (JWT):** The JWT ``roles`` claim must contain
-  ``tpa_org_allowlist_admin:<enterprise_customer_uuid>``.
-- **Explicit (database):** A ``SystemWideEnterpriseUserRoleAssignment`` row must exist
-  linking the user to the ``tpa_org_allowlist_admin`` role for the relevant enterprise.
+   Authorization: JWT <access_token>
+
+The API accepts only JWT and LMS session authentication. A ``Bearer`` prefix is ignored, and
+an opaque (non-JWT) OAuth2 access token is rejected; both fail with ``401``. Request tokens
+with ``token_type=jwt`` to get a JWT (see `Setting up the service user`_).
+
+Beyond authentication, callers need the ``tpa_org_allowlist_admin`` role. This is a dedicated
+role, separate from ``enterprise_admin`` (which does not grant access here), so that it can be
+granted narrowly. Grant it with a ``SystemWideEnterpriseUserRoleAssignment`` row linking the
+user to the ``tpa_org_allowlist_admin`` role for the relevant enterprise. Superusers bypass the
+role check.
+
+.. note::
+   Only the database role assignment is checked. A ``tpa_org_allowlist_admin:<uuid>`` entry in
+   the JWT ``roles`` claim doesn't grant access on its own, because the LMS's
+   ``SYSTEM_TO_FEATURE_ROLE_MAPPING`` has no entry for this role.
 
 Setting up the service user
 ***************************
 
-The Auth0 Post-Login Action needs a long-lived bearer token to call ``validate``.
-The recommended approach is a dedicated edX service account so that the token scope
-is limited to this API.
+The Auth0 Post-Login Action calls ``validate`` as a dedicated edX service user, using the
+OAuth2 client-credentials grant to get a short-lived JWT. A dedicated service account keeps
+the credentials scoped to this API.
 
 Via the Django admin UI
 =======================
@@ -136,24 +156,25 @@ Fill in:
 
 Save and note the generated **Client id** and **Client secret**.
 
-Step 3 — Obtain a bearer token
---------------------------------
+Step 3 — Obtain a JWT access token
+------------------------------------
 
-Exchange the client credentials for a token:
+Exchange the client credentials for a JWT access token at the LMS token endpoint. Include
+``token_type=jwt``: without it the endpoint returns an opaque token, which this API rejects.
 
 .. code-block:: bash
 
-   curl -X POST https://<edx-host>/oauth2/access_token \
-     -d "client_id=<client_id>&client_secret=<client_secret>&grant_type=client_credentials"
+   curl -X POST https://courses.edx.org/oauth2/access_token \
+     -d "client_id=<client_id>&client_secret=<client_secret>&grant_type=client_credentials&token_type=jwt"
 
-Store the ``access_token`` from the response — this goes into the Auth0 Action Secret
-``TPA_ORG_API_TOKEN``.
+Send the ``access_token`` from the response as ``Authorization: JWT <access_token>``.
 
 .. note::
-   Check ``expires_in`` against your Auth0 Action caching policy. If the token expires
-   before the Action cache is refreshed, subsequent logins will get 401 errors. Either
-   configure a sufficiently long token lifetime in the OAuth2 application settings, or
-   add token-refresh logic to the Action.
+   JWT access tokens are short-lived. ``expires_in`` in the response gives the lifetime in
+   seconds: 1 hour by default, set by the LMS's ``JWT_ACCESS_TOKEN_EXPIRE_SECONDS``. Don't
+   store a token in the Auth0 Action, because it stops working when it expires. Store the
+   client id and secret instead, and have the Action request a new token before the cached
+   one expires (see `Configure Auth0 Action Secrets`_).
 
 Step 4 — Assign the role
 --------------------------
@@ -167,9 +188,9 @@ Fill in:
 - **Role:** ``tpa_org_allowlist_admin`` (create it if it does not yet exist)
 - **Enterprise customer:** select the target enterprise customer (e.g. Skillsoft)
 
-Save. This role assignment is what allows the service user to call ``validate`` without
-passing ``enterprise_customer`` as a query parameter — the enterprise scope is read
-directly from the assignment.
+Save. This role assignment is what gives the service user access to the API. It also sets
+the enterprise scope, so ``validate`` doesn't need an ``enterprise_customer`` query
+parameter.
 
 Step 5 — Configure Auth0 Action Secrets
 -----------------------------------------
@@ -210,14 +231,15 @@ Step 2 — Issue an OAuth2 application and obtain a token
    print('client_id:', app.client_id)
    print('client_secret:', app.client_secret)
 
-Then exchange for a token:
+Then request a JWT access token (``token_type=jwt`` is required):
 
 .. code-block:: bash
 
-   curl -X POST https://<edx-host>/oauth2/access_token \
-     -d "client_id=<client_id>&client_secret=<client_secret>&grant_type=client_credentials"
+   curl -X POST https://courses.edx.org/oauth2/access_token \
+     -d "client_id=<client_id>&client_secret=<client_secret>&grant_type=client_credentials&token_type=jwt"
 
-Store the ``access_token`` as ``TPA_ORG_API_TOKEN`` in Auth0 Action Secrets.
+For the Auth0 Action, store the ``client_id`` and ``client_secret``, not the token (see
+`Configure Auth0 Action Secrets`_).
 
 Step 3 — Assign the role
 --------------------------
@@ -249,19 +271,58 @@ Add the following secrets to the Auth0 Post-Login Action:
      - Value
    * - ``TPA_ORG_API_URL``
      - Base URL, e.g. ``https://courses.edx.org/channel_integrations/api/v1/tpa-org-allowlist``
-   * - ``TPA_ORG_API_TOKEN``
-     - The bearer token obtained in Step 2
+   * - ``TPA_ORG_TOKEN_URL``
+     - LMS OAuth2 token endpoint, e.g. ``https://courses.edx.org/oauth2/access_token``
+   * - ``TPA_ORG_CLIENT_ID``
+     - Client id of the service user's OAuth2 application
+   * - ``TPA_ORG_CLIENT_SECRET``
+     - Client secret of the service user's OAuth2 application
 
 Note that ``TPA_ENTERPRISE_CUSTOMER_UUID`` is no longer needed — the enterprise scope
 is derived from the service user's role assignment, not from a query parameter.
+``TPA_ORG_API_TOKEN`` is no longer used either: a stored JWT stops working when it expires,
+so the Action requests its own tokens.
 
-The Action calls ``validate`` like this:
+The Action gets a token and calls ``validate`` like this:
 
 .. code-block:: javascript
 
+   // Requests a JWT with the client-credentials grant and caches it for a
+   // little less than its lifetime, so a cached token never expires mid-login.
+   async function getAccessToken(event, api) {
+     const cached = api.cache.get('tpa_org_api_token');
+     if (cached) {
+       return cached.value;
+     }
+     const response = await fetch(event.secrets.TPA_ORG_TOKEN_URL, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+       body: new URLSearchParams({
+         grant_type: 'client_credentials',
+         client_id: event.secrets.TPA_ORG_CLIENT_ID,
+         client_secret: event.secrets.TPA_ORG_CLIENT_SECRET,
+         token_type: 'jwt',
+       }),
+     });
+     if (!response.ok) {
+       return null;
+     }
+     const { access_token: accessToken, expires_in: expiresIn } = await response.json();
+     api.cache.set('tpa_org_api_token', accessToken, { ttl: (expiresIn - 60) * 1000 });
+     return accessToken;
+   }
+
+   // Inside onExecutePostLogin:
+   const accessToken = await getAccessToken(event, api);
+   if (!accessToken) {
+     // Fail closed: deny if no token can be obtained
+     api.access.deny('Unable to verify organisation authorization.');
+     return;
+   }
+
    const response = await fetch(
      `${event.secrets.TPA_ORG_API_URL}/validate/?tpa_org_id=${percipioOrganizationUuid}`,
-     { headers: { Authorization: `Bearer ${event.secrets.TPA_ORG_API_TOKEN}` } }
+     { headers: { Authorization: `JWT ${accessToken}` } }
    );
 
    if (response.status === 404) {
@@ -274,3 +335,28 @@ The Action calls ``validate`` like this:
      return;
    }
    // 200 — authorised, continue
+
+Troubleshooting
+***************
+
+.. list-table::
+   :widths: 45 55
+   :header-rows: 1
+
+   * - Response
+     - Cause and fix
+   * - ``403`` with ``{"message": "Invalid key=value pair (missing equal-sign) in Authorization header ..."}``
+     - The request went to an AWS API Gateway such as ``api.edx.org``, not the LMS. Send it to
+       ``https://courses.edx.org`` (or the LMS host of the environment you're testing).
+   * - ``401 {"detail": "Authentication credentials were not provided."}``
+     - The request has no usable ``Authorization`` header. Usually the header uses the
+       ``Bearer`` prefix; send ``Authorization: JWT <access_token>`` instead.
+   * - ``401 {"detail": "Invalid token."}``, or another invalid or expired token message
+     - The token isn't a valid, unexpired JWT from this LMS. Request a new one with
+       ``token_type=jwt``.
+   * - ``403 {"detail": "You do not have permission to perform this action."}``
+     - The caller has no ``tpa_org_allowlist_admin`` role assignment. Add one (see
+       `Setting up the service user`_).
+   * - ``400`` on a ``POST``
+     - Usually the ``(enterprise_customer, tpa_org_id)`` pair is already allowlisted. The
+       response body names the field that failed validation.

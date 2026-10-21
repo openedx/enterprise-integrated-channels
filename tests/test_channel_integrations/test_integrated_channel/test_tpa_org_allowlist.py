@@ -165,6 +165,19 @@ class TestTpaOrgAllowlistCreate:
         assert response.status_code == 201
         assert response.data['enterprise_group_uuid'] is None
 
+    def test_create_without_trailing_slash_returns_201(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """POST to the URL without its trailing slash creates the entry."""
+        payload = {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': str(uuid4()),
+        }
+        response = authenticated_client.post(TPA_ORG_ALLOWLIST_URL.rstrip('/'), data=payload, format='json')
+        assert response.status_code == 201
+        assert TpaOrgAllowlist.objects.filter(
+            enterprise_customer=enterprise_customer,
+            tpa_org_id=payload['tpa_org_id'],
+        ).exists()
+
 
 @pytest.mark.django_db
 class TestTpaOrgAllowlistList:
@@ -348,6 +361,20 @@ class TestTpaOrgAllowlistValidate:
             tpa_org_id=tpa_org_id,
         )
         response = authenticated_client.get(self.VALIDATE_URL, {
+            'enterprise_customer': str(enterprise_customer.uuid),
+            'tpa_org_id': tpa_org_id,
+        })
+        assert response.status_code == 200
+        assert response.data['detail'] == 'Authorised.'
+
+    def test_validate_without_trailing_slash_returns_200(self, authenticated_client, enterprise_customer):  # pylint: disable=redefined-outer-name
+        """validate without its trailing slash still routes to validate, not to retrieve an entry with id 'validate'."""
+        tpa_org_id = str(uuid4())
+        TpaOrgAllowlist.objects.create(
+            enterprise_customer=enterprise_customer,
+            tpa_org_id=tpa_org_id,
+        )
+        response = authenticated_client.get(self.VALIDATE_URL.rstrip('/'), {
             'enterprise_customer': str(enterprise_customer.uuid),
             'tpa_org_id': tpa_org_id,
         })
