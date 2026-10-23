@@ -158,6 +158,8 @@ constraint-dependencies = [
     "Django<6.0",
     "elasticsearch<7.14.0",
     "social-auth-app-django<5.5",
+    "social-auth-core<5.0.0",
+    "pip<26.2.1",
 ]
 conflicts = [
     [
