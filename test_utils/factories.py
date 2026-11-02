@@ -409,6 +409,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationFactory(GenericEnterpriseC
         )
 
     sapsf_base_url = factory.LazyAttribute(lambda x: FAKER.url())
+    sapsf_api_server_url = 'https://api.sap.example.test/'
     sapsf_company_id = factory.LazyAttribute(lambda x: FAKER.company())
     sapsf_user_id = factory.LazyAttribute(lambda x: FAKER.pyint())
     user_type = SAPSuccessFactorsEnterpriseCustomerConfiguration.USER_TYPE_USER

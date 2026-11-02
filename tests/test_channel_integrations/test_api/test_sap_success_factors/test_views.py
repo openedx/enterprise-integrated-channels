@@ -388,6 +388,7 @@ class SAPSuccessFactorsConfigurationViewSetTests(APITest):
         private_key = generate_test_private_key_pem()
         payload = {
             'sapsf_base_url': 'https://testing2',
+            'sapsf_api_server_url': 'https://api.testing2',
             'sapsf_company_id': 'test',
             'enterprise_customer': ENTERPRISE_ID,
             'sapsf_user_id': 893489,
@@ -403,6 +404,7 @@ class SAPSuccessFactorsConfigurationViewSetTests(APITest):
         )
         self.assertEqual(created.auth_type, SAPAuthType.SELF_SIGNED_ASSERTION)
         self.assertEqual(created.decrypted_private_key.strip(), private_key.strip())
+        self.assertEqual(created.sapsf_api_server_url, 'https://api.testing2')
 
     @mock.patch('enterprise.rules.crum.get_current_request')
     def test_create_self_signed_auth_type_without_audience_uses_model_default(self, mock_current_request):
@@ -418,6 +420,7 @@ class SAPSuccessFactorsConfigurationViewSetTests(APITest):
         url = reverse('api:v1:sap_success_factors:configuration-list')
         payload = {
             'sapsf_base_url': 'https://testing2',
+            'sapsf_api_server_url': 'https://api.testing2',
             'sapsf_company_id': 'test',
             'enterprise_customer': ENTERPRISE_ID,
             'sapsf_user_id': 893489,
@@ -473,6 +476,7 @@ class SAPSuccessFactorsConfigurationViewSetTests(APITest):
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.content.decode('utf-8'))
         self.assertIn('sapsf_base_url', data)
+        self.assertIn('sapsf_api_server_url', data)
 
     @mock.patch('enterprise.rules.crum.get_current_request')
     def test_passphrase_with_meaningful_whitespace_is_not_stripped(self, mock_current_request):

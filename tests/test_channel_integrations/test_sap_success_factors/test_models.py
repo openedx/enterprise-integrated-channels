@@ -71,6 +71,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
             enterprise_customer=self.enterprise_customer,
             active=True,
             sapsf_base_url='https://sap.example.com',
+            sapsf_api_server_url='https://api.sap.example.com',
             sapsf_company_id='COMP1',
             sapsf_user_id='user-1',
             decrypted_key='a-key',
@@ -199,6 +200,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         assert self.config.auth_type == SAPAuthType.SAP_SIGNED_ASSERTION
         self.config.decrypted_key = ''
         self.config.decrypted_secret = ''
+        self.config.sapsf_api_server_url = ''  # How every existing SAP-signed config looks after 0008.
 
         missing, _ = self.config.is_valid
         assert 'key' in missing['missing']
@@ -206,6 +208,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         # The self-signed-only fields must not leak into a SAP-signed config's requirements.
         assert 'private_key' not in missing['missing']
         assert 'saml_assertion_audience' not in missing['missing']
+        assert 'sapsf_api_server_url' not in missing['missing']
 
     def test_is_valid_rejects_blank_saml_assertion_audience(self):
         """
@@ -225,7 +228,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
     @ddt.unpack
     def test_is_valid_requires_https_base_url_for_self_signed_assertion(self, auth_type, expected_incorrect):
         """
-        A self-signed assertion's Recipient is the token endpoint on the base URL, which must be HTTPS.
+        Self-signed Learning API calls carry the bearer token, so the base URL must be HTTPS.
         """
         self.config.auth_type = auth_type
         self.config.decrypted_private_key = PRIVATE_KEY
@@ -234,6 +237,23 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfiguration(unittest.TestCase):
         missing, incorrect = self.config.is_valid
         assert not missing['missing']
         assert incorrect['incorrect'] == expected_incorrect
+
+    @ddt.data(
+        ('', 'missing'),
+        ('http://api.sap.example.com', 'incorrect'),
+        ('api.sap.example.com', 'incorrect'),
+    )
+    @ddt.unpack
+    def test_is_valid_requires_https_api_server_url_for_self_signed_assertion(self, api_server_url, problem):
+        """A self-signed config needs an HTTPS API server URL."""
+        self.config.auth_type = SAPAuthType.SELF_SIGNED_ASSERTION
+        self.config.decrypted_private_key = PRIVATE_KEY
+        self.config.sapsf_api_server_url = api_server_url
+
+        missing, incorrect = self.config.is_valid
+        assert {'missing': missing['missing'], 'incorrect': incorrect['incorrect']}[problem] == [
+            'sapsf_api_server_url'
+        ]
 
     def test_is_valid_reports_malformed_base_url_once_for_self_signed_assertion(self):
         """
@@ -472,6 +492,7 @@ class TestGetCredentialErrors(unittest.TestCase):
             enterprise_customer=self.enterprise_customer,
             active=True,
             sapsf_base_url='https://sap.example.com',
+            sapsf_api_server_url='https://api.sap.example.com',
             sapsf_company_id='COMP1',
             sapsf_user_id='user-1',
             decrypted_key='a-key',
@@ -624,11 +645,27 @@ class TestGetCredentialErrors(unittest.TestCase):
             'sapsf_base_url': 'https://sap.example.com',
             'expected_errors': {'decrypted_private_key': 'Must be a PEM-encoded RSA private key.'},
         },
+        # self-signed, no API server URL.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com', 'sapsf_api_server_url': '',
+            'expected_errors': {
+                'sapsf_api_server_url': 'A SAP API server URL is required when the auth type is self-signed.',
+            },
+        },
+        # self-signed, non-HTTPS API server URL.
+        {
+            'auth_type': SAPAuthType.SELF_SIGNED_ASSERTION, 'private_key': PRIVATE_KEY,
+            'private_key_passphrase': '', 'saml_assertion_audience': 'www.successfactors.com',
+            'sapsf_base_url': 'https://sap.example.com', 'sapsf_api_server_url': 'http://api.sap.example.com',
+            'expected_errors': {'sapsf_api_server_url': 'Must be an absolute HTTPS URL.'},
+        },
     )
     @ddt.unpack
     def test_get_credential_errors(
         self, auth_type, private_key, private_key_passphrase, saml_assertion_audience, sapsf_base_url,
-        expected_errors,
+        expected_errors, sapsf_api_server_url='https://api.sap.example.com',
     ):
         errors = self.config.get_credential_errors(
             auth_type=auth_type,
@@ -636,6 +673,7 @@ class TestGetCredentialErrors(unittest.TestCase):
             private_key_passphrase=private_key_passphrase,
             saml_assertion_audience=saml_assertion_audience,
             sapsf_base_url=sapsf_base_url,
+            sapsf_api_server_url=sapsf_api_server_url,
         )
         assert errors == expected_errors
 
@@ -656,6 +694,7 @@ class TestGetCredentialErrors(unittest.TestCase):
             private_key_passphrase='',
             saml_assertion_audience='',
             sapsf_base_url='https://sap.example.com',
+            sapsf_api_server_url='',
         )
         assert not errors
 
@@ -675,5 +714,6 @@ class TestGetCredentialErrors(unittest.TestCase):
             private_key_passphrase='',
             saml_assertion_audience='www.successfactors.com',
             sapsf_base_url='https://sap.example.com',
+            sapsf_api_server_url='https://api.sap.example.com',
         )
         assert not errors

@@ -51,6 +51,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationForm(forms.ModelForm):
             private_key_passphrase=self._cleaned_or_blank(cleaned_data, "decrypted_private_key_passphrase"),
             saml_assertion_audience=self._cleaned_or_blank(cleaned_data, "saml_assertion_audience"),
             sapsf_base_url=self._cleaned_or_blank(cleaned_data, "sapsf_base_url"),
+            sapsf_api_server_url=self._cleaned_or_blank(cleaned_data, "sapsf_api_server_url"),
         )
         for field, message in errors.items():
             self.add_error(field, message)
@@ -94,6 +95,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
         "decrypted_private_key",
         "decrypted_private_key_passphrase",
         "saml_assertion_audience",
+        "sapsf_api_server_url",
         "sapsf_user_id",
         "user_type",
         "has_access_token",
@@ -126,7 +128,9 @@ class SAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(DjangoObjectActions,
     change_actions = ("force_content_metadata_transmission",)
 
     class Media:
-        js = ("sap_success_factors/admin/toggle_auth_type_fields.js",)
+        # The toggle script needs django.jQuery, defined by jquery.init.js, so it must load after it.
+        # ModelAdmin.media already loads jQuery itself.
+        js = ("admin/js/jquery.init.js", "sap_success_factors/admin/toggle_auth_type_fields.js")
 
     class Meta:
         model = SAPSuccessFactorsEnterpriseCustomerConfiguration

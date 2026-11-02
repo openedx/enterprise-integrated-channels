@@ -14,6 +14,20 @@ Change Log
 Unreleased
 **********
 
+0.3.0 – 2026-10-30
+******************
+
+* feat(sap): request self-signed access tokens from the customer's SAP API server
+
+  * New ``sapsf_api_server_url`` field: self-signed tokens are requested from the data
+    center's API server (e.g. ``https://api12preview.sapsf.eu``) instead of the Learning
+    host in ``sapsf_base_url``, which has no ``/oauth/token`` endpoint. Required for
+    self-signed configs; Learning API calls still go to ``sapsf_base_url``.
+  * Self-signed completion calls send ``actingAs=user``: SAP Learning treats a platform
+    token as admin by default.
+  * Django admin now hides the fields that don't apply to the selected auth type: the
+    toggle script loaded before ``django.jQuery`` existed, so it never ran.
+
 0.1.77 – 2026-10-05
 *******************
 

@@ -181,9 +181,9 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
         """
         oauth_token_api_path = (self.global_sap_config.oauth_token_api_path or '').strip()
         parsed_token_path = urlparse(oauth_token_api_path)
-        # urljoin() lets an absolute or scheme-relative value replace the customer's base URL
+        # urljoin() lets an absolute or scheme-relative value replace the customer's API server URL
         # outright, which would send the signed assertion to a different host; a value with no
-        # path (blank, query-only, fragment-only) resolves to the base URL itself; and a fragment is
+        # path (blank, query-only, fragment-only) resolves to the server URL itself; and a fragment is
         # never sent but would still be embedded in the assertion's Recipient, which SAP then rejects.
         if (
             not parsed_token_path.path
@@ -202,12 +202,13 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
                 )
             )
             raise ClientError(
-                'SAP OAuth token API path must be a non-empty path relative to the SAP base URL.',
+                'SAP OAuth token API path must be a non-empty path relative to the SAP API server URL.',
                 HTTPStatus.INTERNAL_SERVER_ERROR.value,
             )
 
+        # SAP's token server is on the data center's API server, not the Learning host (sapsf_base_url).
         token_url = urljoin(
-            self.enterprise_configuration.sapsf_base_url,
+            self.enterprise_configuration.sapsf_api_server_url,
             oauth_token_api_path,
         )
 
@@ -480,10 +481,13 @@ class SAPSuccessFactorsAPIClient(IntegratedChannelApiClient):  # pylint: disable
         # ``get_remote_id()`` can return a number, but the SAML assertion needs a string.
         sap_user_id = str(sap_user_id)
         oauth_access_token, _ = self.get_access_token(sap_user_id, self.enterprise_configuration.USER_TYPE_USER)
+        # SAP Learning treats a self-signed token as admin by default; act as the learner instead.
+        params = {'actingAs': 'user'} if self.enterprise_configuration.uses_self_signed_assertion else None
         start_time = time.time()
         response = requests.post(
             url,
             data=payload,
+            params=params,
             headers={
                 'Authorization': 'Bearer {}'.format(oauth_access_token),
                 'content-type': CONTENT_TYPE_APP_JSON

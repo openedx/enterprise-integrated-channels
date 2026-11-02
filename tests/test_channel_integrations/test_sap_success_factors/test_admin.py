@@ -68,6 +68,14 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationAdmin(TestCase):
 
         assert any("toggle_auth_type_fields" in js_path for js_path in media_js)
 
+    def test_toggle_script_loads_after_django_jquery(self):
+        """The toggle script needs django.jQuery, so it must load after admin/js/jquery.init.js."""
+        media_js = self.admin_instance.media._js  # pylint:disable=protected-access
+        toggle_index = next(i for i, js_path in enumerate(media_js) if "toggle_auth_type_fields" in js_path)
+
+        assert media_js.index("admin/js/jquery.init.js") < toggle_index
+        assert len([js_path for js_path in media_js if "vendor/jquery/" in js_path]) == 1
+
     def test_add_form_retains_all_credential_fields(self):
         """
         The Add form keeps every credential field server-side -- visibility toggling is
@@ -227,6 +235,7 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationForm(TestCase):
         data = {
             "enterprise_customer": self.sap_config.enterprise_customer_id,
             "sapsf_base_url": "https://sapsf.example.com",
+            "sapsf_api_server_url": "https://api.sapsf.example.com",
             "sapsf_company_id": "company",
             "sapsf_user_id": "user",
             "user_type": SAPSuccessFactorsEnterpriseCustomerConfiguration.USER_TYPE_USER,
@@ -275,6 +284,19 @@ class TestSAPSuccessFactorsEnterpriseCustomerConfigurationForm(TestCase):
         )
         assert not form.is_valid()
         assert "sapsf_base_url" in form.errors
+
+    def test_self_signed_auth_requires_sapsf_api_server_url(self):
+        """Regression: is_valid_url('') is True, so a blank URL must be checked separately."""
+        form = SAPSuccessFactorsEnterpriseCustomerConfigurationForm(
+            data=self._form_data(
+                auth_type=SAPAuthType.SELF_SIGNED_ASSERTION,
+                decrypted_private_key=generate_test_private_key_pem(),
+                sapsf_api_server_url="",
+            ),
+            instance=self.sap_config,
+        )
+        assert not form.is_valid()
+        assert "sapsf_api_server_url" in form.errors
 
     def test_passphrase_with_meaningful_whitespace_is_not_stripped(self):
         """Regression: the default CharField strips whitespace, but decryption needs exact bytes."""

@@ -58,7 +58,7 @@ class SAPSuccessFactorsGlobalConfiguration(ConfigurationModel):
         default='/oauth/token',
         verbose_name="OAuth Token API Path",
         help_text=_(
-            "Path, relative to a customer's SAP base URL, of the endpoint that exchanges a SAML "
+            "Path, relative to a customer's SAP API server URL, of the endpoint that exchanges a SAML "
             "bearer assertion for an access token."
         )
     )
@@ -220,8 +220,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             "How access tokens are obtained for this customer. 'SAP-signed' asks SAP's OAuth IdP API to "
             "mint the SAML assertion for us, authenticated with the OAuth client id/secret; "
             "'Self-signed' means we sign the assertion ourselves with the configured private key "
-            "instead. Self-signed support is still under development and is not yet used to authenticate any "
-            "transmissions."
+            "instead."
         )
     )
 
@@ -258,6 +257,17 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         help_text=_(
             "Value of the Audience restriction in the SAML bearer assertion sent to this customer's "
             "token endpoint. Only used for a self-signed SAML assertion."
+        )
+    )
+
+    sapsf_api_server_url = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="SAP API Server URL",
+        help_text=_(
+            "SAP SuccessFactors API server for this customer's data center (e.g. https://api12preview.sapsf.eu), "
+            "where self-signed access tokens are requested. Only used for a self-signed SAML assertion."
         )
     )
 
@@ -354,7 +364,8 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         errors[field] = message
 
     def get_credential_errors(
-        self, auth_type, private_key, private_key_passphrase, saml_assertion_audience, sapsf_base_url
+        self, auth_type, private_key, private_key_passphrase, saml_assertion_audience, sapsf_base_url,
+        sapsf_api_server_url,
     ):
         """
         Validate proposed credential values against ``is_valid``'s policy without saving them.
@@ -366,6 +377,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
         candidate.decrypted_private_key_passphrase = private_key_passphrase
         candidate.saml_assertion_audience = saml_assertion_audience
         candidate.sapsf_base_url = sapsf_base_url
+        candidate.sapsf_api_server_url = sapsf_api_server_url
         missing_items, incorrect_items = candidate.is_valid
 
         # A stored/submitted value differing only by trailing whitespace or None-vs-'' isn't a
@@ -389,12 +401,16 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
                 "A SAML assertion audience is required when the auth type is self-signed."
             )
         # is_valid flags a blank or non-HTTPS base URL for any auth type; only block saving it
-        # for self-signed, where the token endpoint on this URL also signs as the SAML recipient.
+        # for self-signed, whose Learning API calls carry the self-signed bearer token.
         if candidate.uses_self_signed_assertion:
             if 'sapsf_base_url' in missing_items['missing']:
                 errors['sapsf_base_url'] = _("A SAP base URL is required when the auth type is self-signed.")
             elif 'sapsf_base_url' in incorrect_items['incorrect']:
                 errors['sapsf_base_url'] = _("Must be an absolute HTTPS URL when the auth type is self-signed.")
+        if 'sapsf_api_server_url' in missing_items['missing']:
+            errors['sapsf_api_server_url'] = _("A SAP API server URL is required when the auth type is self-signed.")
+        elif 'sapsf_api_server_url' in incorrect_items['incorrect']:
+            errors['sapsf_api_server_url'] = _("Must be an absolute HTTPS URL.")
         return errors
 
     @property
@@ -427,6 +443,11 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
                 incorrect_items.get('incorrect').append('private_key')
             if not (self.saml_assertion_audience or '').strip():
                 missing_items.get('missing').append('saml_assertion_audience')
+            # The assertion's Recipient is the token endpoint on this URL, which must be HTTPS.
+            if not self.sapsf_api_server_url:
+                missing_items.get('missing').append('sapsf_api_server_url')
+            elif not is_valid_url(self.sapsf_api_server_url) or urlparse(self.sapsf_api_server_url).scheme != 'https':
+                incorrect_items.get('incorrect').append('sapsf_api_server_url')
         if not is_valid_url(self.sapsf_base_url):
             incorrect_items.get('incorrect').append('sapsf_base_url')
         elif (
@@ -434,8 +455,7 @@ class SAPSuccessFactorsEnterpriseCustomerConfiguration(EnterpriseCustomerPluginC
             and self.sapsf_base_url
             and urlparse(self.sapsf_base_url).scheme != 'https'
         ):
-            # A self-signed assertion names the token endpoint on this URL as its Recipient, which
-            # must be an HTTPS URL.
+            # Self-signed Learning API calls carry the bearer token, so must use HTTPS.
             incorrect_items.get('incorrect').append('sapsf_base_url')
         if len(self.display_name) > 20:
             incorrect_items.get('incorrect').append('display_name')

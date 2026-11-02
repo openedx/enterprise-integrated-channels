@@ -36,6 +36,7 @@ def _create_tenants():
         config = factories.SAPSuccessFactorsEnterpriseCustomerConfigurationFactory(
             enterprise_customer=customer,
             sapsf_base_url=f'https://{host}/',
+            sapsf_api_server_url=f'https://api.{host}/',
             sapsf_company_id=f'{name}-company',
             sapsf_user_id=f'{name}-service-user',
             decrypted_key=f'{name}-client-id',
@@ -48,14 +49,18 @@ def _create_tenants():
     return worker, tenants
 
 
+def _token_url(config):
+    # Self-signed tokens come from the API server; SAP-signed ones from the Learning host.
+    if config.uses_self_signed_assertion:
+        return urljoin(config.sapsf_api_server_url, 'saml/token')
+    return urljoin(config.sapsf_base_url, 'legacy/token')
+
+
 def _register_mock_endpoints(tenants, downstream_path, response_for_tenant):
     for name, config, access_token in tenants:
-        token_path = (
-            'saml/token' if config.uses_self_signed_assertion else 'legacy/token'
-        )
         responses.add(
             responses.POST,
-            urljoin(config.sapsf_base_url, token_path),
+            _token_url(config),
             json={'access_token': access_token, 'expires_in': 1800},
             status=200,
         )
@@ -69,15 +74,14 @@ def _register_mock_endpoints(tenants, downstream_path, response_for_tenant):
 
 
 def _request_to(url):
-    matches = [call.request for call in responses.calls if call.request.url == url]
+    matches = [call.request for call in responses.calls if call.request.url.split('?')[0] == url]
     assert matches, f'no request was sent to {url}'
     return matches[0]
 
 
 def _assert_tenant_logs_are_redacted(tenants):
     for name, config, access_token in tenants:
-        token_path = 'saml/token' if config.uses_self_signed_assertion else 'legacy/token'
-        token_call = _request_to(urljoin(config.sapsf_base_url, token_path))
+        token_call = _request_to(_token_url(config))
         # The signed assertion and the key that signed it are what must never reach the stored logs.
         secrets = [access_token, f'{name}-echoed-token']
         if config.decrypted_secret:
@@ -205,6 +209,8 @@ def test_learner_data_worker_isolates_sap_signed_and_self_signed_tenants():
         assert audit.status == '200'
 
         api_call = _request_to(urljoin(config.sapsf_base_url, 'learning/completion'))
+        # Only self-signed completions send actingAs.
+        assert ('actingAs=user' in api_call.url) is config.uses_self_signed_assertion
         assert api_call.headers['Authorization'] == f'Bearer {token}'
         assert json.loads(api_call.body)['userID'] == f'{name}-sap-user'
 

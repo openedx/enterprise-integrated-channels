@@ -49,6 +49,7 @@ class TestSAPSuccessFactorsAPIClient(unittest.TestCase):
         self.completion_status_api_path = "learning/odatav4/public/admin/ocn/v1/current-user/item/learning-event"
         self.course_api_path = "learning/odatav4/public/admin/ocn/v1/OcnCourses"
         self.url_base = "https://test.successfactors.com/"
+        self.api_server_url = "https://api.test.successfactors.com/"
         self.client_id = "client_id"
         self.client_secret = "client_secret"
         self.company_id = "company_id"
@@ -83,6 +84,7 @@ class TestSAPSuccessFactorsAPIClient(unittest.TestCase):
         self.enterprise_config = SAPSuccessFactorsEnterpriseCustomerConfiguration(
             encrypted_key=self.client_id,
             sapsf_base_url=self.url_base,
+            sapsf_api_server_url=self.api_server_url,
             sapsf_company_id=self.company_id,
             sapsf_user_id=self.user_id,
             encrypted_secret=self.client_secret,
@@ -107,7 +109,7 @@ class TestSAPSuccessFactorsAPIClient(unittest.TestCase):
         """
         self.enterprise_config.auth_type = auth_type
         if auth_type == SAPAuthType.SELF_SIGNED_ASSERTION:
-            return self.url_base + self.oauth_token_api_path
+            return self.api_server_url + self.oauth_token_api_path
         return self.url_base + self.oauth_api_path
 
     @responses.activate
@@ -276,6 +278,9 @@ class TestSAPSuccessFactorsAPIClient(unittest.TestCase):
         assert len(responses.calls) == 2
         assert responses.calls[0].request.url == token_url
         expected_url = self.url_base + self.completion_status_api_path
+        # Self-signed completions act as the learner.
+        if auth_type == SAPAuthType.SELF_SIGNED_ASSERTION:
+            expected_url += '?actingAs=user'
         assert responses.calls[1].request.url == expected_url
         sap_client._call_post_with_user_override.assert_called()  # pylint: disable=protected-access
         sap_client.get_access_token.assert_called_once_with('99', self.enterprise_config.USER_TYPE_USER)

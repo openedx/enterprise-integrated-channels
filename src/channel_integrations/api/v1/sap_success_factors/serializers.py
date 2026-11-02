@@ -29,6 +29,7 @@ class SAPSuccessFactorsConfigSerializer(EnterpriseCustomerPluginConfigSerializer
             "private_key",
             "private_key_passphrase",
             "saml_assertion_audience",
+            "sapsf_api_server_url",
             "user_type",
             "additional_locales",
             "show_course_price",
@@ -62,6 +63,7 @@ class SAPSuccessFactorsConfigSerializer(EnterpriseCustomerPluginConfigSerializer
             private_key_passphrase=attrs.get("private_key_passphrase", candidate.decrypted_private_key_passphrase),
             saml_assertion_audience=attrs.get("saml_assertion_audience", candidate.saml_assertion_audience),
             sapsf_base_url=attrs.get("sapsf_base_url", candidate.sapsf_base_url),
+            sapsf_api_server_url=attrs.get("sapsf_api_server_url", candidate.sapsf_api_server_url),
         )
         if errors:
             raise serializers.ValidationError(
