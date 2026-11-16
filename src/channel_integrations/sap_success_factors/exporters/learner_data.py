@@ -27,6 +27,7 @@ class SapSuccessFactorsLearnerExporter(LearnerExporter):
     """
 
     INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK = False
+    TRANSMIT_FAILED_GRADES = True
     remote_id_field_name = getattr(settings, 'SAP_THIRD_PARTY_AUTH_USER_ID_ATTRIBUTE', None)
 
     def get_learner_data_records(
@@ -80,20 +81,22 @@ class SapSuccessFactorsLearnerExporter(LearnerExporter):
             if learner_transmission_record is None:
                 learner_transmission_record = SapSuccessFactorsLearnerDataTransmissionAudit(
                     enterprise_course_enrollment_id=enterprise_enrollment.id,
-                    sapsf_user_id=sapsf_user_id,
-                    user_email=enterprise_enrollment.enterprise_customer_user.user_email,
-                    course_id=get_course_id_for_enrollment(enterprise_enrollment),
-                    course_completed=course_completed,
-                    completed_timestamp=completed_date,
-                    sap_completed_timestamp=sap_completed_timestamp,
-                    grade=grade,
-                    content_title=content_title,
-                    progress_status=progress_status,
-                    total_hours=total_hours,
-                    credit_hours=total_hours,
+                    course_id=course_id,
                     enterprise_customer_uuid=self.enterprise_configuration.enterprise_customer.uuid,
                     plugin_configuration_id=self.enterprise_configuration.id
                 )
+            # Always refresh an existing record with current data, so a retry never resends a stale
+            # SAP user ID or grade. The transmitter only saves the record when it is actually sent.
+            learner_transmission_record.sapsf_user_id = sapsf_user_id
+            learner_transmission_record.user_email = enterprise_enrollment.enterprise_customer_user.user_email
+            learner_transmission_record.course_completed = course_completed
+            learner_transmission_record.completed_timestamp = completed_date
+            learner_transmission_record.sap_completed_timestamp = sap_completed_timestamp
+            learner_transmission_record.grade = grade
+            learner_transmission_record.content_title = content_title
+            learner_transmission_record.progress_status = progress_status
+            learner_transmission_record.total_hours = total_hours
+            learner_transmission_record.credit_hours = total_hours
             return [learner_transmission_record]
         LOGGER.info(
             generate_formatted_log(

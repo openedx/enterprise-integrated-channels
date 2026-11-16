@@ -208,6 +208,7 @@ def is_already_transmitted(
     grade,
     subsection_id=None,
     detect_grade_updated=True,
+    failed_grade=None,
 ):
     """
     Returns: Boolean indicating if completion date for given enrollment is already sent of not.
@@ -219,6 +220,8 @@ def is_already_transmitted(
         subsection_id (Optional): The id of the subsection, needed if transmitting assessment level grades as there can
         be multiple per course.
         detect_grade_updated: default True. if this is False, method does not take into account grade changes
+        failed_grade (Optional): if the latest transmitted grade equals this value, grade changes are taken into
+        account even if detect_grade_updated is False, so a learner who fails and later passes is retransmitted.
     """
     try:
         already_transmitted = transmission.objects.filter(
@@ -230,8 +233,9 @@ def is_already_transmitted(
             already_transmitted = already_transmitted.filter(subsection_id=subsection_id)
 
         latest_transmitted_tx = already_transmitted.latest('id')
-        if detect_grade_updated:
-            return latest_transmitted_tx and getattr(latest_transmitted_tx, 'grade', None) == grade
+        latest_grade = getattr(latest_transmitted_tx, 'grade', None)
+        if detect_grade_updated or (failed_grade is not None and latest_grade == failed_grade):
+            return latest_transmitted_tx and latest_grade == grade
         return latest_transmitted_tx is not None
     except transmission.DoesNotExist:
         return False

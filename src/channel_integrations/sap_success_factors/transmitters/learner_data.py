@@ -20,6 +20,7 @@ class SapSuccessFactorsLearnerTransmitter(LearnerTransmitter):
     """
 
     INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK = False
+    TRANSMIT_FAILED_GRADES = True
 
     def __init__(self, enterprise_configuration, client=SAPSuccessFactorsAPIClient):
         """

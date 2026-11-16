@@ -94,6 +94,44 @@ class TestLearnerExporter(unittest.TestCase):
         If you add any settings to the ChannelSettingsMixin, add a test here for the common default value
         """
         assert LearnerExporter('fake-user', self.config).INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK is True
+        assert LearnerExporter('fake-user', self.config).TRANSMIT_FAILED_GRADES is False
+
+    @ddt.data(
+        # (certificate status, is_passing, course end, expected grade)
+        ('downloadable', True, YESTERDAY, LearnerExporter.GRADE_PASSING),
+        ('notpassing', False, YESTERDAY, LearnerExporter.GRADE_FAILING),
+        ('notpassing', False, TOMORROW, LearnerExporter.GRADE_INCOMPLETE),
+        ('notpassing', False, None, LearnerExporter.GRADE_INCOMPLETE),
+        ('unverified', False, YESTERDAY, LearnerExporter.GRADE_INCOMPLETE),
+        ('error', False, YESTERDAY, LearnerExporter.GRADE_INCOMPLETE),
+        ('unavailable', False, YESTERDAY, LearnerExporter.GRADE_INCOMPLETE),
+    )
+    @ddt.unpack
+    @mock.patch('channel_integrations.integrated_channel.exporters.learner_data.get_persistent_grade')
+    @mock.patch('channel_integrations.integrated_channel.exporters.learner_data.get_course_certificate')
+    def test_collect_certificate_data_grade_by_status(
+            self, status, is_passing, course_end, expected_grade,
+            mock_get_course_certificate, mock_get_persistent_grade,
+    ):
+        """
+        Only a notpassing certificate in an ended course is a failing grade; a notpassing certificate in an
+        open course, and other non-passing statuses, are not a result yet.
+        """
+        mock_get_persistent_grade.return_value = None
+        mock_get_course_certificate.return_value = {
+            'status': status, 'is_passing': is_passing, 'created': self.NOW, 'grade': '0.5',
+        }
+        enrollment = factories.EnterpriseCourseEnrollmentFactory(
+            enterprise_customer_user=self.enterprise_customer_user,
+            course_id=self.course_id,
+        )
+
+        with freeze_time(self.NOW):
+            _, grade, _, _, _ = self.exporter.collect_certificate_data(
+                enrollment, 'generic', mock_course_overview(end=course_end),
+            )
+
+        assert grade == expected_grade
 
     def test_collect_learner_data_no_enrollments(self):
         learner_data = list(self.exporter.export())

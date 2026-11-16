@@ -54,6 +54,9 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
     GRADE_PASSING = 'Pass'
     GRADE_FAILING = 'Fail'
     GRADE_INCOMPLETE = 'In Progress'
+    # The only edx-platform certificate status that means the learner did not pass. Other non-passing
+    # statuses (e.g. unverified, error, unavailable) are not a result, so they are not reported as failing.
+    CERTIFICATE_STATUS_NOT_PASSING = 'notpassing'
 
     def __init__(self, user, enterprise_configuration):
         """
@@ -312,7 +315,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
                 completed_date_from_api = timezone.now()
         else:
             completed_date_from_api, grade_from_api, is_passing_from_api, grade_percent, passed_timestamp = \
-                self.collect_certificate_data(enterprise_enrollment, channel_name)
+                self.collect_certificate_data(enterprise_enrollment, channel_name, course_details)
             if completed_date_from_api is None:
                 # means we cannot find a cert for this learner
                 # we will try getting grades info using the alternative api in this case
@@ -499,6 +502,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
                         self.enterprise_configuration.id,
                         grade,
                         detect_grade_updated=self.INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK,
+                        failed_grade=self.grade_failing if self.transmit_failed_grades else None,
                     ):
                 # We've already sent a completion status for this enrollment
                 LOGGER.info(generate_formatted_log(
@@ -625,7 +629,7 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
         # We return one record here, with the course key, that was sent to the integrated channel.
         return [learner_transmission_record]
 
-    def collect_certificate_data(self, enterprise_enrollment, channel_name):
+    def collect_certificate_data(self, enterprise_enrollment, channel_name, course_details=None):
         """
         Collect the learner completion data from the course certificate.
 
@@ -638,6 +642,8 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
             enterprise_enrollment (EnterpriseCourseEnrollment): the enterprise enrollment record for which we need to
             collect completion/grade data,
             channel_name: labeled for relevant integrated channel this is being called for to enhance logging.
+            course_details (CourseOverview, optional): the course details; a notpassing certificate is only a
+            failing grade once the course has ended.
 
         Returns:
             completed_date: Date the course was completed, this is None if course has not been completed.
@@ -709,7 +715,15 @@ class LearnerExporter(ChannelSettingsMixin, Exporter):
         # For consistency with _collect_grades_data, we only care about Pass/Fail grades. This could change.
         is_passing = certificate.get('is_passing')
         percent_grade = certificate.get('grade')
-        grade = self.grade_passing if is_passing else self.grade_failing
+        if is_passing:
+            grade = self.grade_passing
+        elif (certificate.get('status') == self.CERTIFICATE_STATUS_NOT_PASSING and
+                course_details is not None and course_details.end is not None and
+                course_details.end < timezone.now()):
+            # Like the grades path, the learner has only failed once the course has ended.
+            grade = self.grade_failing
+        else:
+            grade = self.grade_incomplete
 
         return completed_date, grade, is_passing, percent_grade, passed_timestamp
 

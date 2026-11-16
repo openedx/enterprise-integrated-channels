@@ -14,6 +14,16 @@ Change Log
 Unreleased
 **********
 
+0.4.0 – 2026-11-16
+******************
+
+* feat(sap): send failed completions to SAP so they show as Failed in Sync History
+
+  * Behind the ``enable_failed_grade_transmission`` waffle switch (off by default): failed
+    learners are sent with grade ``Fail``, and sent again once they pass.
+  * On deploy: retries send the learner's current data, and only a ``notpassing``
+    certificate in an ended course counts as ``Fail``.
+
 0.3.0 – 2026-10-30
 ******************
 

@@ -299,6 +299,8 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
             ))
             return
 
+        failed_grade = payload.grade_failing if self.transmit_failed_grades else None
+
         # Since we have started sending courses to integrated channels instead of course runs,
         # we need to attempt to send transmissions with course keys and course run ids in order to
         # ensure that we account for whether courses or course runs exist in the integrated channel.
@@ -315,10 +317,12 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
                 enterprise_enrollment_id
             )
 
+            grade = getattr(learner_data, 'grade', None)
             if (not learner_data.course_completed and
+                    not (failed_grade and grade == failed_grade) and
                     not getattr(self.enterprise_configuration, 'enable_incomplete_progress_transmission', False)):
-                # The user has not completed the course and enable_incomplete_progress_transmission is not set,
-                # so we shouldn't send a completion status call
+                # The user has not completed the course, the channel does not transmit failed grades and
+                # enable_incomplete_progress_transmission is not set, so we shouldn't send a completion status call
                 remote_id = getattr(learner_data, kwargs.get('remote_user_id'))
                 encoded_serialized_payload = encode_data_for_logging(serialized_payload)
                 LOGGER.info(generate_formatted_log(
@@ -333,13 +337,13 @@ class LearnerTransmitter(Transmitter, ChannelSettingsMixin):
                 ))
                 continue
 
-            grade = getattr(learner_data, 'grade', None)
             if (not force_transmit) and is_already_transmitted(
                 TransmissionAudit,
                 enterprise_enrollment_id,
                 self.enterprise_configuration.id,
                 grade,
                 detect_grade_updated=self.INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK,
+                failed_grade=failed_grade,
             ):
                 # We've already sent a completion status for this enrollment
                 LOGGER.info(generate_formatted_log(

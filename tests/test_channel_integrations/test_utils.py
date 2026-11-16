@@ -234,6 +234,32 @@ class TestIntegratedChannelsUtils(unittest.TestCase):
             detect_grade_updated=False,
         ) is True
 
+    @ddt.data(
+        # (latest transmitted grade, current grade, expected)
+        ('Fail', 'Pass', False),
+        ('Fail', None, False),
+        ('Fail', 'Fail', True),
+        ('Pass', 'Fail', True),
+        ('Pass', None, True),
+    )
+    @ddt.unpack
+    def test_is_already_transmitted_failed_grade(self, latest_grade, grade, expected):
+        """
+        When failed_grade is given, a change away from a transmitted failed grade is detected
+        even though detect_grade_updated is False; any other transmitted grade is final.
+        """
+        transmission = MagicMock()
+        transmission.objects.filter.return_value.latest.return_value = MagicMock(grade=latest_grade)
+
+        assert utils.is_already_transmitted(
+            transmission,
+            123,
+            456,
+            grade,
+            detect_grade_updated=False,
+            failed_grade='Fail',
+        ) is expected
+
     def test_generate_formatted_log(self):
         log_str = utils.generate_formatted_log(1, 2, 3, 4, 5, 6)
         assert log_str == 'integrated_channel=1, '\

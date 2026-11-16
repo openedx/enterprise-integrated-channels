@@ -8,7 +8,9 @@ from unittest.mock import MagicMock, Mock
 
 import ddt
 from pytest import mark
+from waffle.testutils import override_switch
 
+from channel_integrations.integrated_channel.channel_settings import ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH
 from channel_integrations.integrated_channel.exporters.learner_data import LearnerExporter
 from channel_integrations.integrated_channel.tasks import transmit_single_learner_data
 from channel_integrations.integrated_channel.transmitters.learner_data import LearnerTransmitter
@@ -45,6 +47,9 @@ class TestLearnerDataTransmitter(unittest.TestCase):
         If you add any settings to the ChannelSettingsMixin, add a test here for the common default value
         """
         assert LearnerTransmitter(self.enterprise_config).INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK is True
+        assert LearnerTransmitter(self.enterprise_config).TRANSMIT_FAILED_GRADES is False
+        with override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True):
+            assert LearnerTransmitter(self.enterprise_config).transmit_failed_grades is False
 
     def test_transmit_single_learner_data_signal_kwargs(self):
         """
@@ -164,6 +169,29 @@ class TestLearnerDataTransmitter(unittest.TestCase):
             remote_user_id='user_id',
             force_transmit=True,
         )
+
+        assert not self.learner_transmitter.client.create_course_completion.called
+
+    @override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True)
+    @mock.patch('channel_integrations.integrated_channel.transmitters.'
+                'learner_data.LearnerExporterUtility.lms_user_id_for_ent_course_enrollment_id')
+    @mock.patch('channel_integrations.integrated_channel.transmitters.learner_data.is_already_transmitted')
+    def test_failed_grade_not_transmitted_for_channels_not_opted_in(self, is_already_tx, mock_lms_id):
+        """Channels that don't opt in keep skipping failed grades, even with the waffle switch on."""
+        mock_lms_id.return_value = 'abc'
+        is_already_tx.return_value = False
+        self.learner_transmitter.client.create_course_completion = Mock(return_value=(200, 'ok'))
+
+        exporter = MagicMock(grade_failing=LearnerExporter.GRADE_FAILING)
+        record = MagicMock()
+        record.course_completed = False
+        record.serialize = Mock(return_value='serialized data')
+        record.enterprise_course_enrollment_id = 22
+        record.grade = LearnerExporter.GRADE_FAILING
+        record.course_id = 'course-v1:test+TST+2026'
+        exporter.export = MagicMock(return_value=[record])
+
+        self.learner_transmitter.transmit(exporter, remote_user_id='user_id')
 
         assert not self.learner_transmitter.client.create_course_completion.called
 
