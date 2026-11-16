@@ -2,6 +2,11 @@
 Channel level settings (global for all channels).
 """
 
+import waffle  # pylint: disable=invalid-django-waffle-import
+
+# Waffle switch that turns on failed-grade transmission for channels that opt in with TRANSMIT_FAILED_GRADES.
+ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH = 'enable_failed_grade_transmission'
+
 
 class ChannelSettingsMixin:
     """
@@ -17,3 +22,16 @@ class ChannelSettingsMixin:
     # a channel should override this to False if they don't want grade changes to
     # cause retransmission of completion records
     INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK = True
+
+    # a channel should override this to True to transmit failed (completed but not passing) grades.
+    # A learner whose failed grade was transmitted is then retransmitted once their grade changes,
+    # even if INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK is False.
+    # Takes effect only while the ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH waffle switch is active.
+    TRANSMIT_FAILED_GRADES = False
+
+    @property
+    def transmit_failed_grades(self):
+        """
+        Whether failed grades are transmitted: the channel opts in and the waffle switch is active.
+        """
+        return self.TRANSMIT_FAILED_GRADES and waffle.switch_is_active(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH)

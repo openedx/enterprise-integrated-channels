@@ -8,8 +8,10 @@ from unittest import mock
 
 import ddt
 from pytest import mark
+from waffle.testutils import override_switch
 
 from channel_integrations.exceptions import ClientError
+from channel_integrations.integrated_channel.channel_settings import ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH
 from channel_integrations.sap_success_factors.models import SapSuccessFactorsLearnerDataTransmissionAudit
 from channel_integrations.sap_success_factors.transmitters import learner_data
 from test_utils import factories
@@ -59,7 +61,8 @@ class TestSapSuccessFactorsLearnerDataTransmitter(unittest.TestCase):
             )
         ]
         self.exporter = lambda payloads=self.payloads: mock.MagicMock(
-            export=mock.MagicMock(return_value=iter(payloads))
+            export=mock.MagicMock(return_value=iter(payloads)),
+            grade_failing='Fail',
         )
 
         # Mocks
@@ -148,6 +151,106 @@ class TestSapSuccessFactorsLearnerDataTransmitter(unittest.TestCase):
         assert payload.status == '500'
         assert payload.error_message == 'error occurred'
         assert payload.is_transmitted is False
+
+    def _incomplete_payload(self, grade, progress_status):
+        """
+        Build a not-completed payload for the enrollment under test.
+        """
+        return SapSuccessFactorsLearnerDataTransmissionAudit(
+            enterprise_course_enrollment_id=self.enterprise_course_enrollment.id,
+            sapsf_user_id='sap_user',
+            course_id='course-v1:edX+DemoX+DemoCourse',
+            course_completed=False,
+            sap_completed_timestamp=1486755998,
+            completed_timestamp=datetime.datetime.fromtimestamp(1486755998),
+            grade=grade,
+            progress_status=progress_status,
+            enterprise_customer_uuid=self.enterprise_customer.uuid,
+            plugin_configuration_id=self.enterprise_config.id,
+        )
+
+    @override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True)
+    def test_transmit_failed_grade(self):
+        """
+        A failed grade is transmitted as not completed and saved, so it shows as Failed in sync history.
+        """
+        self.create_course_completion_mock.return_value = 200, '{"success":"true"}'
+        payload = self._incomplete_payload('Fail', 'Failed')
+        transmitter = learner_data.SapSuccessFactorsLearnerTransmitter(self.enterprise_config)
+        transmitter.transmit(self.exporter([payload]))
+        self.create_course_completion_mock.assert_called_once_with(payload.sapsf_user_id, payload.serialize())
+        assert '"courseCompleted": "false"' in payload.serialize()
+        assert payload.is_transmitted is True
+        assert SapSuccessFactorsLearnerDataTransmissionAudit.objects.get(id=payload.id).progress_status == 'Failed'
+
+    def test_skip_failed_grade_when_switch_inactive(self):
+        """
+        A failed grade is not transmitted while the waffle switch is off.
+        """
+        payload = self._incomplete_payload('Fail', 'Failed')
+        transmitter = learner_data.SapSuccessFactorsLearnerTransmitter(self.enterprise_config)
+        transmitter.transmit(self.exporter([payload]))
+        self.create_course_completion_mock.assert_not_called()
+        assert payload.id is None
+
+    @override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True)
+    def test_skip_in_progress_grade(self):
+        """
+        A grade that is neither passing nor failed is still not transmitted.
+        """
+        payload = self._incomplete_payload('In Progress', 'In Progress')
+        transmitter = learner_data.SapSuccessFactorsLearnerTransmitter(self.enterprise_config)
+        transmitter.transmit(self.exporter([payload]))
+        self.create_course_completion_mock.assert_not_called()
+        assert payload.id is None
+
+    @ddt.data(
+        # (new grade, new course_completed, expect transmission)
+        ('Pass', True, True),
+        ('Fail', False, False),
+    )
+    @ddt.unpack
+    @override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True)
+    def test_retransmit_after_failed_grade(self, grade, course_completed, expect_transmission):
+        """
+        A learner whose failed grade was transmitted is transmitted again once they pass, but not
+        while they are still failing.
+        """
+        self.create_course_completion_mock.return_value = 200, '{"success":"true"}'
+        payload = self._incomplete_payload('Fail', 'Failed')
+        payload.is_transmitted = True
+        payload.save()
+
+        payload.grade = grade
+        payload.course_completed = course_completed
+        transmitter = learner_data.SapSuccessFactorsLearnerTransmitter(self.enterprise_config)
+        transmitter.transmit(self.exporter([payload]))
+
+        assert self.create_course_completion_mock.called is expect_transmission
+        assert SapSuccessFactorsLearnerDataTransmissionAudit.objects.get(id=payload.id).grade == grade
+
+    @override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True)
+    def test_failed_pass_transmission_after_failed_grade_is_retried(self):
+        """
+        If the passing grade that follows a transmitted failed grade errors, the single record is
+        overwritten as not transmitted, and the passing grade is retried on the next run.
+        """
+        payload = self._incomplete_payload('Fail', 'Failed')
+        payload.is_transmitted = True
+        payload.save()
+        payload.grade, payload.course_completed, payload.progress_status = 'Pass', True, 'Passed'
+        transmitter = learner_data.SapSuccessFactorsLearnerTransmitter(self.enterprise_config)
+
+        self.create_course_completion_mock.side_effect = ClientError('error occurred', 400)
+        transmitter.transmit(self.exporter([payload]))
+        record = SapSuccessFactorsLearnerDataTransmissionAudit.objects.get(id=payload.id)
+        assert (record.grade, record.is_transmitted, record.status) == ('Pass', False, '400')
+
+        self.create_course_completion_mock.side_effect = None
+        self.create_course_completion_mock.return_value = 200, '{"success":"true"}'
+        transmitter.transmit(self.exporter([record]))
+        assert self.create_course_completion_mock.call_count == 2
+        assert SapSuccessFactorsLearnerDataTransmissionAudit.objects.get(id=payload.id).is_transmitted is True
 
     @ddt.data(
         ('user account is inactive', False),
@@ -271,6 +374,9 @@ class TestSapSuccessFactorsLearnerDataTransmitter(unittest.TestCase):
         """
         If you add any settings to the ChannelSettingsMixin, add a test here for the common default value
         """
-        assert learner_data.SapSuccessFactorsLearnerTransmitter(
-            self.enterprise_config
-        ).INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK is False
+        transmitter = learner_data.SapSuccessFactorsLearnerTransmitter(self.enterprise_config)
+        assert transmitter.INCLUDE_GRADE_FOR_COMPLETION_AUDIT_CHECK is False
+        assert transmitter.TRANSMIT_FAILED_GRADES is True
+        assert transmitter.transmit_failed_grades is False
+        with override_switch(ENABLE_FAILED_GRADE_TRANSMISSION_SWITCH, active=True):
+            assert transmitter.transmit_failed_grades is True
