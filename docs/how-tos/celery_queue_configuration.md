@@ -167,7 +167,7 @@ If issues occur, disable the feature:
 
 1. **Set feature flag to False**:
    ```python
-   FEATURES['ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT'] = False
+   ENABLE_WEBHOOK_LEARNING_TIME_ENRICHMENT = False
    ```
 
 2. **Restart application servers** (Django workers)
